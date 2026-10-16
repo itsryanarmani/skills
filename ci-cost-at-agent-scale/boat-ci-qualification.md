@@ -22,7 +22,7 @@ A process can report more CPUs than its assigned CPU set permits.
 Scale from queued jobs and usable capacity, with a spending ceiling.
 Count a machine only after its readiness checks pass.
 Reserve account starts for replacement capacity. Check the current
-[limits API](https://docs.boat.dev/api-v1) before a burst.
+[limits API](https://docs.boat.dev/api/v1) before a burst.
 
 An idle-state label does not prove that a machine has no active job.
 Use leases, process state, and a heartbeat to stop idle machines.

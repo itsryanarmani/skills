@@ -37,9 +37,11 @@ Do not hand off a decision that is the owner's to make. Write it in the brief as
 2. **Toolchain.** Check the forge CLI, the runtime, the package manager and any
    browser deps on the VM. A missing CLI fails late, after the agent has spent a
    round getting there.
-3. **Secrets.** Put every token in one `secrets.env`, mode 600, shell syntax.
-   Never put a value in a command line, a prompt, or the brief. The runner
-   sources the file with `set -a`. Tell the agent never to print it.
+3. **Secrets.** Put every token in one `secrets.env`, mode 600, as plain
+   `KEY=VALUE` lines. Build the bundle in a folder outside every git checkout
+   (a temp folder works), so the file cannot be committed with the brief. Never
+   put a value in a command line, a prompt, or the brief. The runner reads the
+   file as data, not code. Tell the agent never to print it.
 4. **State that is already done.** Write what the laptop session finished, with
    commit SHAs, so the agent does not redo or undo it.
 
@@ -61,14 +63,20 @@ it, then `STATUS.md`. Shape:
 ## Goals, in order
 1. <Goal> — <the check that proves it, with the exact command>.
 2. ...
-N. Report: keep one sticky status comment on <one tracking issue>. Update it at
-   least every <45> minutes and at each finished goal: Done, In progress, Next,
-   Blocked. Then write ~/orch/DONE.
 
 ## Rules
-<No claims without output. Write each step to STATUS.md. Never print secrets.
+<Keep one sticky status comment on <one tracking issue>. Update it at least
+every <45> minutes and at each finished goal: Done, In progress, Next, Blocked.
+No claims without output. Write each step to STATUS.md. Never print secrets.
 Never kill processes by name. The repo's own PR and commit rules.>
+
+## Finish
+When every goal above is done, including goals added later, post the final
+status comment, then write ~/orch/DONE.
 ```
+
+Keep `## Finish` after `## Rules`. `add-goal` inserts new goals before
+`## Rules`, so they always land ahead of the step that writes DONE.
 
 Why each part matters:
 
@@ -107,8 +115,10 @@ vm-orchestrate --ssh "..." add-goal ./goal.md
 ```
 
 It inserts the goal before `## Rules` and appends a line to STATUS.md, so the
-running agent sees it at its next read. If the brief says "write DONE after goal
-N", change that line too, or the agent finishes before reaching the new goal.
+running agent sees it at its next read. With the template above, the goal lands
+after the last goal and before `## Finish`, so DONE still comes last. If a brief
+puts "write DONE" inside a numbered goal instead, move it to `## Finish` first,
+or the agent stops before it reaches the new goal.
 
 ## Traps seen in practice
 
@@ -136,6 +146,7 @@ N", change that line too, or the agent finishes before reaching the new goal.
 
 ## Related
 
-- `agents-on-boxes` runs short parallel jobs on Boxes. This skill is for one
-  long job that must outlive the laptop session.
-- `crabbox-worktree` keeps a VM in sync with a worktree for builds.
+- [agents-on-boxes](../agents-on-boxes/SKILL.md) runs short parallel jobs on
+  Boxes. This skill is for one long job that must outlive the laptop session.
+- [crabbox-worktree](../crabbox-worktree/SKILL.md) keeps a VM in sync with a
+  worktree for builds.

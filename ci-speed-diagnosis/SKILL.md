@@ -53,6 +53,10 @@ Retry only the affected checks to diagnose the mismatch. Keep their results besi
 Then run the complete required local gate with matching conditions before every push.
 Report unresolved differences. Attribute a failure to source only after the relevant execution conditions match.
 
+For trigger changes, affected tests, build reuse, and post-merge experiments, read
+[Choose and verify a CI optimization](references/optimization-decisions.md).
+It gives the shared evidence and recovery rules before a sibling changes execution.
+
 ## Diagnose in this order
 
 Do not skip a step. Each one stops you from optimising a job that does not matter.

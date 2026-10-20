@@ -50,6 +50,6 @@ Use `hardware/build.sh` in private-repo-32ef. It does all three. To check a flag
 
 ## Status
 
-Verified: three phones linked at once with `adv=1`. Not verified: four or five phones on one board. Plan for two boards if five fail.
+Verified: five phones linked at once on one board. Each slot answered `ping` and a pointer `move`. At five links the board shows `adv=0`. This is normal. For more than five phones, add a second board.
 
 Whether apps can detect this input path is not proven. Start with passive actions.

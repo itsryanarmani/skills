@@ -11,6 +11,26 @@ An ESP32-S3 shows up to each iPhone as a Bluetooth mouse and keyboard. Assistive
 
 Firmware, build script and the full doc: `pooriaarab/private-repo-32ef` (`hardware/`, `docs/ble-bridge.md`). CLI: `pooriaarab/scripts` (`ble-bridge`).
 
+## Set up the board
+
+Do this before you pair any phone. Work in a `pooriaarab/private-repo-32ef` checkout.
+
+1. Connect the ESP32-S3 to the Mac with USB.
+2. Flash it: `hardware/build.sh`. The script builds and uploads the firmware.
+3. Find the serial port: `ls /dev/cu.usbmodem*`.
+4. Send `ping` over that port with `ble-bridge` (`pooriaarab/scripts`). The board must answer `ok`.
+5. Send `log`. It must show `adv=1`. The board now advertises as `Pad xxxx`.
+
+Do not go on if `ping` fails. Fix the board first.
+
+## Gates
+
+- Ask the user first for any outward-facing action: send, post, comment, like, follow, call, pay, delete, sign in, or grant a permission.
+- `click`, `type`, `key` and `scroll` act on a real phone. Name the action before you run it.
+- Do not type a password or a code.
+- Stop when a screen asks for approval. Follow the gates in `iphone-agent`.
+- Apps may see the pointer. Start with passive actions.
+
 ## Set up one phone
 
 1. Settings → Accessibility → Touch → AssistiveTouch: on. Perform Touch Gestures: on. Tracking Sensitivity: maximum.
@@ -53,3 +73,7 @@ Use `hardware/build.sh` in private-repo-32ef. It does all three. To check a flag
 Verified: five phones linked at once on one board. Each slot answered `ping` and a pointer `move`. At five links the board shows `adv=0`. This is normal. For more than five phones, add a second board.
 
 Whether apps can detect this input path is not proven. Start with passive actions.
+
+## Screen over USB
+
+Since 2026-10-24 the screen can come over a USB cable. It needs no AirPlay and no Developer Mode. Use `hardware/usbcap` in `pooriaarab/private-repo-32ef` (PR #12). Read `docs/usb-screen.md` there for the run steps.

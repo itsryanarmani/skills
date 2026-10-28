@@ -152,8 +152,9 @@ or ~/.codex config.
    If Tailscale is off, run: sudo tailscale up --auth-key=file:$HOME/.ts-authkey. Then delete
    ~/.ts-authkey.
 4. Run: cliproxy-hub verify. Expect "hub reachable".
-5. Run: cliproxy-hub client claude, client codex and client pi.
-6. Test once with each tool: CLAUDE_CONFIG_DIR=~/.claude-hub claude -p "say ok" and
+5. Run these three commands: cliproxy-hub client claude, then cliproxy-hub client codex,
+   then cliproxy-hub client pi.
+6. Test once with Claude Code and Codex: CLAUDE_CONFIG_DIR=~/.claude-hub claude -p "say ok" and
    CODEX_HOME=~/.codex-hub codex exec "say ok".
 7. Report which commands passed. If one failed, quote the error and stop.
 ```

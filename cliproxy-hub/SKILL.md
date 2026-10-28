@@ -90,7 +90,7 @@ It reads the hub URL and key files from `~/Documents/Personal/.secrets`
 (`cliproxy-hub.env`, `cliproxy-hub-key`, the newest `tailscale-authkey-boat-hub-*`). The box
 joins the tailnet, wires Claude Code, Codex and pi, and pulls the latest `main` of the repo
 and of `private-repo-b1e6`. A repo with a `<repo>-ready` snapshot starts faster. Any other repo
-starts from `hub-ready` and clones on first boot. Make a snapshot with `boat-hub warm <repo>`.
+starts from `hub-ready` and clones on first boot. Make a snapshot with `boat-hub warm <repo>`, which needs a Boat environment named for the repo.
 Each snapshot costs storage, so keep few. On the box, run `claude-hub` and `codex-hub`.
 A bare `claude` has no hub login.
 
@@ -156,7 +156,8 @@ or ~/.codex config.
    then cliproxy-hub client pi.
 6. Test once with Claude Code and Codex: CLAUDE_CONFIG_DIR=~/.claude-hub claude -p "say ok" and
    CODEX_HOME=~/.codex-hub codex exec "say ok".
-7. Report which commands passed. If one failed, quote the error and stop.
+7. Report which commands passed. If one failed, quote the error with any key, token or
+   header removed, and stop.
 ```
 
 ## Verify from a client

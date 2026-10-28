@@ -36,11 +36,11 @@ The guide says a ban is possible. Tell the user this before you start.
 4. Keep the hub awake. A sleeping hub stops every client.
 
    ```sh
-   sudo pmset -a sleep 0 disablesleep 1
+   sudo pmset -c sleep 0
    ```
 
-   `disablesleep 1` keeps a laptop awake with the lid closed. Turn on automatic login so the
-   service starts again after a reboot.
+   `-c` applies on power only, and the Mac still sleeps when you close the lid. Turn on automatic
+   login so the service starts again after a reboot.
 5. Keep the hub up to date. An old build sends an old Grok CLI version, and xAI returns
    `426 ... CLI version is outdated`. Run `brew upgrade cliproxyapi` and
    `brew services restart cliproxyapi`. Seats survive the upgrade.

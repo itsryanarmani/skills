@@ -40,7 +40,8 @@ The guide says a ban is possible. Tell the user this before you start.
    ```
 
    `-c` applies on power only, and the Mac still sleeps when you close the lid. Turn on automatic
-   login so the service starts again after a reboot.
+   login so the service starts again after a reboot. A hub set up with the old command still has
+   the lid-closed setting: run `sudo pmset -a disablesleep 0` to remove it.
 5. Keep the hub up to date. An old build sends an old Grok CLI version, and xAI returns
    `426 ... CLI version is outdated`. Run `brew upgrade cliproxyapi` and
    `brew services restart cliproxyapi`. Seats survive the upgrade.

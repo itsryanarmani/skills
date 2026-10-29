@@ -599,7 +599,7 @@ and names each bad path. Unknown fields fail, so a typo cannot hide.
 | Storyboard gate | Per shot `prompts.still`, `camera`, `dialogue`, `vo`, `onScreenText`; `review.still`; a `budget.approvals` entry for `stills` before any video spend |
 | Clips | `prompts.motion`, `assets.clip`, `assets.rejects`, `review.clip`, a `budget.spend` row per paid step |
 | Cut | Per shot `edit` (window, zoom, transition, sceneVolume, useStill); `audio.voiceOver` and `audio.mix`; `render.outputs` |
-| Verify | `verify`, written by `storyboard-video verify`, plus a `listening` block from the listening-model pass |
+| Verify | `verify`: copy in `out/verify.json`, which `storyboard-video verify` writes, and add a `listening` block from the listening-model pass |
 
 Record a decision when you make it. If a still is rejected, add its path to `assets.rejects`
 and say why in `review.notes`, so the redo prompt can name the fault.

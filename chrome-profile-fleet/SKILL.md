@@ -168,6 +168,50 @@ literal `api_token` for Cloudflare, so an old username fails the login. Use the
 new token or app password, not the old one, and send a test message after you
 save.
 
+## Logos in your own Gmail
+
+Gmail shows a Google Contacts photo in place of the letter avatar. Run
+`scripts/gmail-contact-logos.py` to set one photo per sending address from the
+site's favicon. When a domain has no favicon, the script draws a simple
+symbolic mark in a rounded square.
+
+```sh
+export GOOGLE_ACCESS_TOKEN=...   # OAuth token with the "contacts" scope
+python3 scripts/gmail-contact-logos.py --domains example.com example.org --dry-run
+python3 scripts/gmail-contact-logos.py --domains example.com example.org
+```
+
+Know the limit before you promise anyone a logo. Only the account owner sees
+contact photos. A recipient's Gmail ignores your contacts. A recipient sees a
+logo in one of two cases:
+
+- The sender address belongs to a Google Account that has a profile photo.
+  This is why one address on a domain can show a logo while its neighbours do
+  not: the logo follows the address, not the domain or its favicon.
+- The domain publishes BIMI with a paid Common Mark Certificate. Gmail also
+  needs DMARC at `quarantine` or `reject`.
+
+A site favicon alone never reaches a recipient's Gmail.
+
+Two traps in the script's input. Some SVG favicons use `oklch()` colours,
+which `rsvg-convert` renders as black, so the script converts them first.
+Contacts keep their own name, and Gmail shows that name instead of the one in
+the message header, so pass `--names` with the display names you already use.
+
+## A send-as alias can go stale and still look verified
+
+Gmail stores the SMTP password inside each alias. If the provider token
+rotates, or the alias still points at an old provider, Gmail keeps listing it
+as verified. The first real message bounces with
+`535 Authentication credentials invalid`, and the bounce arrives in about 45
+seconds.
+
+Test every alias with a real message, not with the settings page. Send one
+message from each alias to your own inbox and search for a bounce from
+`mailer-daemon`. Fix a stale alias with Settings, Accounts and Import, edit
+info, then re-enter the server, port and password. Never trust the "verified"
+status alone.
+
 ## Watch out
 
 - A domain that routes through Cloudflare can still have a *different*

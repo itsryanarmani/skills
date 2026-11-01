@@ -188,7 +188,7 @@ logo in one of two cases:
 - The sender address belongs to a Google Account that has a profile photo.
   This is why one address on a domain can show a logo while its neighbours do
   not: the logo follows the address, not the domain or its favicon.
-- The domain publishes BIMI with a paid Common Mark Certificate. Gmail also
+- The domain publishes BIMI with a paid Verified Mark Certificate (VMC) or Common Mark Certificate (CMC). Gmail also
   needs DMARC at `quarantine` or `reject`.
 
 A site favicon alone never reaches a recipient's Gmail.
@@ -197,6 +197,8 @@ Two traps in the script's input. Some SVG favicons use `oklch()` colours,
 which `rsvg-convert` renders as black, so the script converts them first.
 Contacts keep their own name, and Gmail shows that name instead of the one in
 the message header, so pass `--names` with the display names you already use.
+`--names` applies only when the script creates a contact. A contact that
+already exists keeps its old name.
 
 ## A send-as alias can go stale and still look verified
 

@@ -197,8 +197,9 @@ Two traps in the script's input. Some SVG favicons use `oklch()` colours,
 which `rsvg-convert` renders as black, so the script converts them first.
 Contacts keep their own name, and Gmail shows that name instead of the one in
 the message header, so pass `--names` with the display names you already use.
-`--names` applies only when the script creates a contact. A contact that
-already exists keeps its old name.
+An explicit `--names` entry also renames a contact that already exists, and
+drops its family name. The script skips a contact that holds more than one
+address, because a photo applies to the whole contact.
 
 ## A send-as alias can go stale and still look verified
 

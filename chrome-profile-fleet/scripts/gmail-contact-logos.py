@@ -77,7 +77,7 @@ def check_site_url(url, domain):
         raise ValueError(f"blocked: {url} is not an https URL on {domain}")
     for info in socket.getaddrinfo(u.hostname, u.port or 443, proto=socket.IPPROTO_TCP):
         ip = ipaddress.ip_address(info[4][0])
-        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+        if not ip.is_global:
             raise ValueError(f"blocked: {u.hostname} resolves to a non-public address")
 
 
@@ -228,6 +228,9 @@ def to_png(kind, data):
     if kind == "svg":
         if not shutil.which("rsvg-convert"):
             die("rsvg-convert is not installed (brew install librsvg)")
+        # Keep the SVG on stdin. With no file path or --base-uri the renderer has
+        # no base to resolve a relative or file: reference against. This is the
+        # real guard; sanitize_svg is a second layer. Never pass a file path here.
         png = subprocess.run(["rsvg-convert", "-a", "-w", str(SIZE), "-h", str(SIZE)], input=sanitize_svg(fix_oklch(data)),
                              capture_output=True, check=True).stdout
         im = Image.open(io.BytesIO(png)).convert("RGBA")
@@ -276,7 +279,7 @@ def load_existing(token):
         for p in d.get("connections", []):
             emails = p.get("emailAddresses", [])
             info = {"rn": p["resourceName"], "etag": p.get("etag"), "emails": len(emails),
-                    "name": (p.get("names") or [{}])[0].get("givenName")}
+                    "name": (p.get("names") or [{}])[0].get("displayName")}
             for e in emails:
                 by_email[e["value"].lower()] = info
         token_next = d.get("nextPageToken")
@@ -330,6 +333,7 @@ def main():
                 time.sleep(0.7)
             elif addr in names and info["name"] != name:
                 # An explicit --names entry also renames a contact that already exists.
+                # This replaces the whole names list, so a family name is dropped.
                 api("PATCH", f"/{info['rn']}:updateContact?updatePersonFields=names", token,
                     {"etag": info["etag"], "names": [{"givenName": name}]})
                 time.sleep(0.7)

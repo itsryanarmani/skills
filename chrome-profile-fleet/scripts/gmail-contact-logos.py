@@ -219,7 +219,7 @@ def sanitize_svg(svg):
     svg = re.sub(rb"@import[^;]*;?", b"", svg, flags=re.I)
     # Keep only in-document references such as href="#a" and url(#a).
     # An inline raster (data:image/png and similar) is plain data and stays.
-    svg = re.sub(rb"""\s(?:xlink:)?href\s*=\s*(["'])(?!#|data:image/(?:png|jpe?g|gif|webp)[;,]).*?\1""", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"""\s(?:[\w.-]+:)?href\s*=\s*(["'])(?!#|data:image/(?:png|jpe?g|gif|webp)[;,]).*?\1""", b"", svg, flags=re.S | re.I)
     svg = re.sub(rb"url\(\s*(?![\s'\"]*#)[^)]*\)", b"none", svg, flags=re.I)
     return svg
 

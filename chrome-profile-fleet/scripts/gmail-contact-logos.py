@@ -25,7 +25,7 @@ Usage:
 name is the title-cased domain label for hello@, else the title-cased local part.
 Every write is skipped with --dry-run. Rendered PNGs go to --out (default ./logos-out).
 """
-import argparse, base64, colorsys, hashlib, io, ipaddress, json, os, re, shutil, socket, subprocess, sys, time
+import argparse, base64, colorsys, hashlib, html as htmllib, io, ipaddress, json, os, re, shutil, socket, subprocess, sys, time
 import urllib.error, urllib.parse, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; contact-logo-bot)"}
@@ -97,15 +97,17 @@ def fetch_site(url, domain):
         body = r.read(MAX_BYTES + 1)
         if len(body) > MAX_BYTES:
             raise ValueError("blocked: download is over the size cap")
-        return r.status, r.headers, body
+        return r.geturl(), r.headers, body
 
 
 def api(method, path, token, body=None):
-    """Call the People API. Retry rate limits; retry server errors only for reads.
+    """Call the People API. Retry rate limits. Retry a server error or a network
+    error only when repeating the call is safe: a read, or a photo upload.
 
-    A POST that fails with a 5xx may still have created the contact, so a blind
-    retry would create a duplicate.
+    A POST that fails with a 5xx may still have created the contact, and an
+    etag-guarded rename fails on an etag mismatch if the first try went through.
     """
+    safe = method == "GET" or path.endswith(":updateContactPhoto")
     attempts = 6
     for attempt in range(attempts):
         last = attempt == attempts - 1
@@ -114,24 +116,24 @@ def api(method, path, token, body=None):
                              headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, method=method)
             return json.loads(raw or b"{}")
         except urllib.error.HTTPError as e:
-            retry = e.code == 429 or (e.code in (500, 503) and method != "POST")
+            retry = e.code == 429 or (e.code in (500, 503) and safe)
             if retry and not last:
                 time.sleep(5 * (attempt + 1))
                 continue
             die(f"{method} {path} -> {e.code} {e.read()[:200].decode('utf-8', 'replace')}")
         except (urllib.error.URLError, TimeoutError) as e:
-            if method != "POST" and not last:
+            if safe and not last:
                 time.sleep(5 * (attempt + 1))
                 continue
             die(f"{method} {path} network error: {e}")
 
 
-def discover_icon(domain):
-    """Return (kind, bytes) for the best icon the site offers, or None."""
+def icon_candidates(domain):
+    """Yield (kind, bytes) for each icon the site offers, best first."""
     try:
-        _, hdr, html = fetch_site(f"https://{domain}/", domain)
+        base, _, html = fetch_site(f"https://{domain}/", domain)
     except Exception:
-        return None
+        return
     html = html.decode("utf-8", "replace")
     cands = []
     for tag in re.findall(r"<link[^>]+>", html, re.I):
@@ -140,7 +142,8 @@ def discover_icon(domain):
         m = re.search(r'href="([^"]+)"', tag)
         if not m:
             continue
-        href = urllib.parse.urljoin(f"https://{domain}/", m.group(1))
+        # Resolve against the page's final URL, after redirects, and decode &amp;.
+        href = urllib.parse.urljoin(base, htmllib.unescape(m.group(1)))
         sz = re.search(r'sizes="(\d+)x', tag)
         size = int(sz.group(1)) if sz else 0
         is_svg = ".svg" in href.split("?")[0] or "svg" in tag.lower()
@@ -156,10 +159,9 @@ def discover_icon(domain):
             continue
         ctype = h.get("Content-Type", "")
         if body[:200].lstrip().startswith(b"<svg") or b"<svg" in body[:400] or "svg" in ctype:
-            return "svg", body
-        if "image" in ctype or body[:4] in (b"\x89PNG", b"\x00\x00\x01\x00") or body[:3] == b"\xff\xd8\xff":
-            return "raster", body
-    return None
+            yield "svg", body
+        elif "image" in ctype or body[:4] in (b"\x89PNG", b"\x00\x00\x01\x00") or body[:3] == b"\xff\xd8\xff":
+            yield "raster", body
 
 
 def monogram(domain):
@@ -214,10 +216,10 @@ def sanitize_svg(svg):
     svg = re.sub(rb"<!ENTITY.*?>", b"", svg, flags=re.S | re.I)
     svg = re.sub(rb"<\?xml-stylesheet.*?\?>", b"", svg, flags=re.S | re.I)
     svg = re.sub(rb"<(script|foreignObject)\b.*?</\1\s*>", b"", svg, flags=re.S | re.I)
-    svg = re.sub(rb"<image\b[^>]*>", b"", svg, flags=re.S | re.I)
     svg = re.sub(rb"@import[^;]*;?", b"", svg, flags=re.I)
     # Keep only in-document references such as href="#a" and url(#a).
-    svg = re.sub(rb"""\s(?:xlink:)?href\s*=\s*(["'])(?!#).*?\1""", b"", svg, flags=re.S | re.I)
+    # An inline raster (data:image/png and similar) is plain data and stays.
+    svg = re.sub(rb"""\s(?:xlink:)?href\s*=\s*(["'])(?!#|data:image/(?:png|jpe?g|gif|webp)[;,]).*?\1""", b"", svg, flags=re.S | re.I)
     svg = re.sub(rb"url\(\s*(?![\s'\"]*#)[^)]*\)", b"none", svg, flags=re.I)
     return svg
 
@@ -232,7 +234,7 @@ def to_png(kind, data):
         # no base to resolve a relative or file: reference against. This is the
         # real guard; sanitize_svg is a second layer. Never pass a file path here.
         png = subprocess.run(["rsvg-convert", "-a", "-w", str(SIZE), "-h", str(SIZE)], input=sanitize_svg(fix_oklch(data)),
-                             capture_output=True, check=True).stdout
+                             capture_output=True, check=True, timeout=20).stdout
         im = Image.open(io.BytesIO(png)).convert("RGBA")
     else:
         im = Image.open(io.BytesIO(data)).convert("RGBA")
@@ -242,6 +244,8 @@ def to_png(kind, data):
     canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     canvas.paste(im, ((SIZE - im.width) // 2, (SIZE - im.height) // 2))
     im = canvas
+    if not any(p[3] > 200 for p in (im.get_flattened_data() if hasattr(im, "get_flattened_data") else im.getdata())):
+        raise ValueError("icon rendered empty")
     # Flatten transparency onto a background that keeps the mark visible.
     px = [p for p in im.get_flattened_data() if p[3] > 200] if hasattr(im, "get_flattened_data") else [p for p in im.getdata() if p[3] > 200]
     lum = sum(0.3 * r + 0.59 * g + 0.11 * b for r, g, b, _ in px) / (255 * len(px)) if px else 0
@@ -259,12 +263,11 @@ def logo_for(domain, logo_dir):
             p = os.path.join(logo_dir, f"{domain}.{ext}")
             if os.path.exists(p):
                 return "override", to_png(kind, open(p, "rb").read())
-    found = discover_icon(domain)
-    if found:
+    for kind, data in icon_candidates(domain):
         try:
-            return "favicon", to_png(*found)
+            return "favicon", to_png(kind, data)
         except Exception:
-            pass
+            continue  # try the next candidate before drawing a mark
     return "monogram", to_png("svg", monogram(domain))
 
 
@@ -305,6 +308,8 @@ def main():
     token = os.environ.get("GOOGLE_ACCESS_TOKEN")
     if not token and not a.dry_run:
         die("GOOGLE_ACCESS_TOKEN is not set")
+    domains = list(dict.fromkeys(d.lower() for d in domains))
+    a.locals = list(dict.fromkeys(l.lower() for l in a.locals))
     names = {k.lower(): v for k, v in json.load(open(a.names)).items()} if a.names else {}
     os.makedirs(a.out, exist_ok=True)
     existing = load_existing(token) if token else {}
@@ -336,6 +341,8 @@ def main():
                 # This replaces the whole names list, so a family name is dropped.
                 api("PATCH", f"/{info['rn']}:updateContact?updatePersonFields=names", token,
                     {"etag": info["etag"], "names": [{"givenName": name}]})
+                info["name"] = name
+                info["etag"] = None  # the rename changed it; this run does not need it again
                 time.sleep(0.7)
             api("PATCH", f"/{info['rn']}:updateContactPhoto", token,
                 {"photoBytes": base64.b64encode(png).decode(), "personFields": "photos"})

@@ -6,7 +6,7 @@ one contact per address and sets the photo from the site's own favicon. When a
 domain has no usable favicon, it draws a simple symbolic mark instead.
 
 Only YOU see these photos. A recipient's Gmail ignores your contacts. For
-recipients you need BIMI with a paid Common Mark Certificate, or a Google
+recipients you need BIMI with a paid VMC or CMC, or a Google
 Account that owns the address and has a profile photo.
 
 Needs:
@@ -25,12 +25,13 @@ Usage:
 name is the title-cased domain label for hello@, else the title-cased local part.
 Every write is skipped with --dry-run. Rendered PNGs go to --out (default ./logos-out).
 """
-import argparse, base64, colorsys, hashlib, io, json, os, re, shutil, subprocess, sys, time
+import argparse, base64, colorsys, hashlib, io, ipaddress, json, os, re, shutil, socket, subprocess, sys, time
 import urllib.error, urllib.parse, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; contact-logo-bot)"}
 PEOPLE = "https://people.googleapis.com/v1"
 SIZE = 512
+MAX_BYTES = 2_000_000  # cap on any icon download
 
 # Symbols on a 64x64 canvas, drawn in white on a coloured rounded square.
 # The first keyword found in the domain picks the symbol.
@@ -59,6 +60,44 @@ def http(url, data=None, headers=None, method=None, timeout=20):
     req = urllib.request.Request(url, data=data, headers=headers or {}, method=method)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, r.headers, r.read()
+
+
+def host_allowed(host, domain):
+    return host == domain or host.endswith("." + domain)
+
+
+def check_site_url(url, domain):
+    """Allow only https URLs on the domain itself that resolve to public addresses.
+
+    An icon link on an untrusted site can point anywhere, so a redirect or a
+    link to an internal host must never be followed.
+    """
+    u = urllib.parse.urlparse(url)
+    if u.scheme != "https" or not u.hostname or not host_allowed(u.hostname.lower(), domain.lower()):
+        raise ValueError(f"blocked: {url} is not an https URL on {domain}")
+    for info in socket.getaddrinfo(u.hostname, u.port or 443, proto=socket.IPPROTO_TCP):
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            raise ValueError(f"blocked: {u.hostname} resolves to a non-public address")
+
+
+class _SameSiteRedirect(urllib.request.HTTPRedirectHandler):
+    def __init__(self, domain):
+        self.domain = domain
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        check_site_url(newurl, self.domain)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def fetch_site(url, domain):
+    check_site_url(url, domain)
+    opener = urllib.request.build_opener(_SameSiteRedirect(domain))
+    with opener.open(urllib.request.Request(url, headers=UA), timeout=20) as r:
+        body = r.read(MAX_BYTES + 1)
+        if len(body) > MAX_BYTES:
+            raise ValueError("blocked: download is over the size cap")
+        return r.status, r.headers, body
 
 
 def api(method, path, token, body=None):
@@ -90,7 +129,7 @@ def api(method, path, token, body=None):
 def discover_icon(domain):
     """Return (kind, bytes) for the best icon the site offers, or None."""
     try:
-        _, hdr, html = http(f"https://{domain}/", headers=UA)
+        _, hdr, html = fetch_site(f"https://{domain}/", domain)
     except Exception:
         return None
     html = html.decode("utf-8", "replace")
@@ -112,7 +151,7 @@ def discover_icon(domain):
     cands.append((0, f"https://{domain}/favicon.ico"))
     for _, href in cands:
         try:
-            _, h, body = http(href, headers=UA)
+            _, h, body = fetch_site(href, domain)
         except Exception:
             continue
         ctype = h.get("Content-Type", "")
@@ -154,7 +193,7 @@ def oklch_to_hex(L, C, H):
     return "#%02x%02x%02x" % tuple(round(gamma(x) * 255) for x in rgb)
 
 
-OKLCH = re.compile(rb"oklch\(\s*([\d.]+)(%?)\s+([\d.]+)(%?)\s+([\d.]+)(?:deg)?\s*(?:/[^)]*)?\)")
+OKLCH = re.compile(rb"oklch\(\s*([\d.]+)(%?)\s+([\d.]+)(%?)\s+(none|-?[\d.]+)(deg|turn|rad|grad)?\s*(?:/[^)]*)?\)", re.I)
 
 
 def fix_oklch(svg):
@@ -162,22 +201,41 @@ def fix_oklch(svg):
     def one(m):
         L = float(m.group(1)) / (100 if m.group(2) else 1)
         C = float(m.group(3)) * (0.4 / 100 if m.group(4) else 1)
-        return oklch_to_hex(L, C, float(m.group(5))).encode()
+        hue = 0.0 if m.group(5).lower() == b"none" else float(m.group(5))
+        unit = (m.group(6) or b"deg").lower()
+        hue *= {b"deg": 1, b"turn": 360, b"rad": 180 / 3.141592653589793, b"grad": 0.9}[unit]
+        return oklch_to_hex(L, C, hue).encode()
     return OKLCH.sub(one, svg)
+
+
+def sanitize_svg(svg):
+    """Strip what lets a downloaded SVG read local files or run code in the renderer."""
+    svg = re.sub(rb"<!DOCTYPE[^>\[]*(\[.*?\])?\s*>", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"<!ENTITY.*?>", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"<\?xml-stylesheet.*?\?>", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"<(script|foreignObject)\b.*?</\1\s*>", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"<image\b[^>]*>", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"@import[^;]*;?", b"", svg, flags=re.I)
+    # Keep only in-document references such as href="#a" and url(#a).
+    svg = re.sub(rb"""\s(?:xlink:)?href\s*=\s*(["'])(?!#).*?\1""", b"", svg, flags=re.S | re.I)
+    svg = re.sub(rb"url\(\s*(?![\s'\"]*#)[^)]*\)", b"none", svg, flags=re.I)
+    return svg
 
 
 def to_png(kind, data):
     from PIL import Image
+    Image.MAX_IMAGE_PIXELS = 25_000_000  # reject decompression bombs
     if kind == "svg":
         if not shutil.which("rsvg-convert"):
             die("rsvg-convert is not installed (brew install librsvg)")
-        png = subprocess.run(["rsvg-convert", "-a", "-w", str(SIZE), "-h", str(SIZE)], input=fix_oklch(data),
+        png = subprocess.run(["rsvg-convert", "-a", "-w", str(SIZE), "-h", str(SIZE)], input=sanitize_svg(fix_oklch(data)),
                              capture_output=True, check=True).stdout
         im = Image.open(io.BytesIO(png)).convert("RGBA")
     else:
         im = Image.open(io.BytesIO(data)).convert("RGBA")
-    # Fit without stretching: scale to the square, centre on a transparent canvas.
-    im.thumbnail((SIZE, SIZE), Image.LANCZOS)
+    # Fit without stretching: scale up or down to the square, centre on a transparent canvas.
+    scale = min(SIZE / im.width, SIZE / im.height)
+    im = im.resize((max(1, round(im.width * scale)), max(1, round(im.height * scale))), Image.LANCZOS)
     canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     canvas.paste(im, ((SIZE - im.width) // 2, (SIZE - im.height) // 2))
     im = canvas
@@ -208,13 +266,19 @@ def logo_for(domain, logo_dir):
 
 
 def load_existing(token):
+    """Map each email to its contact: resource name, etag, display name, email count."""
     by_email, token_next = {}, None
     while True:
-        q = "?personFields=names,emailAddresses&pageSize=1000" + (f"&pageToken={urllib.parse.quote(token_next, safe='')}" if token_next else "")
+        q = "?personFields=names,emailAddresses&pageSize=1000"
+        if token_next:
+            q += f"&pageToken={urllib.parse.quote(token_next, safe='')}"
         d = api("GET", f"/people/me/connections{q}", token)
         for p in d.get("connections", []):
-            for e in p.get("emailAddresses", []):
-                by_email[e["value"].lower()] = p["resourceName"]
+            emails = p.get("emailAddresses", [])
+            info = {"rn": p["resourceName"], "etag": p.get("etag"), "emails": len(emails),
+                    "name": (p.get("names") or [{}])[0].get("givenName")}
+            for e in emails:
+                by_email[e["value"].lower()] = info
         token_next = d.get("nextPageToken")
         if not token_next:
             return by_email
@@ -238,7 +302,7 @@ def main():
     token = os.environ.get("GOOGLE_ACCESS_TOKEN")
     if not token and not a.dry_run:
         die("GOOGLE_ACCESS_TOKEN is not set")
-    names = json.load(open(a.names)) if a.names else {}
+    names = {k.lower(): v for k, v in json.load(open(a.names)).items()} if a.names else {}
     os.makedirs(a.out, exist_ok=True)
     existing = load_existing(token) if token else {}
     report = []
@@ -252,14 +316,24 @@ def main():
             if a.dry_run:
                 report.append((addr, source, "dry-run"))
                 continue
-            rn = existing.get(addr)
-            if not rn:
+            info = existing.get(addr)
+            if info and info["emails"] > 1:
+                # A photo applies to the whole contact, so never touch one that
+                # also holds other addresses.
+                report.append((addr, source, "skipped: contact is shared with other addresses"))
+                continue
+            if not info:
                 made = api("POST", "/people:createContact", token,
                            {"names": [{"givenName": name}], "emailAddresses": [{"value": addr}]})
-                rn = made["resourceName"]
-                existing[addr] = rn
+                info = {"rn": made["resourceName"], "etag": made.get("etag"), "emails": 1, "name": name}
+                existing[addr] = info
                 time.sleep(0.7)
-            api("PATCH", f"/{rn}:updateContactPhoto", token,
+            elif addr in names and info["name"] != name:
+                # An explicit --names entry also renames a contact that already exists.
+                api("PATCH", f"/{info['rn']}:updateContact?updatePersonFields=names", token,
+                    {"etag": info["etag"], "names": [{"givenName": name}]})
+                time.sleep(0.7)
+            api("PATCH", f"/{info['rn']}:updateContactPhoto", token,
                 {"photoBytes": base64.b64encode(png).decode(), "personFields": "photos"})
             report.append((addr, source, "photo set"))
             time.sleep(0.7)

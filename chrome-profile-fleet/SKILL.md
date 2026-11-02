@@ -162,8 +162,11 @@ seconds.
 Test every alias with a real message. Send one message from each alias to your
 own inbox and search for a bounce from `mailer-daemon`. Fix a stale alias with
 Gmail → Settings → Accounts and Import → Send mail as → edit info, then
-re-enter the server, port and password. Use the new token or app password, not
-the old one.
+re-enter the server, port, username, encryption and password. The transports
+use different usernames: the primary Gmail address for Google's servers and the
+literal `api_token` for Cloudflare, so an old username fails the login. Use the
+new token or app password, not the old one, and send a test message after you
+save.
 
 ## Watch out
 

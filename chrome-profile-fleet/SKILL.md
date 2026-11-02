@@ -149,6 +149,25 @@ When aliases route through Cloudflare Email Routing:
   back is equally cheap, which makes per-alias receive-destination changes
   a routine operation.
 
+## A send-as alias can go stale and show no warning
+
+Gmail stores the SMTP password inside each alias and does not check it again.
+The password goes stale in three cases: the provider token rotates, Google
+revokes the app password after an account password change, or the alias still
+points at an old provider. Gmail then shows no warning on the alias. The first
+real message bounces with a `535` authentication error, for example
+`535 Authentication credentials invalid`. The bounce arrives in about 45
+seconds.
+
+Test every alias with a real message. Send one message from each alias to your
+own inbox and search for a bounce from `mailer-daemon`. Fix a stale alias with
+Gmail → Settings → Accounts and Import → Send mail as → edit info, then
+re-enter the server, port, username, encryption and password. The transports
+use different usernames: the primary Gmail address for Google's servers and the
+literal `api_token` for Cloudflare, so an old username fails the login. Use the
+new token or app password, not the old one, and send a test message after you
+save.
+
 ## Watch out
 
 - A domain that routes through Cloudflare can still have a *different*

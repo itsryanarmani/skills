@@ -219,6 +219,7 @@ Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp3
 | [crabbox-worktree](crabbox-worktree/SKILL.md) | Offload per-worktree dev work (installs, builds, dev server) to a remote GCP VM via crabbox so your laptop stays cool — bakes a golden image and wires into worktree hooks. |
 | [schengen-visa-application](schengen-visa-application/SKILL.md) | Prep a short-stay Schengen (type C) visa application from Canada — finds the right per-country handler, builds the document set from your own local folders, fills the EU form, stops before in-person submission. Zero PII stored. |
 | [flipper-zero](flipper-zero/SKILL.md) | Use Flipper Zero lawfully — microSD sizing, official app install via qFlipper and Flipper Lab, defensive tools, and own-device NFC, IR, and Sub-GHz checks. |
+| [flipper-wifi-devboard](flipper-wifi-devboard/SKILL.md) | Official Wi‑Fi dev board — Marauder vs Blackmagic, BOOT/RESET download mode flash from a computer, qFlipper DFU recovery on the main unit, companion app use. |
 
 ### Workspace utilities
 

@@ -68,14 +68,14 @@ each hit against these questions:
 | `signup_url` | Where to start |
 | `phd_required`, `publications_required`, `orcid_required` | Entry gates as stated on the venue page (`yes`, `no`, `preferred`, or `unknown` when not stated) |
 | `other_criteria` | Anything else the page says |
-| `application_type` | How to apply: `open form`, `account + reviewer profile`, `volunteer form`, `email editor`, or `invitation only`, matching the next section |
+| `application_type` | How to apply: `open form`, `account + reviewer profile`, `volunteer form`, `email editor`, or `invitation only`, as in the next section |
 | `form_asks` | What the form or editor usually requests |
 | `deadline_cadence` | Rolling, annual, or per cycle |
 | `fee` | Fee to review (should be `none`) |
 | `predatory_check` | Notes from the legitimacy check |
-| `url_check` | Whether the sign-up URL loaded when checked |
+| `url_check` | Whether the sign-up URL loaded when checked; `found by search` means the URL came from a search, not the venue's own index, so verify it |
 
-Coverage skews to AI/ML, computer science, HCI, ethics and policy, and practitioner venues. Treat a row as a lead. Re-read the venue page before applying: criteria and
+Coverage skews to AI/ML, computer science, HCI, ethics and policy, and practitioner venues. Treat a row as a lead. Not for journals whose reviewer pool is editor-only; use the invitation route there. Re-read the venue page before applying: criteria and
 URLs change, and some sites block scripted checks but load in a browser.
 
 ## Apply by type
@@ -86,7 +86,7 @@ URLs change, and some sites block scripted checks but load in a browser.
 | Account plus reviewer profile | Register in the submission system, then complete the reviewer profile and expertise keywords | Email, affiliation, ORCID, 3-10 keywords, sometimes a CV link |
 | Volunteer form | Conferences and artifact evaluation committees: answer the call for reviewers or self-nomination form | Name, affiliation, topics, relevant publications or artifacts, availability, conflicts |
 | Email the editor | Send the template below to the managing editor or the address on the journal's reviewer page | Short bio, expertise, a link to evidence |
-| Invitation only | Do not cold-apply. Get noticed: publish and share work on the venue's topic, join the community's open reviewing, cite the journal's papers, and offer artifact reviews. Then use the email route if the page allows it | n/a |
+| Invitation only | Do not cold-apply. Get noticed: publish and share work on the venue's topic, join the community's open reviewing, and offer artifact reviews. Then use the email route if the page allows it | n/a |
 
 Rules that apply to every type:
 
@@ -145,7 +145,7 @@ follow-up date two to four weeks out.
 
 | Venue | Type | Applied on | Method | Contact | Status | Follow-up | Notes |
 |---|---|---|---|---|---|---|---|
-| Example Journal | account plus profile | 2026-01-15 | Reviewer profile | Editorial office | pending | 2026-02-05 | Keywords: x, y |
+| Example Journal | account + reviewer profile | 2026-01-15 | Reviewer profile | Editorial office | pending | 2026-02-05 | Keywords: x, y |
 
 Statuses: `todo`, `applied`, `pending`, `invited`, `declined`, `dropped`.
 

@@ -149,6 +149,20 @@ When aliases route through Cloudflare Email Routing:
   back is equally cheap, which makes per-alias receive-destination changes
   a routine operation.
 
+## A send-as alias can go stale and still look verified
+
+Gmail stores the SMTP password inside each alias. If the provider token
+rotates, or the alias still points at an old provider, Gmail keeps listing it
+as verified. The first real message bounces with
+`535 Authentication credentials invalid`, and the bounce arrives in about 45
+seconds.
+
+Test every alias with a real message, not with the settings page. Send one
+message from each alias to your own inbox and search for a bounce from
+`mailer-daemon`. Fix a stale alias with Settings, Accounts and Import, edit
+info, then re-enter the server, port and password. Never trust the "verified"
+status alone.
+
 ## Watch out
 
 - A domain that routes through Cloudflare can still have a *different*

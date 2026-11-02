@@ -168,6 +168,39 @@ literal `api_token` for Cloudflare, so an old username fails the login. Use the
 new token or app password, not the old one, and send a test message after you
 save.
 
+## Logos in your own Gmail
+
+Gmail shows a Google Contacts photo in place of the letter avatar. Run
+`scripts/gmail-contact-logos.py` to set one photo per sending address from the
+site's favicon. When a domain has no favicon, the script draws a simple
+symbolic mark in a rounded square.
+
+```sh
+export GOOGLE_ACCESS_TOKEN=...   # OAuth token with the "contacts" scope
+python3 scripts/gmail-contact-logos.py --domains example.com example.org --dry-run
+python3 scripts/gmail-contact-logos.py --domains example.com example.org
+```
+
+Know the limit before you promise anyone a logo. Only the account owner sees
+contact photos. A recipient's Gmail ignores your contacts. A recipient sees a
+logo in one of two cases:
+
+- The sender address belongs to a Google Account that has a profile photo.
+  This is why one address on a domain can show a logo while its neighbours do
+  not: the logo follows the address, not the domain or its favicon.
+- The domain publishes BIMI with a paid Verified Mark Certificate (VMC) or Common Mark Certificate (CMC). Gmail also
+  needs DMARC at `quarantine` or `reject`.
+
+A site favicon alone never reaches a recipient's Gmail.
+
+Two traps in the script's input. Some SVG favicons use `oklch()` colours,
+which `rsvg-convert` renders as black, so the script converts them first.
+Contacts keep their own name, and Gmail shows that name instead of the one in
+the message header, so pass `--names` with the display names you already use.
+An explicit `--names` entry also renames a contact that already exists, and
+drops its family name. The script skips a contact that holds more than one
+address, because a photo applies to the whole contact.
+
 ## Watch out
 
 - A domain that routes through Cloudflare can still have a *different*

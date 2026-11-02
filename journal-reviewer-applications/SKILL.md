@@ -111,17 +111,19 @@ and work on {{expertise_1}} and {{expertise_2}}.
 Evidence of my work: {{evidence_link}}
 ORCID: {{orcid_url}}
 
-I do not hold a prior reviewer role at this journal. I can commit to returning
-reports on time, declaring conflicts of interest, and keeping manuscripts
-confidential. If the journal has a reviewer form, I am happy to use it instead.
+I can commit to returning reports on time, declaring conflicts of interest, and
+keeping manuscripts confidential. If the journal has a reviewer form, I am happy
+to use it instead.
 
 Thank you for considering this,
 {{your_name}}
 {{contact_email}}
 ```
 
-If you have no publications, point `{{evidence_link}}` at relevant code,
-artifacts, or a training certificate and say so plainly.
+Point `{{evidence_link}}` at your strongest work, such as papers, code,
+artifacts, or a certificate, and lead with what you do. Mentioning that you
+have no publications is optional and usually unnecessary, unless the venue asks
+or requires them.
 
 ## Avoid predatory venues
 

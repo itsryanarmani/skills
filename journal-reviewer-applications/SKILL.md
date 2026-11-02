@@ -1,6 +1,6 @@
 ---
 name: journal-reviewer-applications
-description: "Become a peer reviewer for journals, conference program committees, and artifact evaluation committees — the profiles to set up first (ORCID, Web of Science reviewer profile, OpenReview, Google Scholar), free reviewer training, how to pick venues by topic and entry requirements, how to apply per venue type (open form, account plus reviewer profile, volunteer form, email to the editor, invitation only), a short honest cover email template, how to avoid predatory venues, an application tracker, and a CSV of 287 venues. Use when someone asks how to start reviewing, how to join a program committee or artifact evaluation committee, or which journals accept reviewer sign-ups."
+description: "Become a peer reviewer for journals, conference program committees, and artifact evaluation committees — the profiles to set up first (ORCID, Web of Science reviewer profile, OpenReview, Google Scholar), free reviewer training, how to pick venues by topic and entry requirements, how to apply per venue type (open form, account plus reviewer profile, volunteer form, email to the editor, invitation only), a short honest cover email template, how to avoid predatory venues, an application tracker, and a CSV of venues. Use when someone asks how to start reviewing, how to join a program committee or artifact evaluation committee, or which journals accept reviewer sign-ups."
 ---
 
 # journal-reviewer-applications
@@ -66,16 +66,16 @@ each hit against these questions:
 | `field`, `field_group` | Specific topic and coarse group |
 | `venue_type` | journal, conference PC, artifact evaluation, practitioner magazine, reviewer database, and so on |
 | `signup_url` | Where to start |
-| `phd_required`, `publications_required`, `orcid_required` | Entry gates as stated on the venue page (`unknown` when not stated) |
+| `phd_required`, `publications_required`, `orcid_required` | Entry gates as stated on the venue page (`yes`, `no`, `preferred`, or `unknown` when not stated) |
 | `other_criteria` | Anything else the page says |
-| `application_type` | How to apply, matching the next section |
+| `application_type` | How to apply: `open form`, `account + reviewer profile`, `volunteer form`, `email editor`, or `invitation only`, matching the next section |
 | `form_asks` | What the form or editor usually requests |
 | `deadline_cadence` | Rolling, annual, or per cycle |
 | `fee` | Fee to review (should be `none`) |
 | `predatory_check` | Notes from the legitimacy check |
 | `url_check` | Whether the sign-up URL loaded when checked |
 
-Treat a row as a lead. Re-read the venue page before applying: criteria and
+Coverage skews to AI/ML, computer science, HCI, ethics and policy, and practitioner venues. Treat a row as a lead. Re-read the venue page before applying: criteria and
 URLs change, and some sites block scripted checks but load in a browser.
 
 ## Apply by type
@@ -128,7 +128,7 @@ artifacts, or a training certificate and say so plainly.
 Check every venue before applying:
 
 - **DOAJ:** is the journal listed at <https://doaj.org>?
-- **COPE:** is the publisher a member of the Committee on Publication Ethics?
+- **COPE:** is the publisher a member of the Committee on Publication Ethics (<https://publicationethics.org/members>)?
 - **Think.Check.Submit:** run the checklist at <https://thinkchecksubmit.org>.
 - **Warning signs:** a fee to review or to be listed as a reviewer, spam
   invitations outside your field, fake or invented impact factors, promised
@@ -145,7 +145,7 @@ follow-up date two to four weeks out.
 
 | Venue | Type | Applied on | Method | Contact | Status | Follow-up | Notes |
 |---|---|---|---|---|---|---|---|
-| Example Journal | account plus profile | 2026-01-15 | Reviewer profile | Editorial office | Pending | 2026-02-05 | Keywords: x, y |
+| Example Journal | account plus profile | 2026-01-15 | Reviewer profile | Editorial office | pending | 2026-02-05 | Keywords: x, y |
 
 Statuses: `todo`, `applied`, `pending`, `invited`, `declined`, `dropped`.
 

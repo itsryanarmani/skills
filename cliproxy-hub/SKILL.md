@@ -1,6 +1,6 @@
 ---
 name: cliproxy-hub
-description: Run one always-on CLIProxyAPI hub on a home machine and point Claude Code and Codex on every other host at it over Tailscale. Load when a host needs Claude, Codex or Grok access without its own login, when the hub shows "token expired", "unauthorized" or a 426 version error, when a client gets 503 auth_unavailable, or when adding a seat. Based on Theo's CLIProxyAPI guide.
+description: Run one always-on CLIProxyAPI hub on a home machine and point Claude Code and Codex on every other host at it over Tailscale. Load when a host needs Claude, Codex or Grok access without its own login, when the hub shows "token expired", "unauthorized" or a 426 version error, when a client gets 503 auth_unavailable, when adding a seat, or when a Boat box that uses the hub hides a secret, a clone error, or a dead login. Based on Theo's CLIProxyAPI guide.
 ---
 
 # CLIProxyAPI hub
@@ -146,3 +146,20 @@ cliproxy-hub verify
 ```
 
 Expect `hub reachable: N models`. Then send one small request with each tool.
+
+## Traps
+
+These traps apply when you make a Boat box that uses the hub (`boat-hub`).
+
+- `boat env list` prints secret values. Do not run it raw in an agent session. Print the `name` fields only.
+- `boat env add-repo` changes the environment. A probe that adds a repo leaves it there. Probe in a throwaway environment, then delete that environment.
+- The connected-repo list can be stale. Boat can reject a newer repo with "not found in your connected GitHub repos". Open the dashboard. Go to Environment, then GitHub repositories, then Add Repository, then Refresh. A new login does not fix this. A change to the GitHub app permissions does not fix this.
+- A box made with `--from <snapshot>` can skip environment injection. It then has no GitHub login and no repo clone. A box made without `--from` had both. Test that snapshot path with one canary box before you rely on it.
+- `boat-hub warm` can hide a clone error and then wait five minutes. The hide was `|| true` with the output discarded. Capture the error and print it.
+- Agent logins inside a box expire. A queued prompt can stay "queued" with no process and no error. Run a one-word canary prompt first. Check that an agent process exists. Then fan out.
+- Check the trial limits and the wallet with `boat onboard --json` before you make several boxes.
+- Delete idle boxes. They bill the wallet.
+- `set -- $var` does not split in zsh. Pass explicit arguments, or use `${=var}`.
+- `PATH` differs in a background shell. `gh` and `boat` can be missing there. Export `PATH` in that command.
+- A delegate task runs in that thread's own project. From a scratch folder with no repo, it cannot make a worktree. Make the worktree yourself. Run the worker CLI in that worktree.
+- Judge a worker on its diff and on its pull request. Do not judge it on its exit code.

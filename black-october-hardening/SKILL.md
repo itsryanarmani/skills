@@ -16,7 +16,8 @@ The script lives in `pooriaarab/scripts`. It is read-only.
 ./black-october-audit --json /tmp/black-october.json
 ```
 
-It exits 1 when a check fails. The JSON holds versions, app names, port numbers and
+It exits 1 when a check fails. It exits 2 when you ask for a JSON report and it
+cannot write the file. The JSON holds versions, app names, port numbers and
 counts. It holds no URLs, headers, process arguments or secret values.
 
 Set the floors for the current window:

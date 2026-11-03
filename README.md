@@ -115,6 +115,7 @@ Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp3
 | Skill | Description |
 |-------|-------------|
 | [live-site-security-sweep](live-site-security-sweep/SKILL.md) | Scan every repo that serves a live domain with the claude-security method, then fix, review, merge and release each finding. Covers headless plugin runs, a Box fleet with non-Claude agents, Cloudflare TLS and HTTPS hardening, a header baseline, and the traps from the first run. |
+| [black-october-hardening](black-october-hardening/SKILL.md) | Audit and harden a Mac during a browser and Electron patch window. Finds old Chromium in Electron apps and automation caches, then lists the fixes and the traps from the first run. |
 | [eco-mode](eco-mode/SKILL.md) | Cut token/CO₂ usage ~65% without quality loss. Caveman-inspired. |
 | [eco-analyze](eco-analyze/SKILL.md) | `/eco-analyze` — calculate your real carbon footprint from Claude Code history |
 | [multi-account-cli](multi-account-cli/SKILL.md) | One-command switching between work and personal accounts across gcloud, gws, Firebase, and Netlify. |

@@ -10,7 +10,7 @@ private repositories. Each one has its measured result and its trap. Some result
 They are here on purpose.
 
 Most of the gain did not come from where we expected it. The type checker paid the most.
-Two caches lost time. Runner pinning saved almost nothing.
+Two caches lost time and a third saved about 0 s. Runner pinning saved almost nothing.
 
 ## When to use this
 
@@ -28,10 +28,10 @@ Two caches lost time. Runner pinning saved almost nothing.
 | Tactic | Measured result | Verdict |
 | --- | --- | --- |
 | Rust port of the TypeScript compiler | typecheck 34.5 s to 2.5 s on the runner | Paid the most |
-| Gate the matrix on the cheap check | about 780 runner-minutes avoided in 20 runs | Paid |
-| Step timeout on network steps | about 70 runner-minutes saved on one hang | Paid |
+| Gate the matrix on the cheap check | 780 runner-minutes ran after a failed cheap check in a 20-run sample | A gate avoids that work |
+| Step timeout on network steps | projected, about 70 min on one hang | Projected |
 | Compiler cache for a per-site deploy | net negative in every way it was counted | Lost |
-| Browser-binary cache | about 0 s saved, 272 MB written | Lost |
+| Browser-binary cache | about 0 s saved, 272 MB written | No gain |
 | Dependency-cache restore | 17-18 s against 7.7 s clean install | Lost |
 | Five cheap gates in parallel | 8-9 s saved | Marginal |
 | Blobless clone on a depth-1 checkout | 0 s saved | No gain |
@@ -46,18 +46,21 @@ Pull the last 100 to 150 runs of each workflow. Split every job into **wait**, *
 - **Do not call a dependency wait a queue.** A "queue" column that counts time behind `needs`
   jobs is not pool starvation. Subtract the dependency wait first.
 - **Dedupe re-runs.** A re-run attempt copies the passed jobs with new ids and the same runner
-  and timestamps. Dedupe on name, runner, start and end. One sample counted 75 runner-minutes twice.
+  and timestamps. Dedupe on name, runner, start and end. One sample counted 75 runner-minutes twice
+  (16 copied job records in 23 re-run runs, found by an audit tool).
 - **Report two percentiles.** Show success-only values beside all-outcome values. Cancelled
   jobs end early and pull the median down.
 
 Baseline example: one repo showed about 12,400 estimated runner-minutes in the sample window.
-Its check job had p50 66 s over all outcomes and 59 s over successes only.
+Its check job had p50 66 s over all outcomes and 59 s over successes only, across about 150 runs.
 
 ## 2. Swap the type checker
 
 A Rust port of the TypeScript compiler cut the typecheck step from 34.5 s to 2.5 s on the CI
 runner, and from 62 s to 4-6 s on a laptop. The cheap-check job fell from about 88 s to 26 s.
-Because the step is fast, the push gate can run the real project typecheck.
+Those three job numbers measure different things: 66 s (tactic 1) is the p50 over about 150
+runs, 88 s is the p50 of the last 10 default-branch push runs before the work, and 26 s is one
+branch run after the swap. Because the step is fast, the push gate can run the real project typecheck.
 
 **Trap: a false green.** The port uses newer library defaults. One `lib` setting omitted the
 iterable DOM types, and the port accepted code the old compiler rejected.
@@ -75,14 +78,14 @@ Measure restore time on the real runner before you add a cache.
 | Cache | Restore | Work saved | Net |
 | --- | --- | --- | --- |
 | Compiler cache, per-site deploy | median 24 s (range 6-70 s) | about 8 s of build | net negative, see below |
-| Browser binary | not recorded | old install step: median 4 s (mean 5 s) on warm boxes. The cached action took 2-4 s there | about 0 s, and a 272 MB entry written |
+| Browser binary | not recorded | old install step: median 4 s (mean 5 s) on warm boxes. The cached action took 2-4 s there (7 warm shards, one run) | about 0 s, and a 272 MB entry written |
 | Dependencies | 17-18 s | clean install from a warm package store: 7.7 s | loss |
 
 **How the compiler-cache numbers combine.** Each figure is a separate measurement.
 
 - By simple subtraction, 24 s restore against 8 s of build saved is a net loss of about 16 s per site.
 - Paired probe runs (restore plus build, 13 runs) gave a median net of -35 s. Only 3 of 13 runs were positive.
-- The canary job also paid a 5-10 s save.
+- The canary job also paid a save step: 4.6 s and 9.7 s in two probe runs.
 
 The cache was net negative in every way it was counted. Do not quote one of these as the
 other. The -35 s figure comes from the paired runs, not from the subtraction.
@@ -111,7 +114,8 @@ one sample of 20 runs.
 ## 5. Set step timeouts on network steps
 
 One hung dependency install used the whole 75-minute job timeout. A 5-minute step timeout would
-have saved about 70 runner-minutes. The longest healthy install in recent runs was 46 s, so
+have saved about 70 runner-minutes. That is a projection (75 min minus a 5 min timeout that did
+not exist), not a measured saving. The longest healthy install in recent runs was 46 s, so
 5 minutes leaves headroom.
 
 Measure the longest healthy run before you choose the number. Set it on installs, downloads and
@@ -132,21 +136,14 @@ on stale commits, plus one runner hang. None was infrastructure alone.
 
 ## 7. Affected-only test selection
 
-Use a deterministic path-to-test map. Widen to the full suite on any of these:
+Use a deterministic path-to-test map. Anything unknown widens to the full suite.
 
-- an unknown path or a shared root;
-- a config file, a lockfile or a workflow file;
-- a new, deleted or renamed spec;
-- an empty diff or a bad base.
+Replayed on 60 commits, 5 of 60 (8%) narrowed. That is the correct shape: a selector that
+narrows often is probably skipping something. Mutation-testing the check gave 22 of 22 red
+mutants. The first version let 4 live.
 
-Replayed on 60 commits, only 8 narrowed. That is the correct result. A selector that narrows
-often is probably wrong.
-
-**Test the skip logic.** Write the failure modes first. Hide a server change next to a docs
-change and assert that the selector widens. Then mutation-test the check: break each rule in a
-scratch copy and require a red result. 22 of 22 mutants went red. The first version let 4 live.
-Review found one false skip: data files under a site folder that a spec reads through a path join.
-See [ci-selective-evidence](../ci-selective-evidence/SKILL.md) for the controls.
+The widening rules, the failure-modes-first method and a false skip found in review are in
+[ci-selective-evidence](../ci-selective-evidence/SKILL.md#build-the-path-map-then-test-the-map).
 
 ## 8. What did not pay
 
@@ -162,9 +159,10 @@ A big-runner pool starved. Median queue wait was 32.8 min (p90 215 min). The sma
 0.2 min.
 
 - **Use the small runner** unless a job is CPU-bound.
-- **Give tiny required jobs their own lane.** A policy check or secret scan queued 25 minutes or
-  more behind heavy jobs on the same pool, for a job that runs in seconds. Move them to a
-  hosted runner, or to a separate pool.
+- **Give tiny required jobs their own lane.** A policy check or secret scan queued behind heavy
+  jobs on the same pool, for a job that runs in seconds. Required checks were seen queued from
+  04:11 UTC and still queued at 04:35 UTC, so at least 24 minutes. Move them to a hosted runner,
+  or to a separate pool.
 
 ## 10. The local push gate
 
@@ -207,8 +205,8 @@ steps (the install timeout, check-before-matrix) and in the audit. See
 
 ## 12. Process traps
 
-- **Do not quote a projection as a result.** One projected saving read 11.9 minutes, then 3 to 4
-  minutes on a closer look, then a net loss when measured in CI. Projections were wrong three times.
+- **Do not quote a projection as a result.** One projection was revised twice, then measured as a
+  loss: about 12 minutes, then 3 to 4 (both projections), then net negative in CI.
 - **Review and merge traps for agent fleets** (fresh-context review, mutation-testing reviewers,
   pinning the head SHA at merge, shared git config, squash trailers, claim identity, resumable
   work, lock release) are in [agent-pr-standards](../agent-pr-standards/SKILL.md).

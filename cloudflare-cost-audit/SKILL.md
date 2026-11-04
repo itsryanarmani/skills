@@ -1,11 +1,40 @@
 ---
 name: cloudflare-cost-audit
-description: Audit Cloudflare spending across services and reduce D1 row costs. Use for unexpected bills, costly SQL, preview resource growth, or proposed table consolidation.
+description: Audit Cloudflare spending across services and reduce D1 row costs. Use for unexpected bills, costly SQL, preview resource growth, or proposed table consolidation. Report a dollar figure only from the latest cumulative usage row. Keep MEASURED savings separate from TARGET estimates.
 ---
 
 # Cloudflare cost audit
 
 Attribute the bill before changing the schema. Keep savings targets separate from measured savings.
+
+## Report dollars from the latest cumulative row
+
+Do not sum daily rows of the billable-usage feed. The feed holds cumulative and overlapping rows. A per-day sum can look like a large daily bill and still mean nothing.
+
+Use the latest cumulative row per service, subscription, zone, and billing period. Report a dollar figure only from that reduction.
+
+Keep two columns. Never call a target a measured saving.
+
+| Column | Meaning |
+| --- | --- |
+| MEASURED | Dollars from the latest cumulative row. Reconcile them to the invoice when the invoice exists. |
+| TARGET | A plan estimate. It is not a saving. |
+
+The billing feed lags. It can have no rows after a change. Wait for new data before you claim a saving.
+
+## Price the meter before the fix
+
+Compute dollars per unit before you pick a fix. One KV write can cost about as much as 5,000 D1 rows read. A cache that writes once per long-tail key can cost more than the query it saves.
+
+These paths drive a bill of this shape: facet `COUNT` scans, per-request server render, and visitor-driven cache writes. Fix them in this order:
+
+1. Pause the costly search.
+2. Stop the staging workload.
+3. Precompute the counts.
+4. Serve static pages.
+5. Add one budget guard in front of HTTP, the CLI, and MCP.
+
+Put the guard at the shared entry point. Every interface reaches that point, so one limit covers every path.
 
 ## Establish the baseline
 
@@ -37,10 +66,10 @@ Keep billable `rowsRead` and `rowsWritten` separate from SQL query counts.
 Match usage to its billing interval before calculating a cost estimate.
 The calendar month and subscription period can differ.
 
-For cumulative usage, compare the latest cumulative value within each billing group.
+Do not sum daily rows. Follow "Report dollars from the latest cumulative row" above.
 Group by service, subscription, zone, billing period, and currency when those fields exist.
-Validate meter semantics before summing daily costs. High-water charges can repeat across days.
-Reconcile estimates against the invoice. Label unreconciled amounts as estimates.
+High-water charges can repeat across days. Reconcile MEASURED amounts against the invoice.
+Label a TARGET as a plan estimate. It is not a measured saving.
 
 Complete this stage when every inventory page and analytics limit has an explicit completion check.
 
@@ -105,6 +134,7 @@ Complete the experiment only after exact owned resources are absent or cleanup r
 
 Use the repository's PR review, local CI, preview walk, and release procedure.
 Report measured savings after equivalent observation intervals.
+Do not claim a saving until the billing feed has a new cumulative row.
 Include remaining gaps and costs that the change cannot affect.
 
 Primary references:

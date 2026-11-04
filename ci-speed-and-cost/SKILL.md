@@ -30,7 +30,7 @@ Two caches lost time. Runner pinning saved almost nothing.
 | Rust port of the TypeScript compiler | typecheck 34.5 s to 2.5 s on the runner | Paid the most |
 | Gate the matrix on the cheap check | about 780 runner-minutes avoided in 20 runs | Paid |
 | Step timeout on network steps | about 70 runner-minutes saved on one hang | Paid |
-| Compiler cache for a per-site deploy | net -35 s per site | Lost |
+| Compiler cache for a per-site deploy | net negative in every way it was counted | Lost |
 | Browser-binary cache | about 0 s saved, 272 MB written | Lost |
 | Dependency-cache restore | 17-18 s against 7.7 s clean install | Lost |
 | Five cheap gates in parallel | 8-9 s saved | Marginal |
@@ -74,9 +74,18 @@ Measure restore time on the real runner before you add a cache.
 
 | Cache | Restore | Work saved | Net |
 | --- | --- | --- | --- |
-| Compiler cache, per-site deploy | median 24 s (range 6-70 s) | about 8 s of build | -35 s per site |
-| Browser binary | not recorded | install step median 4 s on warm boxes | about 0 s, and a 272 MB entry written |
+| Compiler cache, per-site deploy | median 24 s (range 6-70 s) | about 8 s of build | net negative, see below |
+| Browser binary | not recorded | old install step: median 4 s (mean 5 s) on warm boxes. The cached action took 2-4 s there | about 0 s, and a 272 MB entry written |
 | Dependencies | 17-18 s | clean install from a warm package store: 7.7 s | loss |
+
+**How the compiler-cache numbers combine.** Each figure is a separate measurement.
+
+- By simple subtraction, 24 s restore against 8 s of build saved is a net loss of about 16 s per site.
+- Paired probe runs (restore plus build, 13 runs) gave a median net of -35 s. Only 3 of 13 runs were positive.
+- The canary job also paid a 5-10 s save.
+
+The cache was net negative in every way it was counted. Do not quote one of these as the
+other. The -35 s figure comes from the paired runs, not from the subtraction.
 
 Two design rules for any cache that stays:
 

@@ -15,11 +15,17 @@ Use `runs-on: boat` for build, lint, typecheck, test, E2E, deploy and API waits.
 Use `runs-on: boat-8` only for a heavy production build. Keep macOS and Windows
 jobs on GitHub-hosted images.
 
-Do not create a fresh VM for each job on a provider with start limits. A burst
-can exhaust that limit before jobs run. Keep a pool of always-on Boxes. Each
-Box runs one JIT runner at a time. A completed runner exits; the next job gets
-a new JIT config on the same Box. The VM and caches persist between jobs.
-This is runner isolation, not a fresh VM trust boundary. Admit only trusted CI.
+Choose one sandbox per job for a first, bounded pilot. Use a JIT pool when
+measured demand and start quotas justify reuse. Each Box runs one JIT runner
+at a time. A completed runner exits; the next job gets a new JIT config.
+The VM and caches persist between jobs. Admit only trusted CI to this pool.
+A new runner process does not provide a fresh VM trust boundary.
+
+Before changing capacity or snapshots, read the
+[Boat CI qualification rules](../ci-cost-at-agent-scale/boat-ci-qualification.md).
+Use the [scripts runbook](https://github.com/pooriaarab/scripts/blob/main/boat-runners.md)
+for commands and current implementation gaps. A required safeguard in that
+runbook is not proof that the installed pool implements it.
 
 The broker is a Cloudflare Worker. It receives `workflow_job` webhooks and
 calls GitHub `generate-jitconfig`. The Box agent requests a config and runs

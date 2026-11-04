@@ -16,6 +16,7 @@ Empirical, from building a real launch video (slackclaw) end to end: storyboard 
 - Multi-video suites: one film genre and twist per video, variations per stage (vibe, storyboard stills, cheap draft, full render) with human sign-off, movie-style variation grids, and a genre-lookbook method for pitching 5 to 10 styles.
 - Character consistency: one hero reference image with every shot an edit of it (frame-chaining drifts by shot 3), the Story2Board locked-reference method, and nano (gemini-2.5-flash-image/edit) reframing to square and inventing logos on two-image input.
 - Veo 3 on Vertex AI (ADC auth, predictLongRunning then fetchPredictOperation, inline base64 image conditioning, fixed 8 s clips); fast-cut pacing (12 to 15 cuts of about 2 s per 30 s); the constraint-sandwich prompt and a locked style-anchor library (Pixar/3D, claymation, 2D anime, hyperreal) with negative prompts.
+- A full pass on Google's models (Gemini image, Veo 3.1, Gemini TTS on Vertex AI): story-lock check, cast-sheet stills, a review gate before Veo, window picking, camera moves, ducked voice-over, listening-model verification. See the last section and the `storyboard-video` tool in pooriaarab/scripts.
 - Audio and assembly: minimax music sings the lyrics field (use [instrumental]), TTS casting with minimax/speech-2.6-hd and ffmpeg voice effects, logo glow-halo compositing, genre wrappers (CCTV, found footage), puppeteer screencast to mp4, and ffmpeg traps (-shortest truncates video, aevalsrc has no mod/floor, hard-cut vs xfade audio sync, blur-fill for dual aspect).
 
 ## 1. Storyboard first, always
@@ -231,6 +232,7 @@ POST https://us-central1-aiplatform.googleapis.com/v1/projects/<PROJECT>/locatio
 -> returns an operation name
 ```
 
+- **Model IDs move.** By late 2026 the callable set was `veo-3.1-generate-001`, `veo-3.1-fast-generate-001` and `veo-3.1-lite-generate-001`; the 3.0 and preview IDs were gone. List what your project can call before you submit (the `storyboard-video` README has the one-line query). A user-credential token also needs the `x-goog-user-project: <PROJECT>` header, or Vertex answers 403.
 - **Poll**: POST the same model URL with `:fetchPredictOperation` and body `{"operationName": "<name>"}` until `done` is true; the video comes back inline at `response.videos[0].bytesBase64Encoded` — base64 mp4, decode to file. Clips are a fixed 8s.
 
 **Always image-condition Veo.** Text-prompt-only Veo invents a random character per clip, throwing away the whole §9 hero anchor. Pass the nailed still as the `image` on every instance (note: inline base64 here, not a URL like wavespeed). Same anchoring rule as §3, applied at the video-model step: nail the storyboard and stills FIRST, then animate — never animate from text alone.
@@ -574,3 +576,108 @@ Name-tag lower-thirds + a cold-open title + a VO are what turn "a series of nice
 ## Never fade in from black — the first frame IS the thumbnail
 
 A launch trailer's opening frame is its scroll-stopper and its poster thumbnail. A `fade=t=in:st=0:d=0.4` from black spends that most-valuable frame on nothing, and the autoplay/thumbnail lands on a black rectangle. Open ON the hero image instead — the full cast already in frame, the title over it — and start the source clip a beat in (e.g. `-ss 1.0`, not `0`) so the first visible frame already has life/motion rather than the clip's static first frame. Reserve fades for beat-to-beat dissolves you actually want, never the cold open.
+
+## Storyboard to finished film on Google's models (end to end)
+
+From a 30 s comic launch film made on Vertex AI alone: Gemini image for stills, Veo 3.1 for motion,
+Gemini TTS for the voice-over, ffmpeg for the edit. The `storyboard-video` tool in
+pooriaarab/scripts runs every step from one `board.json`. This section explains why each step
+is shaped the way it is.
+
+### 1. Lock the story before you draw anything
+
+A first-draft storyboard often reads as ten nice ideas, not one story. In the draft that started
+this, four of ten shots did not show the hero, and the cat and the skeleton arrived from nowhere.
+Before you generate anything, check three things:
+
+- **A fixed cast.** Name every character, give each one a description, and reuse those exact
+  words in every prompt. Three to four characters is plenty for 30 s.
+- **Setups and payoffs.** Write the table out. Example: the villain waits in line (shot 3) and fails
+  the human check (shot 6); the hero falls asleep on her manuscript (shot 4) and publishes it (shot 7);
+  the pet causes the crisis (shot 4) and rides along to the end. Cut any shot that sets up nothing
+  and pays off nothing.
+- **A cause for every shot.** Each shot happens because of the one before it. Label each with its
+  arc stage (HOOK, PROBLEM, AGITATE, SOLUTION, PAYOFF, CTA) so the shape is checkable at a glance.
+
+Topical jokes help a comedy land. Search the current month's memes and put one or two in the
+background, not in the plot: a seasonal costume, a cat on a keyboard. They date fast, so tie the
+release date to them.
+
+### 2. One cast sheet anchors every still
+
+Generate one character reference sheet (all characters, full body, front view, name labels),
+then generate every shot with that sheet attached. This is the §9 star topology, applied to a
+whole cast. `gemini-3-pro-image` held faces, outfits and props across ten shots this way.
+
+The failure to watch for: with the sheet attached, the model sometimes **returns the sheet
+itself** instead of the scene. Put the scene first, then the identity lock, then the scene
+again, and say "draw ONE cinematic scene, never a character lineup". Another failure: a
+character quietly swaps for a stranger (a browser-headed officer became a human), or real
+brand names appear on background props. Look at every still. Redo only the ones that fail, and keep
+the rejects in `img/rejected/` so the redo prompt can name what went wrong.
+
+### 3. The review gate: stills first, then Veo
+
+Render the stills into an HTML board (cast sheet, story paragraph, setups and payoffs, one card
+per shot) and get an explicit yes before any motion. **Veo bills each job at submit.** If someone
+asks you to wait after the jobs are in, stopping your poller saves nothing; the clips are already
+paid for. So do not batch-submit "to save time" while the stills are still under review. Spend
+the cheap tier first: `veo-3.1-fast` at 720p is roughly a quarter of the standard tier's
+per-second price. Use the standard tier only for the shots that make the final cut.
+
+### 4. Pick a window per shot, then edit like an editor
+
+This workflow asks Veo for 8 s clips (Veo 3.1 also offers 4 and 6 s), and a 30 s film wants about 3 s per shot. Tile one frame per second of
+every clip into a strip (`fps=1,scale=230:-1,tile=8x1`) and pick each shot's best window by eye.
+Veo often drifts late in a clip: text on a prop dissolves, or a creature grows out of a shadow.
+When a shot has no clean window, show the approved still with a slow push and keep the clip's
+sound.
+
+Then add what a camera operator and editor would:
+
+- **Camera moves.** Give every shot a slow push or pull (`scale=w='trunc(1280*(1+0.06*t/3)/2)*2':h=-2:eval=frame,crop=1280:720`).
+  Add a punch-in (a step to about 1.12×) on the beat that matters, such as a mask slipping or an arm falling off.
+- **Mostly hard cuts on the beat**, plus two or three motivated transitions: a dip to black into a
+  night scene, an iris into a "look inside" moment, a soft fade into the end card. Every
+  `xfade` input needs the same time base (`settb=1/24000` on each input and after each `concat`),
+  or ffmpeg fails with "Failed to configure output pad".
+
+### 5. Mix: one voice on top, the scene underneath
+
+Veo's own sound (foley, stamps, a character's quoted line) is worth keeping. Under a voice-over,
+though, it competes. What worked:
+
+- **Duck the scene with a sidechain.** The narrator bus keys `sidechaincompress` on the scene bed
+  (threshold 0.02, ratio 10, attack 15 ms, release 350 ms). The effects come back up in the gaps.
+- **Mute clips where Veo invents speech.** Unprompted, a robot said "I am Doot. I am merely
+  experiencing a…" under the narrator. Fixed volumes cannot save that; set the clip to 0.
+- **Queue the lines.** Start each line at its shot or just after the previous line, speed it up
+  to 1.2× at most, and warn when it still does not fit. Then shorten the line or lengthen the
+  shot. In the first mix, four lines ran 0.2 to 0.5 s into the next shot.
+- **Fade every cut** by 60 to 80 ms so hard cuts do not click, and normalise to −16 LUFS.
+
+### 6. The first frame must be frame 0
+
+Do not pass `-avoid_negative_ts make_zero` when you mux AAC. It shifts the video by the encoder's
+priming delay (1024 samples, 0.0213 s at 48 kHz). The first frame then starts late, and QuickTime
+shows black until it arrives. Check it: `ffprobe -show_entries stream=start_time` must read
+`0.000000` for both streams. Build the whole edit as one filter graph. Concatenating pre-cut
+segments with `-c copy` brings the same gap back.
+
+### 7. Verify by listening, not by eye
+
+Write a JSON artifact for each render: duration, stream start times, integrated loudness,
+black segments (`blackdetect`), and the timeline of shot starts. For the mix, send the audio to a
+listening model (Gemini) with these questions: transcribe the narrator, list any other voices, say
+whether any lines overlap, say whether the effects compete. The listener caught two clips of
+invented speech and the overlapping lines, so it can see a real fault. Its timestamps drift by a
+second or more, so trust its content, not its timing.
+
+### Open-source storyboard projects worth borrowing from
+
+- [HKUDS/ViMax](https://github.com/HKUDS/ViMax): agentic script → storyboard → video, with reference-photo character consistency. The broadest of the set.
+- [daviddinkevich/Story2Board](https://github.com/daviddinkevich/Story2Board): the training-free locked-reference method behind the cast-sheet approach.
+- [Sri01729/template-ai-storyboard-consistent-character](https://github.com/Sri01729/template-ai-storyboard-consistent-character): a multi-agent storyboard with character memory.
+- [aicontentskills/ai-video-storyboard-skill](https://github.com/aicontentskills/ai-video-storyboard-skill): a shot-list planner skill, with no rendering.
+- [Sunnylincc/StoryboardAI](https://github.com/Sunnylincc/StoryboardAI): a self-hosted, multi-provider storyboard pipeline.
+- [Vincentwei1021/video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft): shot library and beat-sync rules (see the shot-library section above).

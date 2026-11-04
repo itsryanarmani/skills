@@ -78,6 +78,22 @@ Rules that each cost a failed attempt:
 - After the login, run `cliproxy-hub check` and confirm the seat shows `ok`.
 - Move a retired seat file out of `~/.cli-proxy-api`. Do not delete it.
 
+## Boat boxes: one command
+
+Run this on the home Mac. It needs no prompt, no variables and no pasted keys:
+
+```sh
+boat-hub new <repo>
+```
+
+It reads the hub URL and key files from `~/Documents/Personal/.secrets`
+(`cliproxy-hub.env`, `cliproxy-hub-key`, the newest `tailscale-authkey-boat-hub-*`). The box
+joins the tailnet, wires Claude Code, Codex and pi, and pulls the latest `main` of the repo
+and of `private-repo-b1e6`. A repo with a `<repo>-ready` snapshot starts faster. Any other repo
+starts from `hub-ready` and clones on first boot. Make a snapshot with `boat-hub warm <repo>`, which needs a Boat environment named for the repo.
+Each snapshot costs storage, so keep few. On the box, run `claude-hub` and `codex-hub`.
+A bare `claude` has no hub login.
+
 ## Point a client host at the hub
 
 Every client host needs Tailscale on the same tailnet and a Claude Code or Codex install.
@@ -131,12 +147,17 @@ or ~/.codex config.
 1. Read the cliproxy-hub skill in pooriaarab/skills and use cliproxy-hub from
    pooriaarab/scripts.
 2. Check Tailscale is on the same tailnet as the hub: tailscale status.
-3. Put the key I give you in a 0600 file. Set HUB_URL and HUB_KEY_FILE.
+3. Put the hub key in ~/.hub-key and the Tailscale key in ~/.ts-authkey, both mode 600.
+   Copy them from the home Mac with scp, never through chat. Set HUB_URL and HUB_KEY_FILE.
+   If Tailscale is off, run: sudo tailscale up --auth-key=file:$HOME/.ts-authkey. Then delete
+   ~/.ts-authkey.
 4. Run: cliproxy-hub verify. Expect "hub reachable".
-5. Run: cliproxy-hub client claude and cliproxy-hub client codex.
-6. Test once with each tool: CLAUDE_CONFIG_DIR=~/.claude-hub claude -p "say ok" and
+5. Run these three commands: cliproxy-hub client claude, then cliproxy-hub client codex,
+   then cliproxy-hub client pi.
+6. Test once with Claude Code and Codex: CLAUDE_CONFIG_DIR=~/.claude-hub claude -p "say ok" and
    CODEX_HOME=~/.codex-hub codex exec "say ok".
-7. Report which commands passed. If one failed, quote the error and stop.
+7. Report which commands passed. If one failed, quote the error with any key, token or
+   header removed, and stop.
 ```
 
 ## Verify from a client

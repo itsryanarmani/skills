@@ -271,6 +271,10 @@ composition drives the animation, and the CLI checks, snapshots and renders.
   the `/hyperframes` router. A remix of existing footage routes to `general-video`.
 - Write `BRIEF.md` (message, destination, aspect, length, assets with source timestamps) and a `STORYBOARD.md`
   with one block per scene, even when no human reviews it. On resume, these files are the only record of the decisions.
+- When every scene is generated (stills and clips), keep the record in one `board.json` that follows
+  `video.schema.json` (the `storyboard-video` tool in pooriaarab/scripts) instead of the two Markdown files. See
+  "Keep the record in board.json" in `launch-video-generation`. Cuts with any real footage keep `BRIEF.md` and
+  `STORYBOARD.md` until the schema has a footage shot type with playback rate and safe-end limits.
 - Use one project per video, with the same scene set: hook, value, footage with a topline, proof, end card.
   Generate the scene files from one spec per video so all videos share one structure.
 

@@ -584,6 +584,26 @@ Gemini TTS for the voice-over, ffmpeg for the edit. The `storyboard-video` tool 
 pooriaarab/scripts runs every step from one `board.json`. This section explains why each step
 is shaped the way it is.
 
+### 0. Keep the record in board.json
+
+Every generated video keeps one `board.json` that follows `video.schema.json` in pooriaarab/scripts
+(`storyboard-video/`). It is the only record of the decisions, so a recut, a new aspect ratio or
+a fix months later starts from the file, not from memory. `storyboard-video check` validates it
+and names each bad path. Unknown fields fail, so a typo cannot hide.
+
+| Stage | Fill in |
+| --- | --- |
+| Brief | `meta` (title, logline, audience, destinations, aspects, target length, release date), `brief` (message, CTA, framework), `privacy` |
+| Cast and look | `theme.style` (repeated in every prompt), `theme.negative`, `cast[].anchor` (exact identity words) |
+| Story lock | `story.arc`, `story.setupsPayoffs`, `story.topical` with the date each reference was checked, and per shot `stage`, `purpose`, `characters` |
+| Storyboard gate | Per shot `prompts.still`, `camera`, `dialogue`, `vo`, `onScreenText`; `review.still`; a `budget.approvals` entry for `stills` before any video spend |
+| Clips | `prompts.motion`, `assets.clip`, `assets.rejects`, `review.clip`, a `budget.spend` row per paid step |
+| Cut | Per shot `edit` (window, zoom, transition, sceneVolume, useStill); `audio.voiceOver` and `audio.mix`; `render.outputs` |
+| Verify | `verify`: copy in `out/verify.json`, which `storyboard-video verify` writes, and add a `listening` block from the listening-model pass |
+
+Record a decision when you make it. If a still is rejected, add its path to `assets.rejects`
+and say why in `review.notes`, so the redo prompt can name the fault.
+
 ### 1. Lock the story before you draw anything
 
 A first-draft storyboard often reads as ten nice ideas, not one story. In the draft that started

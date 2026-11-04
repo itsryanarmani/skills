@@ -228,6 +228,7 @@ Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp3
 |-------|-------------|
 | [changelog](changelog/SKILL.md) | Auto-generate a changelog from git commits since the last tag or ref. |
 | [init-project](init-project/SKILL.md) | Auto-generate a CLAUDE.md for a new project by analyzing its structure, tooling, and conventions. |
+| [iphone-ble-bridge](iphone-ble-bridge/SKILL.md) | Control real iPhones with no cable or Developer Mode: an ESP32-S3 acts as a Bluetooth mouse and keyboard, AssistiveTouch turns it into touches. Pairing, command protocol, button mapping, pointer scale, and the NimBLE limits that drop a third phone. |
 | [stale-branches](stale-branches/SKILL.md) | List and clean up stale git branches (merged or inactive 30+ days). |
 | [worktree-hygiene](worktree-hygiene/SKILL.md) | Prune git worktrees whose branches already merged, salvaging any with real uncommitted changes to a branch first. |
 | [branch-deploy-convention](branch-deploy-convention/SKILL.md) | Standardise branch names onto `main` (staging) and `release` (production) without breaking a deploy. The silent-dead-trigger defect class, an org-wide sweep, the safe rename order, and the four blockers to check first. |

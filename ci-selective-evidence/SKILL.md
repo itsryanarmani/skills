@@ -137,7 +137,7 @@ full suite on any of these:
 - a new, deleted or renamed spec;
 - an empty diff, or a base the checker cannot resolve.
 
-**Replay before you trust it.** On 60 real commits, only 8 narrowed. That is the correct shape.
+**Replay before you trust it.** On 60 real commits, 5 of 60 (8%) narrowed. That is the correct shape.
 A map that narrows most commits is skipping something.
 
 **Write the failure modes before the code.** List each way the selector could skip a test it

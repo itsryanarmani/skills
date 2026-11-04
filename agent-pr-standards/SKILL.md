@@ -208,7 +208,7 @@ review. Each row is a defect that happened.
 | --- | --- |
 | A reviewer starts a background job and ends its turn | Run commands in the foreground. Write the verdict in the same turn. A review that waits on a background job ends with no verdict |
 | A reviewer reads the diff and approves | Make the reviewer mutation-test any check the PR adds. Break each rule in a scratch copy and require red |
-| A projected saving goes into the PR body | Quote measured results only. One projection read 11.9 minutes, then 3 to 4, then a net loss |
+| A projected saving goes into the PR body | Quote measured results only. One projection was revised twice (about 12 minutes, then 3 to 4, both projections), then measured as a net loss |
 | An automation labels its own PR and merges a newer head than the one it approved | Read the head SHA right before the merge. Pass `--match-head-commit`. Never let an agent apply the gate label |
 | A test writes a placeholder git identity into the shared repo config | Worktrees share that config, so every worker's commits carried it. Pass identity per command, use a temp repo, never run `git config` |
 | A squash merge adds a `Co-authored-by` trailer for each other commit author | Pass an explicit merge message |

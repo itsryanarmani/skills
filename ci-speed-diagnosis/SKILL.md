@@ -28,6 +28,7 @@ levers. Route by what you already know:
 | jobs are on the wrong runner tier, or queueing behind each other | [high-volume-ci-optimization](../high-volume-ci-optimization/SKILL.md) |
 | the suite runs on every pull request — the trigger is the repeated cost | [ci-cost-at-agent-scale](../ci-cost-at-agent-scale/SKILL.md) |
 | the problem is spend, and agents open most of the pull requests | [ci-cost-at-agent-scale](../ci-cost-at-agent-scale/SKILL.md) |
+| the constraint is named and you must pick a tactic with its measured cost and trap | [ci-speed-and-cost](../ci-speed-and-cost/SKILL.md) |
 | you are setting up the host itself | [self-hosted-runner-fleet](../self-hosted-runner-fleet/SKILL.md) |
 
 ## Match CI conditions before local checks

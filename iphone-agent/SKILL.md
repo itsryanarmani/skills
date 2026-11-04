@@ -30,6 +30,8 @@ Read the file that fits the task:
 - [LinkedIn](references/linkedin.md) — open LinkedIn, then leave.
 - [Camera](references/camera.md) — open Camera from App Library. Do not press the shutter.
 - [Warmup](references/warmup.md) — social media account warmup across Instagram, TikTok, X, LinkedIn, YouTube.
+- [Instagram signup](references/instagram-signup.md) — create an account: screens, order, gotchas, stop points.
+- [Send to iPhone](references/send-to-iphone.md) — put a file in the phone's Photos or mail.
 
 ## Gates
 
@@ -44,6 +46,9 @@ Read the file that fits the task:
 - Stay off the AssistiveTouch button.
 - Raw `home` only parks the pointer. Do not trust a home swipe until the frame shows the home screen. A slow drag from the bottom opens the app switcher.
 - A full iPhone is not claimed until the round pointer moves on that phone.
+- Prove the screen source is live before an action: wiggle the pointer and expect a new frame. A still screen writes no frames, so frame age alone proves nothing. A dead AirPlay mirror produced minutes of blind moves.
+- Never press when the pointer ring was seen before and is not on the target. USB frames (`usbcap`) do not drop under load and are stretched, so the ring is an ellipse.
+- The Home route is the AssistiveTouch button, then its Home icon. Edge swipes and the board's Home click did nothing on the test phone.
 
 ## Scope
 

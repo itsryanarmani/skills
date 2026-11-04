@@ -127,6 +127,31 @@ Record unrelated baseline failures beside the map, never inside it. They
 stay visible and still block a clean qualification result. One comparison
 never pays for all future changes.
 
+## Build the path map, then test the map
+
+A path-to-test map is the simplest planner. It is deterministic, so you can test it. Widen to the
+full suite on any of these:
+
+- a path the map does not know;
+- a shared root, a config file, a lockfile or a workflow file;
+- a new, deleted or renamed spec;
+- an empty diff, or a base the checker cannot resolve.
+
+**Replay before you trust it.** On 60 real commits, 5 of 60 (8%) narrowed. That is the correct shape.
+A map that narrows most commits is skipping something.
+
+**Write the failure modes before the code.** List each way the selector could skip a test it
+should run. Then write the checks. One check hides a server change beside a docs change and
+asserts that the selector widens to the full suite.
+
+**Mutation-test the check itself.** For each widening rule, break that rule in a scratch copy
+and run the checks. Each mutant must turn red. The first version let 4 of 22 mutants live. The
+final version killed all 22. A live mutant is a rule no check defends.
+
+**Read review findings as new failure modes.** Review found one false skip. A spec read data
+files under a site folder through a path join. The map had no edge for the join, so a data-only
+change skipped the spec. Add the file, the mutant and the widening rule together.
+
 ## Guard proof paths through the nearest existing ancestor
 
 A guard that resolves a path through a child directory that does not exist yet

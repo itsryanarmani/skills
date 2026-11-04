@@ -199,6 +199,23 @@ silently disables the title and body rules too, turning the knob into a way to
 opt out of the whole standard. Ask any implementation to prove otherwise with a
 test.
 
+## Review and merge traps in a fleet
+
+These came from one day of agent-written CI changes. Every pull request got a fresh-context
+review. Each row is a defect that happened.
+
+| Trap | Rule |
+| --- | --- |
+| A reviewer starts a background job and ends its turn | Run commands in the foreground. Write the verdict in the same turn. A review that waits on a background job ends with no verdict |
+| A reviewer reads the diff and approves | Make the reviewer mutation-test any check the PR adds. Break each rule in a scratch copy and require red |
+| A projected saving goes into the PR body | Quote measured results only. One projection was revised twice (about 12 minutes, then 3 to 4, both projections), then measured as a net loss |
+| An automation labels its own PR and merges a newer head than the one it approved | Read the head SHA right before the merge. Pass `--match-head-commit`. Never let an agent apply the gate label |
+| A test writes a placeholder git identity into the shared repo config | Worktrees share that config, so every worker's commits carried it. Pass identity per command, use a temp repo, never run `git config` |
+| A squash merge adds a `Co-authored-by` trailer for each other commit author | Pass an explicit merge message |
+| A presence-claim hook sees a different identity than the worker's shell | Claim under the identity the hook computes |
+| A usage limit kills a worker mid-task | Keep every task resumable: an issue, a branch and a claim. Re-route the task to another worker |
+| A lock is held by a dead process | Release it with the tool's own release command. Never edit the lock file |
+
 ## Sibling layers
 
 Lint budgets cap the shape of the code. This skill caps the shape of the change.

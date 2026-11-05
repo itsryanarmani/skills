@@ -32,17 +32,18 @@ quote a number.
 
 One KV write costs about as much as reading 5,000 D1 rows ($0.000005 against
 $0.000000001 a row). Weigh a change in both directions: a change that saves a write but
-adds 10,000 row reads loses money. Cache an entry only if it is read about 5 times in its
-window (5,000 rows divided by about 1,000 rows saved a read). A bigger load pays back sooner.
-`optimizations.md` shows the arithmetic.
+adds 10,000 row reads loses money. A cached read also costs the KV read fee, about 500 row
+reads. Net rows saved per hit = rows saved per read minus 500. Reads to pay back one write =
+5,000 divided by that net (ESTIMATE). Saving 1,000 rows a read needs about 10 reads in the
+window. A bigger load pays back sooner. `optimizations.md` shows the arithmetic.
 
 KV writes per hour is the check for any KV change. Query `kvOperationsAdaptiveGroups`
-with the dimension `datetimeHour`. The idea that a deploy empties the data cache and
-causes a write wave was tested and is not supported (no write spike after a fleet deploy).
+with the dimension `datetimeHour`. A test found no write spike after a fleet deploy.
+So the idea that a deploy empties the data cache and causes a write wave is not supported.
 
 To find which D1 queries read the rows, query `d1QueriesAdaptiveGroups` and sort by rows
-read. Families found: a category-tree CTE with `json_each`, a full-row select with no
-index, and per-request COUNT facets. See `optimizations.md`.
+read. Families found: a category-tree CTE with `json_each`, a full scan of one table, and
+per-request COUNT facets. See `optimizations.md`.
 
 In the fleet this was learned on, the order was: Worker CPU, KV writes, D1 rows read,
 requests, KV reads, containers, Durable Objects, subscriptions. Rank yours before you act.
@@ -112,9 +113,10 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
 - **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
   Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That sample came from a different local build
   than the 589 ms median above (one with `minify` on, one with it off), so do not compare the two numbers. That goes against
-  the bytes lever above. A production A/B gave cold requests of 866 to 1,348 ms (4 samples) with
-  `minify` on and 250 to 440 ms (5 samples) with it off (MEASURED, small samples). But fleet CPU
-  per request did not change: 71.5 ms on both days, same hours (MEASURED). Keep it unconfirmed.
+  the bytes lever above. A small production A/B on cold requests (4 on the old bundle, 5 on the
+  new one) showed a large drop (MEASURED, small samples, not reproducible from the kept logs).
+  But fleet CPU per request did not change: 71.5 ms on both days, same hours (MEASURED).
+  Keep it unconfirmed.
   Compare the same hours across days before you credit a change. Deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
 - **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
@@ -134,15 +136,15 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   Put the guard first in the Worker entry. A WAF rule is cheaper still, but it needs a token
   with Zone WAF permission (see the token bullet below).
 - **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user. A
-  per-minute cron for every site measured only about 1% of CPU on this fleet, so measure before you
-  spend a PR on it.
+  per-minute cron for every site was a small share of CPU on this fleet (about 1%, ESTIMATE),
+  so measure before you spend a PR on it.
 
 - **Block a client by what it sends, on the Cloudflare edge, before the Worker runs.** Traffic was very
   concentrated: one IP with an empty `User-Agent` sent 43% of a site's requests and another 60% of a
   second site's. A zone custom rule `(http.user_agent eq "" and not starts_with(http.request.uri.path, "/api/"))`
   with action `block` stops them with no Worker run. Do it safely, zone by zone:
-  1. Check analytics first for empty-user-agent traffic outside `/api/` that you want, such as an
-     uptime monitor.
+  1. Check analytics first for empty-user-agent traffic outside `/api/` that you want. Examples are
+     an uptime monitor, a webhook and a health check. They can send no user agent.
   2. `GET /zones/{id}/rulesets/phases/http_request_firewall_custom/entrypoint` and save the answer to
      a file. A `PUT` to that entrypoint REPLACES every custom rule on the zone: send back all the
      existing rules plus yours, or add yours with `POST .../rulesets/{ruleset_id}/rules`. The free plan
@@ -197,9 +199,10 @@ entry. Pages that are `force-dynamic` still write the data cache through `unstab
 
 ### 3. Cut D1 rows read (D1 rows read)
 
-- **Put a per-request row budget** at the Worker entry. Count rows read per request and
-  refuse above a cap. Exempt sitemap paths with their own higher cap, or the cap turns a
-  valid build into a 503.
+- **Put a per-request row budget** at the Worker entry. Count rows read per request. Run it in
+  log-only mode first. Then set a cap for each route from the measured maximum rows. One query
+  family read up to 190,000 rows in one run. A cap below the real maximum turns a valid page or
+  sitemap build into a 503.
 - **Store counts at import.** Counts for facets, places and categories rarely change. Write
   them to a table when you import. Do not compute them with a group query per request.
 - **Beware head-of-line blocking.** D1 runs queries one after another. One sitemap build ran

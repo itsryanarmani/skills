@@ -19,19 +19,19 @@ any change. Traffic moves the meters more than most code changes do.
 
 ### Turn off Wrangler `minify`
 
-- **Signal.** `git grep -n "minify" -- '*wrangler*'`. The value is `true` or unset.
+- **Signal.** `git grep -n "minify" -- '*wrangler*'`. The signal is `minify: true`. Wrangler's default is false.
 - **Change.** Set `minify: false` on one site. Read `cpuTime` from the tail.
 - **Proof.** Local cold CPU fell 32% to 42% (MEASURED, local workerd).
-  A production A/B on cold requests: 866 to 1,348 ms with 4 samples, and
-  250 to 440 ms with 5 samples (MEASURED, small samples). Fleet CPU per request
-  did NOT change: 71.5 ms on both days, same hours (MEASURED).
+  A small production A/B on cold requests (4 on the old bundle, 5 on the new one)
+  showed a large drop (MEASURED, small samples, not reproducible from the kept logs).
+  Fleet CPU per request did NOT change: 71.5 ms on both days, same hours (MEASURED).
   Treat the saving as **unconfirmed**.
 - **Trap.** Cold samples are few and noisy. Fleet CPU per request depends on the
   hour of day. Compare the same hours across days before you credit the change.
 
 ### Cut bytes in the server bundle
 
-- **Signal.** The handler file is above 20 MB. Run `ls -l .open-next/server-functions/*/handler.mjs`.
+- **Signal.** The handler file is large. The one measured here was 25.7 MB. Run `ls -l .open-next/server-functions/*/handler.mjs`.
 - **Change.** Find modules that the bundler copied into each route group. Share them.
 - **Proof.** About 55% of a 642 ms first request was V8 compile time for a 25.7 MB
   handler (MEASURED, local profile). Measure with `wrangler tail --format json`
@@ -80,7 +80,8 @@ any change. Traffic moves the meters more than most code changes do.
   another sent 60% of a second site's (MEASURED, analytics). Count blocked
   requests in `httpRequestsAdaptiveGroups` by action.
 - **Trap.** A `PUT` to the entrypoint replaces all custom rules. Save the old set
-  first. Check for an uptime monitor that sends no user agent.
+  first. Check for an uptime monitor, a webhook or a health check that sends no
+  user agent. These can sit outside `/api/`.
 
 ### Pause search jobs, staging and idle sites
 
@@ -88,8 +89,8 @@ any change. Traffic moves the meters more than most code changes do.
 - **Change.** Pause them. Shut down staging that nobody reads.
 - **Proof.** One big drop (D1 reads from 97B to 2.5B a day) came from a search
   pause, 12 hours before the code changes that we first credited (MEASURED).
-- **Trap.** A per-minute cron on every site was only about 1% of CPU. Measure
-  before you spend work on a cron.
+- **Trap.** A per-minute cron on every site was a small share of CPU (about 1%,
+  ESTIMATE). Measure before you spend work on a cron.
 
 ## KV writes
 
@@ -98,15 +99,16 @@ KV writes per hour is the check for any KV change. Query
 `actionType` write. Compare the same hours across days.
 
 Measured here: about 40,000 writes an hour on one day, and about 9,500 an hour
-from 04:00 UTC on the next day (MEASURED). The fall came before the cuts below
-shipped. No change was tied to it. The idea that a deploy empties the data cache
-and causes a write wave was tested and is not supported: there was no write
-spike after a fleet deploy (MEASURED).
+from 04:00 UTC on the next day (MEASURED). The fall came before the minify change
+and the city page change below. No cut was tied to it. A test found no write spike
+after a fleet deploy (MEASURED). So the idea that a deploy empties the data cache
+and causes a write wave is not supported.
 
 ### Skip the data cache for long-tail keys
 
-- **Signal.** `git grep -n "unstable_cache\|cachedIf\|JSON.stringify" -- '*.ts'`
-  where the key holds filters, a page number above 1, or free text.
+- **Signal.** `git grep -n "unstable_cache\|cachedIf" -- '*.ts' '*.tsx'`. Look
+  for key arrays that hold a request value: filters, a page number above 1, or
+  free text.
 - **Change.** Cache only head pages. Call the loader directly for the tail.
   Each put to the incremental cache is a billed KV write.
 - **Proof.** 98% of geo page requests were unique within 3 minutes (MEASURED).
@@ -123,6 +125,10 @@ spike after a fleet deploy (MEASURED).
   page's shared block.
 - **Proof.** A cold city page wrote 3 to 5 KV entries (3 once the region keys
   were warm). It saved about 9 D1 queries per later hit (MEASURED, test run).
+  The sum (ESTIMATE): 3 to 5 writes at 5,000 row reads each cost 15,000 to 25,000
+  row reads. Each hit saves about 9 queries of 319 rows, about 2,900 rows, minus
+  the 500-row read fee, so about 2,400 net. The entry needs about 6 to 11 hits in
+  its window. A city page rarely gets that many, so it is long tail.
 - **Counter-example.** The listing page reads the same block on every visit. It
   keeps its cache. Apply the break-even rule below to decide.
 
@@ -131,15 +137,16 @@ spike after a fleet deploy (MEASURED).
 - **Signal.** A new cache entry that stores a D1 result.
 - **Rule.** One KV write costs $0.000005. One D1 row read costs $0.000000001.
   So one write equals 5,000 row reads ($0.000005 / $0.000000001).
-  Reads needed to pay back a write = 5,000 / rows saved per read.
+  Each cached read costs the KV read fee: $0.0000005, about 500 row reads.
+  Net rows saved per hit = rows saved per read minus 500.
+  Writes to pay back = 5,000 / net rows saved per hit.
   A D1 read query read 319 rows on average (MEASURED: 7,952,705 queries read
   2,533,957,103 rows in one day). An entry that saves about 1,000 rows a read
-  (about 3 queries) needs 5 reads in its window. An entry that saves about 16
-  queries (about 5,100 rows) needs about 1. So cache an entry only if it is read
-  about 5 times in its freshness window, or fewer for a bigger load.
+  (about 3 queries) nets 500 and needs about 10 reads in its window. An entry
+  that saves about 16 queries (about 5,100 rows) nets 4,600 and needs about 1.1.
+  So the bigger the load, the fewer reads you need.
 - **Proof.** The arithmetic above, from the price table (ESTIMATE for your own
   load size). Measure your own rows per query with `d1QueriesAdaptiveGroups`.
-  Add the KV read fee ($0.0000005, about 500 row reads) to each cached read.
 - **Trap.** The window starts at the write. A key read once is a loss.
 
 ### Set a per-site data cache window
@@ -179,7 +186,7 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 - **Proof.** Families found in one 16-hour window (MEASURED):
   - A category-tree recursive CTE with `json_each(?)` and `MATERIALIZED`:
     173M rows, 166k runs, six databases, 550 to 190,000 rows a run.
-  - A full-row select with no index: 65M rows, 11k runs, one database, about
+  - A full-row licences select: 65M rows, 11k runs, one database, about
     9,400 rows a run. This is a full scan.
   - A listing rows page: 52M rows, 4k runs.
   - Five facet-count queries (country, region, tier, total) on one database:
@@ -190,11 +197,14 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 ### Put a row budget at the Worker entry
 
 - **Signal.** No code counts rows read per request.
-- **Change.** Count rows read per request. Refuse above a cap. Exempt sitemap
-  paths with a higher cap.
+- **Change.** Count rows read per request. Run the guard in log-only mode first.
+  Then set a cap for each route from the measured maximum rows. Exempt a route by
+  that number, not only the sitemap.
 - **Proof.** No saving was measured for the guard alone. Measure with the top
   queries from `d1QueriesAdaptiveGroups`, same hours.
-- **Trap.** Without the exemption, the cap turns a valid sitemap build into a 503.
+- **Trap.** One query family read up to 190,000 rows in one run (MEASURED, see
+  the families above). A cap below the real maximum of a route sends 503 on a
+  valid page or sitemap build.
 
 ### Store facet counts at import
 
@@ -230,10 +240,12 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 
 ### Stop routine per-request logs
 
-- **Signal.** `git grep -n "console.log" -- '*worker*' '*entry*'` that runs on
-  every request. Workers Logs shows one invocation log per request.
-- **Change.** Stop routine invocation logs. Keep error logs.
+- **Signal.** The Wrangler config has an `observability` block with no
+  `"invocation_logs": false`. Workers Logs then holds one invocation log per request.
+- **Change.** Set `"observability": { "enabled": true, "logs": { "enabled": true,
+  "invocation_logs": false } }`. Errors stay in Workers Logs.
 - **Proof.** No saving was measured in this work. Count log events per day in
-  Workers Observability before and after, same hours (MEASURED once you run it).
-- **Trap.** Keep the log line that names a cause for a refusal. You need it to
+  Workers Observability before and after, same hours.
+- **Trap.** An `env` block that turns invocation logs back on overrides the top
+  level. Keep the log line that names a cause for a refusal. You need it to
   find a heavy burst later.

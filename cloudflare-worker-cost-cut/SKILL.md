@@ -39,6 +39,8 @@ requests, KV reads, containers, Durable Objects, subscriptions. Rank yours befor
    - Each row is ONE DAY of use and that day's cost (`ConsumedQuantity`, `BilledCost`). Cloudflare
      applies the monthly free allowance to the cumulated quantity, so a day that crosses the
      allowance shows a part-free cost. Sum `BilledCost` per day and per service line.
+   - The feed returns only the NEW billing period's rows when `from` lies inside the old period, and `to`
+     is exclusive. Ask 35 days back and one day past the end, then keep the days you want.
    - A new billing period (`BillingPeriodStart` changes) restores the allowance. The first day of a
      period looks cheaper than it is. Do not compare it with the last day of the old period.
    - The newest day is published late and in pieces. A partial day shows only some lines, often
@@ -94,7 +96,8 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   parser. Try a webpack build, which shares chunks. Keep client-only libraries (maps, editors) out
   of server-evaluated code.
 - **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
-  Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That goes against
+  Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That sample came from a different local build
+  than the 589 ms median above (one with `minify` on, one with it off), so do not compare the two numbers. That goes against
   the bytes lever above, and no production number exists yet. Treat it as a hypothesis: deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
 - **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
@@ -127,9 +130,14 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
      a file. A `PUT` to that entrypoint REPLACES every custom rule on the zone: send back all the
      existing rules plus yours, or add yours with `POST .../rulesets/{ruleset_id}/rules`. The free plan
      allows 5 custom rules per zone; check there is room.
+  If the GET returns 404 (a zone with no custom rules yet), create the entrypoint with a `PUT` that holds
+  only your rule.
   3. Give the rule a stable `ref` so it can be found and removed later, and record the zones.
-  4. Verify on each zone: an empty user agent gets 403, a normal request and the AI crawlers you want
+  4. To undo, `DELETE .../rulesets/{ruleset_id}/rules/{rule_id}` for the rule with your `ref`, or `PUT` the
+     saved entrypoint back.
+  5. Verify on each zone: an empty user agent gets 403, a normal request and the AI crawlers you want
      get 200, and `/api/` still answers.
+
   The free plan refuses a custom block response ("not entitled to use a custom response"), so a block
   cannot carry a pointer to your API; use the Worker for that.
 - **Do not block AI crawlers by user agent if your product tells owners to let them in.** Our own
@@ -141,7 +149,8 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   token that already has zone access, with a token that can edit tokens: `PUT /user/tokens/{id}`
   REPLACES the whole token, so (1) `GET` the full token object and save it to a file; (2) send back
   the same object with only `Zone WAF Read` and `Zone WAF Write` added to a policy that already covers
-  all zones, keeping `name`, `status`, `condition` (IP limits) and `expires_on` exactly; (3) read it
+  all zones, keeping `name`, `status`, `condition` (IP limits), `not_before` and `expires_on` exactly (look up the
+  group ids with `GET /user/tokens/permission_groups`; a policy names groups by id); (3) read it
   back and compare name, status, condition, expiry and every permission by NAME, not by position
   (the API reorders policies); (4) to undo, `PUT` the saved object. Verify the token still works.
   Note that this gives that token WAF write on every zone: that is the cost of not using a new token.
@@ -200,7 +209,7 @@ request, read `cpuTime` from `wrangler tail`), not on a warm local server.
   bytes are not CPU. They cost bandwidth, which Workers do not bill.
 - Dynamic `robots.txt` and `llms.txt` cost about 200 ms a hit on one site, but this too was mostly
   cold start; serving static files helps only for files that were not edge cached.
-- A per-minute cron for every site was about 1% of CPU. Measure before you spend a PR on it.
+
 
 ### 5. Publish the long tail as static files (CPU, requests, D1, KV)
 
@@ -282,7 +291,8 @@ estimate, and report measured days beside it.
 
 ## Rolling out to many repos
 
-1. Run `cf-usage-report` for the account. Rank the namespaces and the sites.
+1. Run `cf-usage-report` for the account. Rank the namespaces and the sites. (Both tools are in the
+   scripts repo; without them, use the billing call and the GraphQL queries in Measure first, items 1 and 2.)
 2. Run `cf-cost-scan` over every repo. It lists which levers each repo still lacks.
 3. Do one repo end to end. Prove the saving in the next billing row.
 4. Open one issue and one PR per lever per repo, under 500 lines each. Do not batch levers.

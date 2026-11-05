@@ -45,7 +45,7 @@ many people act together. It carries no real product footage, so keep one real s
 
 ## Rhythm rules
 - Burst shots last 1 to 2 beats (0.43 to 0.86 s). Never two equal lengths twice in a row. Text shots hold 4 beats or more.
-- Flash: white, 3 frames, decay 0.22 s, on the downbeat of each impact. Shake: six x/y steps of 0.045 s, decaying.
+- Flash: white, on screen 0.25 s with a 0.22 s fade, on the downbeat of each impact. Shake: six x/y steps of 0.045 s, decaying.
 - Radial speed-line overlay (`repeating-conic-gradient` with a radial mask, `mix-blend-mode: screen`) from the first burst
   to the strike, rotating slowly.
 - Text slam: scale 1.7 to 1, x -70 to 0, opacity 0 to 1 in 0.2 s, `power4.out`. Second line enters 0.6 beat later.

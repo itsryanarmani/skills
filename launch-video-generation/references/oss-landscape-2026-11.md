@@ -14,7 +14,7 @@ Method: WebSearch (standard), WebFetch on READMEs, and star counts from the publ
 | 4 | browser-use/video-use | https://github.com/browser-use/video-use | Edit video with coding agents. Cuts filler and dead space, 30 ms audio fades at cuts, burns subtitles. MIT. | 30,589 | 30 ms fade at every cut. Transcript-driven cutting. |
 | 5 | HBAI-Ltd/Toonflow-app | https://github.com/HBAI-Ltd/Toonflow-app | Script to smart storyboard to character/scene assets to image to video. Anime short drama focus. | 20,754 | Asset-first flow: character and scene sheets before any shot. |
 | 6 | Wan-Video/Wan2.2 | https://github.com/Wan-Video/Wan2.2 | Open video model. Apache-2.0. Real negative-prompt field, first/last-frame mode. | 18,386 | Local fallback model. First/last frame control. |
-| 7 | Vincentwei1021/video-shotcraft | https://github.com/Vincentwei1021/video-shotcraft | Claude/Codex skill. Remotion promos, shot-card library (19 transitions, 8 rhythm shots), beat sync, sound design, frame QA. | 17,229 | Shot cards as named recipes. Separate beat-sync and sound-design rule files. (Rules not visible on README; I did not read them.) |
+| 7 | Vincentwei1021/video-shotcraft | https://github.com/Vincentwei1021/video-shotcraft | Claude/Codex skill. Remotion promos, shot-card library (19 transitions, 8 rhythm shots), beat sync, sound design, frame QA. | 17,229 | Shot cards as named recipes. Separate beat-sync and sound-design rule files. (Rules not visible on README; not read.) |
 | 8 | Zulko/moviepy | https://github.com/Zulko/moviepy | Python ffmpeg editing. MIT. | 15,115 | Quick scripted cuts. Not agent-native. |
 | 9 | ZeroLu/awesome-seedance | https://github.com/ZeroLu/awesome-seedance | Seedance 2.0 prompt collection. | 2,818 | Anime and action prompt examples. (README not read; blurb only.) |
 | 10 | YouMind-OpenLab/awesome-seedance-2-prompts | https://github.com/YouMind-OpenLab/awesome-seedance-2-prompts | 2000+ Seedance 2.0 prompts incl. anime. | 2,200 | Same. Fetch returned no README body. |
@@ -107,7 +107,7 @@ For Seedance, Runway, Sora: no field. Write the positive form instead ("flat cel
 ## 4. Gaps
 
 - The shot-length and aesthetic rules in video-shotcraft were not read (they sit in files the README did not show). The pacing numbers in section 2 are a synthesis, not from a repo.
-- The two Seedance prompt repos returned no README body to WebFetch. I did not see their anime prompts. Only the blurbs.
+- The two Seedance prompt repos returned no README body to WebFetch. Their anime prompts were not seen, only the blurbs.
 - Star counts: seen via the GitHub API on 2026-11-05 for all repos listed. Where a repo showed 0, it is new, not bad.
 - No popular repo found for Shotstack-style JSON timelines or ffmpeg recipe collections. Search was limited.
 - Not verified the current model lineup (Veo 3.1, Kling 3.0, Seedance 2.x/2.5, Wan 2.2) against vendor docs. Model names come from repo READMEs and search snippets.

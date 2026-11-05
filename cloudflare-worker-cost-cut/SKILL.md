@@ -45,8 +45,8 @@ requests, KV reads, containers, Durable Objects, subscriptions. Rank yours befor
      D1 first and Workers CPU and KV writes later. Mark it `partial`. Never call a partial sum a
      daily total.
    - Check the feed against analytics. A full-day D1 analytics sum matched the bill to the row
-     (63,325,168,002 against 63,325,168,224), and Workers CPU matched to 0.01%. Once they agree,
-     analytics can stand in for the bill on a day the feed has not published.
+     (63,325,168,002 against 63,325,168,224: 222 rows apart, under one part in 100 million), and Workers CPU matched within 0.01% (576,338,444 ms against 576,290,354 ms billed). Analytics gives usage, not cost: to get cost, apply the monthly allowance to the period's cumulated quantity. Once they agree,
+     analytics usage can stand in for the bill's usage on a day the feed has not published.
 2. **GraphQL analytics** gives the same day as usage, not dollars. Useful datasets:
    `workersInvocationsAdaptive` (requests, CPU), `d1AnalyticsAdaptiveGroups` and
    `d1QueriesAdaptiveGroups` (rows read, per query), `kvOperationsAdaptiveGroups`
@@ -60,7 +60,7 @@ requests, KV reads, containers, Durable Objects, subscriptions. Rank yours befor
 5. **Heavy tail.** Ask analytics for `quantiles { cpuTimeP50 cpuTimeP99 }` per script. CPU minus
    (requests times the script's own p50), divided by all CPU, is the heavy-tail share. A share
    above 50% means a few requests cost far more than the rest. On this fleet it was 71%, and the
-   cause was cold starts (see lever 0). A trivial request that costs a second or more of CPU, such
+   likely cause was cold starts (inferred from the cold and warm samples; see lever 0). A trivial request that costs a second or more of CPU, such
    as a redirect or a health check, is the signature.
 6. **Cold versus warm, measured on the real Worker.** Run `wrangler tail <script> --format json`
    in the background. Send a request with a unique query string to a quiet site, again two
@@ -83,23 +83,25 @@ measured effects below are from one fleet and may differ on yours.
 On a fleet of many small Workers, cold starts can be most of the CPU bill. Check the heavy-tail
 share first (Measure, item 5). Here it was 71% of all CPU: a cold request cost about 920 to 990 ms
 and a warm one about 50 ms, so the bill followed (number of cold starts) times (cost of one).
-Each site is its own Worker and each Cloudflare location starts its own isolate, so you cannot
-cut how often they start. You can cut what a start costs.
-- **Bytes are the main lever.** A fresh local process spent about 55% of its first request on V8
-  compiling the 25.7 MB OpenNext handler (about 11.5 ms per MB) and the rest on real start-up work.
+Each site is its own Worker and each Cloudflare location starts its own isolate, so you mostly cannot
+cut how often they start (fewer, larger Workers would share isolates, which is a bigger change). You can cut what a start costs.
+- **Bytes are the main lever.** In a fresh local process the first request had a median of 589 ms (the next 20 had 6.6 ms). In a profiled first request of 642 ms, about 350 ms (55%) was V8 compiling the 25.7 MB OpenNext handler (a plain Node compile took 290 to 300 ms, about 11.5 ms per MB) and the rest was real start-up work.
+
   Lazy `import()` does not help: OpenNext inlines dynamic imports into the same file.
 - **Find what fills the bundle.** On this fleet Turbopack copied shared modules into each route group
   (zod core 20 times, an app schema module 20 times), better-auth, drizzle and kysely were bundled
   once per rsc and ssr layer, and a 0.94 MB block of legacy encoding tables came from Next's body
   parser. Try a webpack build, which shares chunks. Keep client-only libraries (maps, editors) out
   of server-evaluated code.
-- **Test `minify`.** One local measurement found the first request 40% cheaper with Wrangler's
-  `minify` off (530 ms against 900 ms) at the price of a larger gzip. Confirm it on production
-  before you trust it: only a deployed Worker shows the real cost.
+- **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
+  Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That goes against
+  the bytes lever above, and no production number exists yet. Treat it as a hypothesis: deploy it to one
+  site and read `cpuTime` from the tail before you roll it out.
 - **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
   the API to put every request in one place and keep one warm isolate. The API rewrote it as
-  `mode: targeted` and the home page went from 0.2 s to 3.3 s. Smart Placement was already on. Reverse
-  it and test latency on a copy first.
+  `mode: targeted` and the home page went from 0.2 s to 3.3 s. Smart Placement was already on. Save
+  the current placement setting before any change and restore it at once if latency rises. In that
+  test the home page took 3.3 to 3.8 s; test on a copy first.
 
 ### 1. Stop bot and router noise (CPU, requests, D1)
 
@@ -109,26 +111,40 @@ cut how often they start. You can cut what a start costs.
 - **Refuse a bare `_rsc` request.** A real router request sends `?_rsc=` and an `RSC`
   header. A request with the parameter and no header is a bot replay. Answer 404 with
   `Cache-Control: no-store` before the cache and before any render, for GET and HEAD.
-  Put the guard first in the Worker entry. A WAF rule is cheaper still, but it needs an
-  API token with a free slot (see the pitfalls).
-- **Pause or cut crons.** Staging sweeps, search jobs and drip sweeps every few minutes
-  burn requests with no user. Move staging off, and run sweeps less often.
+  Put the guard first in the Worker entry. A WAF rule is cheaper still, but it needs a token
+  with Zone WAF permission (see the token bullet below).
+- **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user. A
+  per-minute cron for every site measured only about 1% of CPU on this fleet, so measure before you
+  spend a PR on it.
 
 - **Block a client by what it sends, on the Cloudflare edge, before the Worker runs.** Traffic was very
   concentrated: one IP with an empty `User-Agent` sent 43% of a site's requests and another 60% of a
   second site's. A zone custom rule `(http.user_agent eq "" and not starts_with(http.request.uri.path, "/api/"))`
-  with action `block` stops them with no Worker run. Verify on each zone: an empty user agent gets
-  403, a normal request and the AI crawlers you want get 200, and `/api/` still answers.
-  The free plan refuses a custom block response ("not entitled to use a custom response"), so a
-  block cannot carry a pointer to your API; use the Worker for that.
+  with action `block` stops them with no Worker run. Do it safely, zone by zone:
+  1. Check analytics first for empty-user-agent traffic outside `/api/` that you want, such as an
+     uptime monitor.
+  2. `GET /zones/{id}/rulesets/phases/http_request_firewall_custom/entrypoint` and save the answer to
+     a file. A `PUT` to that entrypoint REPLACES every custom rule on the zone: send back all the
+     existing rules plus yours, or add yours with `POST .../rulesets/{ruleset_id}/rules`. The free plan
+     allows 5 custom rules per zone; check there is room.
+  3. Give the rule a stable `ref` so it can be found and removed later, and record the zones.
+  4. Verify on each zone: an empty user agent gets 403, a normal request and the AI crawlers you want
+     get 200, and `/api/` still answers.
+  The free plan refuses a custom block response ("not entitled to use a custom response"), so a block
+  cannot carry a pointer to your API; use the Worker for that.
 - **Do not block AI crawlers by user agent if your product tells owners to let them in.** Our own
   audit tool told site owners to let GPTBot, ClaudeBot and similar agents reach the homepage.
   Rate-limit by behaviour, or leave them.
 - **The token needs permission.** The fleet token had no WAF permission (`request is not authorized`).
-  All 50 token slots were in use. Do not revoke a live deploy token to make room. Add `Zone WAF Read`
-  and `Zone WAF Write` to the existing zone-wide policy of the token that already has zone access, with
-  a token that can edit tokens. Save the original policy first. The update merged cleanly: no
-  permission was lost, which you must verify by name, not by position (the API reorders policies).
+  All 50 token slots were in use. Do not revoke a live deploy token to make room. Prefer a separate,
+  narrow WAF token when a slot is free. If none is free, extend the existing zone-wide policy of the
+  token that already has zone access, with a token that can edit tokens: `PUT /user/tokens/{id}`
+  REPLACES the whole token, so (1) `GET` the full token object and save it to a file; (2) send back
+  the same object with only `Zone WAF Read` and `Zone WAF Write` added to a policy that already covers
+  all zones, keeping `name`, `status`, `condition` (IP limits) and `expires_on` exactly; (3) read it
+  back and compare name, status, condition, expiry and every permission by NAME, not by position
+  (the API reorders policies); (4) to undo, `PUT` the saved object. Verify the token still works.
+  Note that this gives that token WAF write on every zone: that is the cost of not using a new token.
 
 ### 2. Cut KV writes (KV writes)
 
@@ -177,10 +193,10 @@ entry. Pages that are `force-dynamic` still write the data cache through `unstab
 Do this after lever 0. Measure on cold, uncached pages in production (a unique query string per
 request, read `cpuTime` from `wrangler tail`), not on a warm local server.
 - A markdown page cost about 24 ms against about 67 ms for HTML on cold pages (median), so serving
-  markdown to AI agents saved about 40 ms a request, about $0.04 a day on a site where AI crawlers
-  were 42% of requests. An older sample had said 8 to 12 times; it compared different pages. Do not
+  markdown to AI agents would save about 40 ms a request. That is an estimate of about $0.04 a day
+  on a site where AI crawlers were 42% of requests (the 40 ms comes from a small cold sample). An older sample had said 8 to 12 times; it compared different pages. Do not
   build a feature on a saving you have not measured on matched pages.
-- Cutting the HTML and RSC payload by 42% and 68% left warm render time about 10% lower. Payload
+- Cutting the HTML and RSC payload by 42% and 68% left warm render time about 10% lower, measured locally on demo data. Payload
   bytes are not CPU. They cost bandwidth, which Workers do not bill.
 - Dynamic `robots.txt` and `llms.txt` cost about 200 ms a hit on one site, but this too was mostly
   cold start; serving static files helps only for files that were not edge cached.
@@ -195,10 +211,6 @@ This removes the CPU, the D1 reads and the KV write for those pages.
   and generation time (estimated 2.2 to 5.7 hours serial for one large site).
 - Use `_headers` for cache headers and a trailing slash rule so URLs match the dynamic ones.
 - Keep dynamic routes for pages that need data per visitor.
-
-## Do not give up
-
-Keep the cache for head pages. Their entries are read many times and cost little to write.
 
 ## Process traps (rolled out as checks where possible)
 
@@ -224,13 +236,10 @@ Keep the cache for head pages. Their entries are read many times and cost little
 - **Prompts.** Pass a long prompt to a CLI by stdin. A variadic `--allowedTools` flag
   swallows a prompt given as an argument. Write prompt files with the Write tool, since a
   hook can block prompt text typed in a shell.
-- **Shell.** `set -- $var` does not split words in zsh. Use `${var%%:*}` or an array.
 - **Sandboxes (Boat).** A box needs the right language runtime version, the site setting,
   and a real copy of any folder that is a symlink in the repo. Agent logins inside a box can
   expire. A new repository may need its environment created first, and the repo list may need
   a refresh in the dashboard.
-- **API token slots.** A token minter can hit its token quota (50 here). Free a slot or
-  grant the permission another way. A WAF rule is blocked until you do.
 - **Billing reads need a clear window.** A frozen feed is often a misread: check the row
   date, not only the number.
 
@@ -238,7 +247,7 @@ Keep the cache for head pages. Their entries are read many times and cost little
 
 - **Write briefs with a file tool or a quoted heredoc (`<<'EOF'`).** An unquoted heredoc runs every
   backticked command in the brief in your own shell and leaves the worker a brief with holes.
-- **In zsh, `set -- $var` does not split words.** Use a function with explicit arguments.
+- **In zsh, `set -- $var` does not split words.** Use a function with explicit arguments or an array.
 - **`pkill -f` kills other jobs.** Kill by process id. Killing the wrapper of a CLI agent does not
   kill the agent: find live agents by their working directory (`lsof -p <pid> | grep cwd`) before you
   start a second one in the same worktree, or the two collide and both stop.

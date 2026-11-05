@@ -34,8 +34,10 @@ One KV write costs about as much as reading 5,000 D1 rows ($0.000005 against
 $0.000000001 a row). Weigh a change in both directions: a change that saves a write but
 adds 10,000 row reads loses money. A cached read also costs the KV read fee, about 500 row
 reads. Net rows saved per hit = rows saved per read minus 500. Reads to pay back one write =
-5,000 divided by that net (ESTIMATE). If a hit reads several cached entries, charge the fee for each. Saving 1,000 rows a read needs about 10 reads in the
-window. A bigger load pays back sooner. `optimizations.md` shows the arithmetic.
+5,000 divided by that net (ESTIMATE). A hit that reads N cached entries pays the fee N times,
+and W entries written cost W times 5,000: hits needed = W x 5,000 / (rows saved - N x 500).
+Saving 1,000 rows a read with one entry needs about 10 reads in the window. A bigger load pays
+back sooner. `optimizations.md` shows the arithmetic.
 
 KV writes per hour is the check for any KV change. Query `kvOperationsAdaptiveGroups`
 with the dimension `datetimeHour`. The hourly reading (MEASURED) showed no write spike after a fleet deploy.

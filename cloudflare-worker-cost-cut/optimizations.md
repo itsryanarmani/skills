@@ -121,17 +121,19 @@ data cache and causes a write wave is not supported.
 ### A city page is long tail, not head
 
 - **Signal.** A cache call whose key holds a place slug (a city or a street), one
-  call for each place. Search: `git grep -n -i "city" -- '*.ts' '*.tsx'` near
-  `cached(` or `unstable_cache`.
+  call for each place. Search: `git grep -n -E "unstable_cache|cachedIf" -- '*.ts' '*.tsx'`,
+  then read each key for a city, a region or a street.
 - **Change.** Treat the place page as long tail. Keep the cache on the listing
   page's shared block.
 - **Proof.** A cold city page wrote 3 to 5 KV entries (3 once the region keys
   were warm). It saved about 9 D1 queries per later hit (MEASURED, test run).
   The sum (ESTIMATE): 3 to 5 writes at 5,000 row reads each cost 15,000 to 25,000
-  row reads. A later hit reads all 3 to 5 entries, so it pays the read fee 3 to 5
-  times: 1,500 to 2,500 row reads. Each hit saves about 9 queries of 319 rows, about
-  2,900 rows. The net is about 400 to 1,400 rows a hit. The entry needs about 11 to
-  67 hits in its window. A city page rarely gets that many, so it is long tail.
+  row reads. Assume a later hit reads 3 to 5 entries (the number of entries a hit
+  reads was not measured), so it pays the read fee 3 to 5 times: 1,500 to 2,500 row
+  reads. Each hit saves about 9 queries of 319 rows, 2,871 rows. The net is 371 to
+  1,371 rows a hit. The writes need about 11 to 67 hits in the window, or about 40 if
+  a warm page writes 3 entries and reads 5. A city page rarely gets that many, so it
+  is long tail.
 - **Counter-example.** The listing page reads the same block on every visit. It
   keeps its cache. Apply the break-even rule below to decide.
 
@@ -142,8 +144,8 @@ data cache and causes a write wave is not supported.
   So one write equals 5,000 row reads ($0.000005 / $0.000000001).
   Each cached read costs the KV read fee: $0.0000005, about 500 row reads.
   Net rows saved per hit = rows saved per read minus 500.
-  Reads to pay back one write = 5,000 / net rows saved per hit. If a hit reads
-  several cached entries, charge the fee for each one.
+  Reads to pay back one write = 5,000 / net rows saved per hit. For W entries written
+  and N entries read per hit: hits needed = W x 5,000 / (rows saved - N x 500).
   A D1 read query read 319 rows on average (MEASURED: 7,952,705 queries read
   2,533,957,103 rows in one day). An entry that saves about 1,000 rows a read
   (about 3 queries) nets 500 and needs about 10 reads in its window. An entry
@@ -245,13 +247,15 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 ### Stop routine per-request logs
 
 - **Signal.** The Wrangler config has an `observability` block with no
-  `"invocation_logs": false`, or no `observability` block at all (the Cloudflare docs
-  say observability defaults to on for new Workers). Workers Logs then holds one
-  invocation log per request.
+  `"invocation_logs": false`, or no `observability` block at all.
+  The Cloudflare docs say observability defaults to on for new Workers.
+  Workers Logs then holds one invocation log per request.
 - **Change.** Set `"observability": { "enabled": true, "logs": { "enabled": true,
   "invocation_logs": false } }`. Errors stay in Workers Logs.
 - **Proof.** No saving was measured in this work. Count log events per day in
   Workers Observability before and after, same hours.
 - **Trap.** An `env` block that sets invocation logs on again overrides the top
-  level: check the rendered config of each environment. Keep the log line that names a cause for a refusal. You need it to
-  find a heavy burst later.
+  level. The Cloudflare docs set observability per environment, so check the
+  rendered config of each environment.
+  Keep the log line that names a cause for a refusal. You need it to find a heavy
+  burst later.

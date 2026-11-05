@@ -11,6 +11,9 @@ Keep a measured saving apart from a target. A target is a plan, not a result.
 Read `cloudflare-cost-audit` first for the billing baseline. This skill covers
 what to change after the baseline exists, and how to roll it out to many repos.
 
+Read [optimizations.md](optimizations.md) for each measured cut, grouped by meter.
+Each entry gives the signal to search for, the change, the proof and the trap.
+
 ## The meters and what they cost
 
 Allowances are per account, shared by every Worker in it. Check current prices before you
@@ -27,8 +30,19 @@ quote a number.
 | KV storage | $0.50 per GB | 1 GB |
 | Durable Object requests | $0.15 per million | 1M |
 
-One KV write costs about as much as reading 5,000 D1 rows. Weigh a change in both
-directions: a change that saves a write but adds 10,000 row reads loses money.
+One KV write costs about as much as reading 5,000 D1 rows ($0.000005 against
+$0.000000001 a row). Weigh a change in both directions: a change that saves a write but
+adds 10,000 row reads loses money. Cache an entry only if it is read about 5 times in its
+window (5,000 rows divided by about 1,000 rows saved a read). A bigger load pays back sooner.
+`optimizations.md` shows the arithmetic.
+
+KV writes per hour is the check for any KV change. Query `kvOperationsAdaptiveGroups`
+with the dimension `datetimeHour`. The idea that a deploy empties the data cache and
+causes a write wave was tested and is not supported (no write spike after a fleet deploy).
+
+To find which D1 queries read the rows, query `d1QueriesAdaptiveGroups` and sort by rows
+read. Families found: a category-tree CTE with `json_each`, a full-row select with no
+index, and per-request COUNT facets. See `optimizations.md`.
 
 In the fleet this was learned on, the order was: Worker CPU, KV writes, D1 rows read,
 requests, KV reads, containers, Durable Objects, subscriptions. Rank yours before you act.
@@ -98,7 +112,10 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
 - **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
   Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That sample came from a different local build
   than the 589 ms median above (one with `minify` on, one with it off), so do not compare the two numbers. That goes against
-  the bytes lever above, and no production number exists yet. Treat it as a hypothesis: deploy it to one
+  the bytes lever above. A production A/B gave cold requests of 866 to 1,348 ms (4 samples) with
+  `minify` on and 250 to 440 ms (5 samples) with it off (MEASURED, small samples). But fleet CPU
+  per request did not change: 71.5 ms on both days, same hours (MEASURED). Keep it unconfirmed.
+  Compare the same hours across days before you credit a change. Deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
 - **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
   the API to put every request in one place and keep one warm isolate. The API rewrote it as
@@ -243,8 +260,21 @@ This removes the CPU, the D1 reads and the KV write for those pages.
   the head SHA, that the SHA has its own check runs and that no Critical or Major is open.
   Merge with `--match-head-commit`.
 - **Prompts.** Pass a long prompt to a CLI by stdin. A variadic `--allowedTools` flag
-  swallows a prompt given as an argument. Write prompt files with the Write tool, since a
+  swallows a prompt given as an argument: `claude -p --allowedTools A B C "prompt"` reads the
+  prompt as a tool name. Write prompt files with the Write tool, since a
   hook can block prompt text typed in a shell.
+- **Commit messages with a dollar sign.** In double quotes, `$0.000025` becomes
+  `/bin/zsh.000025`. Use single quotes.
+- **GraphQL errors in `gh`.** `gh pr edit` and `gh pr review` can fail with a GraphQL error.
+  Use the REST API: `gh api -X PATCH repos/OWNER/REPO/pulls/N -F body=@file`, and
+  `POST repos/OWNER/REPO/pulls/N/reviews`.
+- **Assert the one counter that proves the claim.** A spec that compares D1 read counts
+  between two views can pass for other reasons. Assert the counter for the query you
+  changed, such as the listing query count.
+- **Review the callers of a cache rule you change.** A cache rule that skips the long tail
+  can make a head page uncached if that page shares the key shape.
+- **A review gate may read plain lines.** A gate can match `Reviewed-by:` and `Verdict:`
+  lines only. A bold verdict line is not matched.
 - **Sandboxes (Boat).** A box needs the right language runtime version, the site setting,
   and a real copy of any folder that is a symlink in the repo. Agent logins inside a box can
   expire. A new repository may need its environment created first, and the repo list may need

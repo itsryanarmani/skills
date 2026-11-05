@@ -30,6 +30,7 @@ Read the file that fits the task:
 - [LinkedIn](references/linkedin.md) — open LinkedIn, then leave.
 - [Camera](references/camera.md) — open Camera from App Library. Do not press the shutter.
 - [Warmup](references/warmup.md) — social media account warmup across Instagram, TikTok, X, LinkedIn, YouTube.
+- [Social signups](references/signups.md) — create accounts on Gmail, Instagram, TikTok, YouTube, Threads, Reddit and Medium.
 - [Instagram signup](references/instagram-signup.md) — create an account: screens, order, gotchas, stop points.
 - [Send to iPhone](references/send-to-iphone.md) — put a file in the phone's Photos or mail.
 

@@ -2,7 +2,7 @@
 
 Stars were read from the public GitHub API on 2026-11-05. The anime recipe in section 2 is a synthesis. A later render tested part of it: see `ship-demo-video/styles/anime-heavy-cut.md`. Rule 9 (cuts within 1 frame of a beat) held in that render; the burst lengths of 1 to 2 beats worked better than the 3 to 8 frame bursts here, which suit a 24 fps hand-drawn look and not a still-based cut.
 
-Method: WebSearch (standard), WebFetch on READMEs, and star counts from the public GitHub API (curl, read-only) on 2026-11-05. Stars are as seen that day. Section 2 mixes sourced facts with my own synthesis. The synthesis is marked "untested".
+Method: WebSearch (standard), WebFetch on READMEs, and star counts from the public GitHub API (curl, read-only) on 2026-11-05. Stars are as seen that day. Section 2 mixes sourced facts with a synthesis. The synthesis is marked "untested".
 
 ## 1. Top 12 resources
 
@@ -41,7 +41,7 @@ Sourced facts used below (from ai-shortfilm-prompts README):
 
 ## 2. Anime heavy-cut action recipe (untested synthesis)
 
-Source support is thin here. The shot lengths and the shot-type list come from general anime editing practice, not from a repo I read. Test before trusting.
+Source support is thin here. The shot lengths and the shot-type list come from general anime editing practice, not from a repo that was read. Test before trusting.
 
 **Rhythm (24 fps base; at 30 fps scale by 1.25)**
 - Setup hold: 48-72 f (2-3 s). One only.
@@ -106,11 +106,11 @@ For Seedance, Runway, Sora: no field. Write the positive form instead ("flat cel
 
 ## 4. Gaps
 
-- I did not read the shot-length and aesthetic rules in video-shotcraft (they sit in files the README did not show). The pacing numbers in section 2 are my synthesis, not from a repo.
+- The shot-length and aesthetic rules in video-shotcraft were not read (they sit in files the README did not show). The pacing numbers in section 2 are a synthesis, not from a repo.
 - The two Seedance prompt repos returned no README body to WebFetch. I did not see their anime prompts. Only the blurbs.
 - Star counts: seen via the GitHub API on 2026-11-05 for all repos listed. Where a repo showed 0, it is new, not bad.
 - No popular repo found for Shotstack-style JSON timelines or ffmpeg recipe collections. Search was limited.
-- I did not verify the current model lineup (Veo 3.1, Kling 3.0, Seedance 2.x/2.5, Wan 2.2) against vendor docs. Model names come from repo READMEs and search snippets.
+- Not verified the current model lineup (Veo 3.1, Kling 3.0, Seedance 2.x/2.5, Wan 2.2) against vendor docs. Model names come from repo READMEs and search snippets.
 - No public write-ups (blogs) were read in depth. Search results from pose.ai and pixeldojo were seen as snippets only.
 - Remotion license and OpenMontage AGPL need a check before any reuse.
-- Nothing here was rendered or tested.
+- The anime recipe was partly tested in one render (see the note at the top). The rest was not rendered or tested.

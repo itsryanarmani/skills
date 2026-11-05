@@ -15,13 +15,13 @@ many people act together. It carries no real product footage, so keep one real s
   One accent word in the palette color (never accent text on an accent ground: contrast fails).
 - Tag "SIMULATED" top right for the whole film. End card on paper: mark, name, one-line promise, URL, one note line.
 
-## Pipeline that worked (cost about $6)
+## Pipeline that worked (about $6 in total, estimated from one run)
 1. Hero still first (`seedream-v4`, $0.027). Look at it. Then 16 shots as `seedream-v4/edit` with the hero as the
    reference, so the hero face holds across six shots. Append "zero writing, zero hashtags, zero neon lettering" to
    any shot with signs or buildings: the model prints junk text on them.
 2. Contact sheet of all stills. Fix stray text and wrong mood before any video spend.
 3. Veo 3.1 Fast on Vertex, image to video, 4 s, 720p, audio off, one clip per hero shot (8 clips, about 1 min each,
-   4 in parallel, about $0.15 per second). One camera move and one action per clip. Stills not animated by Veo get
+   4 in parallel, an estimated $0.15 per second, check the current price). One camera move and one action per clip. Stills not animated by Veo get
    a punch, push, pull or pan in the edit.
 4. Lyria 2 bed (32 s, about $0.06). Its loudness is flat, so build the drop in the edit with a volume lane.
 5. ElevenLabs sound effects (about $0.002 each): whoosh, impact, slam, stamp, riser, ring, pop.
@@ -37,8 +37,10 @@ many people act together. It carries no real product footage, so keep one real s
 | 15-16 | Near black, one orange dot grows, music ducks | Breath before the drop |
 | 16-23 | Hero slams the button, white flash, shake. Name, then promise | Value on the drop |
 | 23-34 | Burst: 1-2 beat cuts (signs rise, stream, spiral, scroll), then a held scroll with one line | Demo |
-| 34-40 | Charge, crowd, strike on the gate (flash, shake), gate turns green with one neutral status line | Action and result |
-| 40-48 | Real screenshot in a framed panel, then sunrise payoff line | Proof, payoff |
+| 34-40 | Charge, crowd, strike on the gate (flash, shake) | Action |
+| 40-44 | Gate turns green with one neutral status line | Result |
+| 44-48 | Real screenshot in a framed panel | Proof |
+| 48-54 | Sunrise payoff line over a crowd with raised signs | Payoff |
 | 54-60 | End card, 2.5 s | Install or link |
 
 ## Rhythm rules

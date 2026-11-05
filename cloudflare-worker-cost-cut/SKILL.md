@@ -11,6 +11,9 @@ Keep a measured saving apart from a target. A target is a plan, not a result.
 Read `cloudflare-cost-audit` first for the billing baseline. This skill covers
 what to change after the baseline exists, and how to roll it out to many repos.
 
+Read [optimizations.md](optimizations.md) for each measured cut, grouped by meter.
+Each entry gives the signal to search for, the change, the proof and the trap.
+
 ## The meters and what they cost
 
 Allowances are per account, shared by every Worker in it. Check current prices before you
@@ -27,8 +30,22 @@ quote a number.
 | KV storage | $0.50 per GB | 1 GB |
 | Durable Object requests | $0.15 per million | 1M |
 
-One KV write costs about as much as reading 5,000 D1 rows. Weigh a change in both
-directions: a change that saves a write but adds 10,000 row reads loses money.
+One KV write costs about as much as reading 5,000 D1 rows ($0.000005 against
+$0.000000001 a row). Weigh a change in both directions: a change that saves a write but
+adds 10,000 row reads loses money. A cached read also costs the KV read fee, about 500 row
+reads. Net rows saved per hit = rows saved per read minus 500. Reads to pay back one write =
+5,000 divided by that net (ESTIMATE). A hit that reads N cached entries pays the fee N times,
+and W entries written cost W times 5,000: hits needed = W x 5,000 / (rows saved - N x 500).
+Saving 1,000 rows a read with one entry needs about 10 reads in the window. A bigger load pays
+back sooner. `optimizations.md` shows the arithmetic.
+
+KV writes per hour is the check for any KV change. Query `kvOperationsAdaptiveGroups`
+with the dimension `datetimeHour`. The hourly reading (MEASURED) showed no write spike after a fleet deploy.
+So the idea that a deploy empties the data cache and causes a write wave is not supported.
+
+To find which D1 queries read the rows, query `d1QueriesAdaptiveGroups` and sort by rows
+read. Families found: a category-tree CTE with `json_each`, a full scan of one table, and
+per-request COUNT facets. See `optimizations.md`.
 
 In the fleet this was learned on, the order was: Worker CPU, KV writes, D1 rows read,
 requests, KV reads, containers, Durable Objects, subscriptions. Rank yours before you act.
@@ -98,7 +115,11 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
 - **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
   Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That sample came from a different local build
   than the 589 ms median above (one with `minify` on, one with it off), so do not compare the two numbers. That goes against
-  the bytes lever above, and no production number exists yet. Treat it as a hypothesis: deploy it to one
+  the bytes lever above. A small production A/B (4 cold requests on the old bundle, 5 on the new)
+  showed a large drop. It is MEASURED, but the samples are few and the kept logs cannot reproduce it.
+  But fleet CPU per request did not change: 71.5 ms on both days, same hours (MEASURED).
+  Keep it unconfirmed.
+  Compare the same hours across days before you credit a change. Deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
 - **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
   the API to put every request in one place and keep one warm isolate. The API rewrote it as
@@ -116,16 +137,16 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   `Cache-Control: no-store` before the cache and before any render, for GET and HEAD.
   Put the guard first in the Worker entry. A WAF rule is cheaper still, but it needs a token
   with Zone WAF permission (see the token bullet below).
-- **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user. A
-  per-minute cron for every site measured only about 1% of CPU on this fleet, so measure before you
-  spend a PR on it.
+- **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user.
+  A per-minute cron for every site was about 1% of CPU on this fleet (ESTIMATE).
+  Measure before you spend a PR on it.
 
 - **Block a client by what it sends, on the Cloudflare edge, before the Worker runs.** Traffic was very
   concentrated: one IP with an empty `User-Agent` sent 43% of a site's requests and another 60% of a
   second site's. A zone custom rule `(http.user_agent eq "" and not starts_with(http.request.uri.path, "/api/"))`
   with action `block` stops them with no Worker run. Do it safely, zone by zone:
-  1. Check analytics first for empty-user-agent traffic outside `/api/` that you want, such as an
-     uptime monitor.
+  1. Check analytics first for empty-user-agent traffic outside `/api/` that you want. Examples are
+     an uptime monitor, a webhook and a health check. They can send no user agent.
   2. `GET /zones/{id}/rulesets/phases/http_request_firewall_custom/entrypoint` and save the answer to
      a file. A `PUT` to that entrypoint REPLACES every custom rule on the zone: send back all the
      existing rules plus yours, or add yours with `POST .../rulesets/{ruleset_id}/rules`. The free plan
@@ -180,9 +201,10 @@ entry. Pages that are `force-dynamic` still write the data cache through `unstab
 
 ### 3. Cut D1 rows read (D1 rows read)
 
-- **Put a per-request row budget** at the Worker entry. Count rows read per request and
-  refuse above a cap. Exempt sitemap paths with their own higher cap, or the cap turns a
-  valid build into a 503.
+- **Put a per-request row budget** at the Worker entry. Count rows read per request. Run it in
+  log-only mode first. Then set a cap for each route from the measured maximum rows. One query
+  family read up to 190,000 rows in one run. A cap below the real maximum turns a valid page or
+  sitemap build into a 503.
 - **Store counts at import.** Counts for facets, places and categories rarely change. Write
   them to a table when you import. Do not compute them with a group query per request.
 - **Beware head-of-line blocking.** D1 runs queries one after another. One sitemap build ran
@@ -243,8 +265,21 @@ This removes the CPU, the D1 reads and the KV write for those pages.
   the head SHA, that the SHA has its own check runs and that no Critical or Major is open.
   Merge with `--match-head-commit`.
 - **Prompts.** Pass a long prompt to a CLI by stdin. A variadic `--allowedTools` flag
-  swallows a prompt given as an argument. Write prompt files with the Write tool, since a
+  swallows a prompt given as an argument: `claude -p --allowedTools A B C "prompt"` reads the
+  prompt as a tool name. Write prompt files with the Write tool, since a
   hook can block prompt text typed in a shell.
+- **Commit messages with a dollar sign.** In double quotes, `$0.000025` becomes
+  `/bin/zsh.000025`. Use single quotes.
+- **GraphQL errors in `gh`.** `gh pr edit` and `gh pr review` can fail with a GraphQL error.
+  Use the REST API: `gh api -X PATCH repos/OWNER/REPO/pulls/N -F body=@file`, and
+  `POST repos/OWNER/REPO/pulls/N/reviews`.
+- **Assert the one counter that proves the claim.** A spec that compares D1 read counts
+  between two views can pass for other reasons. Assert the counter for the query you
+  changed, such as the listing query count.
+- **Review the callers of a cache rule you change.** A cache rule that skips the long tail
+  can make a head page uncached if that page shares the key shape.
+- **A review gate may read plain lines.** A gate can match `Reviewed-by:` and `Verdict:`
+  lines only. A bold verdict line is not matched.
 - **Sandboxes (Boat).** A box needs the right language runtime version, the site setting,
   and a real copy of any folder that is a symlink in the repo. Agent logins inside a box can
   expire. A new repository may need its environment created first, and the repo list may need

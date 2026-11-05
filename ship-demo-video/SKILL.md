@@ -400,6 +400,22 @@ before the cut". "Make it better" gets random changes. Re-snapshot after each ro
 - Deliver into the product's media folder, outside the repository. Never commit media to a repo whose
   checks reject committed proof files. Open the folder for the human.
 
+## Films from generated footage
+
+Use this when the product has no capture to film (a concept, a prototype, a protocol). The pipeline is the same
+as the stages above, with generated imagery in place of capture:
+
+1. Stills first. One hero still, then every shot as an edit of the hero. Contact sheet. Fix stray text. No video spend
+   before the person has seen the sheet.
+2. Image to video only for the hero shots (Veo 3.1 Fast on Vertex, 4 s, audio off). Animate the rest in the edit.
+3. Beat grid before any timing: `npx hyperframes beats <bed.mp3> --json`. Write every time in beats.
+4. Build from a spec with `video-film/film_build.py` (scripts repo), run `hyperframes check`, snapshot, render, then
+   `loudnorm` to about -16 LUFS and read a frame grid.
+5. Add one real screenshot as a framed proof panel. Label the film "simulated" on screen.
+
+On a work account, use the work cloud project for Veo and Lyria, not a third-party relay. Style example with
+measured numbers: [anime, heavy cuts](styles/anime-heavy-cut.md).
+
 ## 8. Save the corrections
 
 After the human watches the result, write each correction back into this skill: a new trap, a note the human

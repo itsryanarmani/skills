@@ -701,3 +701,14 @@ second or more, so trust its content, not its timing.
 - [aicontentskills/ai-video-storyboard-skill](https://github.com/aicontentskills/ai-video-storyboard-skill): a shot-list planner skill, with no rendering.
 - [Sunnylincc/StoryboardAI](https://github.com/Sunnylincc/StoryboardAI): a self-hosted, multi-provider storyboard pipeline.
 - [Vincentwei1021/video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft): shot library and beat-sync rules (see the shot-library section above).
+
+## Open-source landscape and anime recipe (2026-11-05)
+
+See [references/oss-landscape-2026-11.md](references/oss-landscape-2026-11.md): the top repos for prompting,
+storyboarding and editing with star counts, a negative-prompt table per video model, an anime heavy-cut recipe,
+and ten testable rules. For a measured anime film, see `ship-demo-video/styles/anime-heavy-cut.md`.
+
+Veo on Vertex needs a valid gcloud login. When `print-access-token` fails with "Reauthentication failed", run
+`gcloud auth login <account> --no-launch-browser --force` with a named pipe on stdin, open the printed URL in the
+browser profile of that account, and write the code the person pastes into the pipe. The code works only for the
+process that printed the URL.

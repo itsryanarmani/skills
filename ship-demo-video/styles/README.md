@@ -26,6 +26,7 @@ and videos in different styles never look alike.
 | [Newsprint zine](newsprint-zine.md) | A photocopied punk zine: cut-out words, stamps | Tamper detection and "caught it" stories | 128 BPM | 21.8 s |
 | [Swiss grid](swiss-grid.md) | International Typographic: a visible 12-column grid | Rule engines and policy gates | 120 BPM | 24.5 s |
 | [Patch bay](patch-bay.md) | A modular-synth panel: jacks, lamps, patch cables | Connectors and direct links with no server between | 112 BPM | 27 s |
+| [Anime, heavy cuts](anime-heavy-cut.md) | A shonen action film: key art, impact flashes, speed lines | Many people against one wall; protest and group-action products | 140 BPM | 25.7 s |
 
 [Presenter](presenter.md) is a module, not a style: a talking-head avatar card that any style can carry.
 

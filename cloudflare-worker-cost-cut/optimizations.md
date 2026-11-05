@@ -19,11 +19,12 @@ any change. Traffic moves the meters more than most code changes do.
 
 ### Turn off Wrangler `minify`
 
-- **Signal.** `git grep -n "minify" -- '*wrangler*'`. The signal is `minify: true`. Wrangler's default is false.
+- **Signal.** `git grep -n "minify" -- '*wrangler*'`. The signal is `minify: true`.
 - **Change.** Set `minify: false` on one site. Read `cpuTime` from the tail.
 - **Proof.** Local cold CPU fell 32% to 42% (MEASURED, local workerd).
-  A small production A/B on cold requests (4 on the old bundle, 5 on the new one)
-  showed a large drop (MEASURED, small samples, not reproducible from the kept logs).
+  A small production A/B (4 cold requests on the old bundle, 5 on the new) showed a
+  large drop. It is MEASURED, but the samples are few and the kept logs cannot
+  reproduce it.
   Fleet CPU per request did NOT change: 71.5 ms on both days, same hours (MEASURED).
   Treat the saving as **unconfirmed**.
 - **Trap.** Cold samples are few and noisy. Fleet CPU per request depends on the
@@ -100,9 +101,9 @@ KV writes per hour is the check for any KV change. Query
 
 Measured here: about 40,000 writes an hour on one day, and about 9,500 an hour
 from 04:00 UTC on the next day (MEASURED). The fall came before the minify change
-and the city page change below. No cut was tied to it. A test found no write spike
-after a fleet deploy (MEASURED). So the idea that a deploy empties the data cache
-and causes a write wave is not supported.
+and the city page change below. No cut was tied to it. The hourly reading showed no
+write spike after a fleet deploy (MEASURED). So the idea that a deploy empties the
+data cache and causes a write wave is not supported.
 
 ### Skip the data cache for long-tail keys
 
@@ -119,16 +120,18 @@ and causes a write wave is not supported.
 
 ### A city page is long tail, not head
 
-- **Signal.** A page keyed by place that many places share, with a cache call
-  for each place.
+- **Signal.** A cache call whose key holds a place slug (a city or a street), one
+  call for each place. Search: `git grep -n -i "city" -- '*.ts' '*.tsx'` near
+  `cached(` or `unstable_cache`.
 - **Change.** Treat the place page as long tail. Keep the cache on the listing
   page's shared block.
 - **Proof.** A cold city page wrote 3 to 5 KV entries (3 once the region keys
   were warm). It saved about 9 D1 queries per later hit (MEASURED, test run).
   The sum (ESTIMATE): 3 to 5 writes at 5,000 row reads each cost 15,000 to 25,000
-  row reads. Each hit saves about 9 queries of 319 rows, about 2,900 rows, minus
-  the 500-row read fee, so about 2,400 net. The entry needs about 6 to 11 hits in
-  its window. A city page rarely gets that many, so it is long tail.
+  row reads. A later hit reads all 3 to 5 entries, so it pays the read fee 3 to 5
+  times: 1,500 to 2,500 row reads. Each hit saves about 9 queries of 319 rows, about
+  2,900 rows. The net is about 400 to 1,400 rows a hit. The entry needs about 11 to
+  67 hits in its window. A city page rarely gets that many, so it is long tail.
 - **Counter-example.** The listing page reads the same block on every visit. It
   keeps its cache. Apply the break-even rule below to decide.
 
@@ -139,7 +142,8 @@ and causes a write wave is not supported.
   So one write equals 5,000 row reads ($0.000005 / $0.000000001).
   Each cached read costs the KV read fee: $0.0000005, about 500 row reads.
   Net rows saved per hit = rows saved per read minus 500.
-  Writes to pay back = 5,000 / net rows saved per hit.
+  Reads to pay back one write = 5,000 / net rows saved per hit. If a hit reads
+  several cached entries, charge the fee for each one.
   A D1 read query read 319 rows on average (MEASURED: 7,952,705 queries read
   2,533,957,103 rows in one day). An entry that saves about 1,000 rows a read
   (about 3 queries) nets 500 and needs about 10 reads in its window. An entry
@@ -198,8 +202,8 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 
 - **Signal.** No code counts rows read per request.
 - **Change.** Count rows read per request. Run the guard in log-only mode first.
-  Then set a cap for each route from the measured maximum rows. Exempt a route by
-  that number, not only the sitemap.
+  Then give each route its own cap, set from the measured maximum rows of that
+  route. A route that goes over its cap still gets a 503.
 - **Proof.** No saving was measured for the guard alone. Measure with the top
   queries from `d1QueriesAdaptiveGroups`, same hours.
 - **Trap.** One query family read up to 190,000 rows in one run (MEASURED, see
@@ -208,7 +212,7 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 
 ### Store facet counts at import
 
-- **Signal.** `git grep -n "COUNT(\*)" -- '*.ts'` in browse and facet code that
+- **Signal.** `git grep -n -i "count(\*)" -- '*.ts' '*.tsx'` in browse and facet code that
   runs per request.
 - **Change.** Write counts to a table at import. Browse pages read stored counts.
 - **Proof.** The five per-request facet queries above read about 140M rows in
@@ -241,11 +245,13 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 ### Stop routine per-request logs
 
 - **Signal.** The Wrangler config has an `observability` block with no
-  `"invocation_logs": false`. Workers Logs then holds one invocation log per request.
+  `"invocation_logs": false`, or no `observability` block at all (the Cloudflare docs
+  say observability defaults to on for new Workers). Workers Logs then holds one
+  invocation log per request.
 - **Change.** Set `"observability": { "enabled": true, "logs": { "enabled": true,
   "invocation_logs": false } }`. Errors stay in Workers Logs.
 - **Proof.** No saving was measured in this work. Count log events per day in
   Workers Observability before and after, same hours.
-- **Trap.** An `env` block that turns invocation logs back on overrides the top
-  level. Keep the log line that names a cause for a refusal. You need it to
+- **Trap.** An `env` block that sets invocation logs on again overrides the top
+  level: check the rendered config of each environment. Keep the log line that names a cause for a refusal. You need it to
   find a heavy burst later.

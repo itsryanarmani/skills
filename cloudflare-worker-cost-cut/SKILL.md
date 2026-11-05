@@ -34,11 +34,11 @@ One KV write costs about as much as reading 5,000 D1 rows ($0.000005 against
 $0.000000001 a row). Weigh a change in both directions: a change that saves a write but
 adds 10,000 row reads loses money. A cached read also costs the KV read fee, about 500 row
 reads. Net rows saved per hit = rows saved per read minus 500. Reads to pay back one write =
-5,000 divided by that net (ESTIMATE). Saving 1,000 rows a read needs about 10 reads in the
+5,000 divided by that net (ESTIMATE). If a hit reads several cached entries, charge the fee for each. Saving 1,000 rows a read needs about 10 reads in the
 window. A bigger load pays back sooner. `optimizations.md` shows the arithmetic.
 
 KV writes per hour is the check for any KV change. Query `kvOperationsAdaptiveGroups`
-with the dimension `datetimeHour`. A test found no write spike after a fleet deploy.
+with the dimension `datetimeHour`. The hourly reading (MEASURED) showed no write spike after a fleet deploy.
 So the idea that a deploy empties the data cache and causes a write wave is not supported.
 
 To find which D1 queries read the rows, query `d1QueriesAdaptiveGroups` and sort by rows
@@ -113,8 +113,8 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
 - **Test `minify` (unconfirmed).** One local sample found the first request about 40% cheaper with
   Wrangler's `minify` off (530 ms against 900 ms), at the price of a larger gzip. That sample came from a different local build
   than the 589 ms median above (one with `minify` on, one with it off), so do not compare the two numbers. That goes against
-  the bytes lever above. A small production A/B on cold requests (4 on the old bundle, 5 on the
-  new one) showed a large drop (MEASURED, small samples, not reproducible from the kept logs).
+  the bytes lever above. A small production A/B (4 cold requests on the old bundle, 5 on the new)
+  showed a large drop. It is MEASURED, but the samples are few and the kept logs cannot reproduce it.
   But fleet CPU per request did not change: 71.5 ms on both days, same hours (MEASURED).
   Keep it unconfirmed.
   Compare the same hours across days before you credit a change. Deploy it to one
@@ -135,9 +135,9 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   `Cache-Control: no-store` before the cache and before any render, for GET and HEAD.
   Put the guard first in the Worker entry. A WAF rule is cheaper still, but it needs a token
   with Zone WAF permission (see the token bullet below).
-- **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user. A
-  per-minute cron for every site was a small share of CPU on this fleet (about 1%, ESTIMATE),
-  so measure before you spend a PR on it.
+- **Pause staging and search jobs.** Staging sweeps and search jobs burn requests with no user.
+  A per-minute cron for every site was about 1% of CPU on this fleet (ESTIMATE).
+  Measure before you spend a PR on it.
 
 - **Block a client by what it sends, on the Cloudflare edge, before the Worker runs.** Traffic was very
   concentrated: one IP with an empty `User-Agent` sent 43% of a site's requests and another 60% of a

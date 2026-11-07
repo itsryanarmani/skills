@@ -93,12 +93,12 @@ day-to-day surfaces.
 
 ```bash
 # The whole suite
-npx skills add pooriaarab/brand
+npx skills add itsryanarmani/brand
 
 # Just the router, then add directions as you pick them
-npx skills add pooriaarab/brand/brand-router
-npx skills add pooriaarab/brand/buildspace
-npx skills add pooriaarab/brand/annual
+npx skills add itsryanarmani/brand/brand-router
+npx skills add itsryanarmani/brand/buildspace
+npx skills add itsryanarmani/brand/annual
 ```
 
 ## Provenance

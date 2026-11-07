@@ -38,7 +38,7 @@ dialog with `agent-browser` and the `cc-cloud-env` script.
   Use headed mode for the login, because a headless login strands you at a
   window that does not exist.
 - The `cc-cloud-env` script from
-  [pooriaarab/scripts](https://github.com/pooriaarab/scripts).
+  [itsryanarmani/scripts](https://github.com/itsryanarmani/scripts).
 - The GitHub app is connected to the account, so the cloud session can clone
   your private repositories.
 

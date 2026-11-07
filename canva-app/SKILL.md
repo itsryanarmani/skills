@@ -8,7 +8,7 @@ description: "Use when building or submitting a Canva app on the Canva Apps SDK:
 A Canva app is a **React app that runs in an iframe inside the Canva editor**, built on the
 **Canva Apps SDK** (`@canva/app-ui-kit`, `@canva/design`, `@canva/intents`, `@canva/platform`).
 It is a thin frontend over your own API: the SDK gives you the design content and the UI kit,
-you supply the logic. The command-level playbook is in `pooriaarab/scripts`
+you supply the logic. The command-level playbook is in `itsryanarmani/scripts`
 `scripts/canva-app/README.md`.
 
 ## When to use

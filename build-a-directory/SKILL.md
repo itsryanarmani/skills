@@ -215,7 +215,7 @@ production serves `/sitemap.xml` and `/llms.txt` with status 200.
 ## 8. Launch into search engines
 
 Use the `search-console` CLI from
-[pooriaarab/clis](https://github.com/pooriaarab/clis/tree/main/search-console).
+[itsryanarmani/clis](https://github.com/itsryanarmani/clis/tree/main/search-console).
 It verifies the domain over DNS, adds it to Google Search Console and Bing
 Webmaster Tools, submits the sitemap, and sends the sitemap URLs to IndexNow.
 Every step is safe to run again.
@@ -226,7 +226,7 @@ fake servers but has not yet run against the live APIs. Run `--dry-run` first.
 Build it once:
 
 ```bash
-git clone https://github.com/pooriaarab/clis.git
+git clone https://github.com/itsryanarmani/clis.git
 cd clis/search-console && make build      # binary: bin/search-console
 export PATH="$PWD/bin:$PATH"              # so the commands below find it
 ```

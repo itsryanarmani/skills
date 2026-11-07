@@ -189,7 +189,7 @@ new lever. It came from making the configured ones actually run.
 ## Tools
 
 `ci-pr-latency`, `ci-job-timings`, `ci-cache-health` and `ci-runner-audit` in
-[pooriaarab/scripts](https://github.com/pooriaarab/scripts) cover steps 1 to 3 and job placement.
+[itsryanarmani/scripts](https://github.com/itsryanarmani/scripts) cover steps 1 to 3 and job placement.
 Run them in that order.
 
 ## Release pipelines share capacity
@@ -213,5 +213,5 @@ Do not start live smoke checks after a failed deployment.
 Check tests that inspect workflow text after shell changes, including quoting changes.
 A passing workflow parser does not prove those assertions still pass.
 
-Use the [release measurement runbook](https://github.com/pooriaarab/scripts/blob/main/ci-release-evidence.md)
+Use the [release measurement runbook](https://github.com/itsryanarmani/scripts/blob/main/ci-release-evidence.md)
 to record comparable runs. Keep estimates separate from observed release results.

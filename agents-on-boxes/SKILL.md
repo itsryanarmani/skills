@@ -12,7 +12,7 @@ this runs the *job* there.
 
 > **Scope: personal repos only.** ascii.dev is a third-party provider. Never put
 > Mozilla, work, or proprietary source on a Box. `box-work` refuses any remote
-> that is not `pooriaarab/*`.
+> that is not `itsryanarmani/*`.
 
 ## Decide honestly: is a Box the right tool?
 
@@ -135,7 +135,7 @@ Two real options:
 - **Use `box-work` instead of a T3 thread** for heavy or parallel jobs. Tested.
 - **Run the whole T3 server on a Box**, reached over `box host`. Then T3's own
   disk *is* the Box. One Box for all threads, not one per repo. See
-  `t3-code-on-a-box.md` in `pooriaarab/scripts`.
+  `t3-code-on-a-box.md` in `itsryanarmani/scripts`.
 
 ## Give `box exec` one shell-safe word
 
@@ -176,7 +176,7 @@ check exists to catch.
 
 ## Where the tools live
 
-All in `pooriaarab/scripts`: `box-work`, `box-session`, `box-guard`,
+All in `itsryanarmani/scripts`: `box-work`, `box-session`, `box-guard`,
 `box-fast-attach`, `box-unpack.sh`, `box-git-sync.sh`, `box-reap`,
 `box-reap-cron`, `box-perf-check`, `box-perf-cron`, `box-env-provision`,
 `box-repo-audit`, plus the launchd plists. Background and measurements are in

@@ -1,7 +1,7 @@
 # Qualify Boat CI changes
 
 Use this reference when moving CI to Boat or changing an existing Boat pool.
-The [scripts runbook](https://github.com/pooriaarab/scripts/blob/main/boat-runners.md)
+The [scripts runbook](https://github.com/itsryanarmani/scripts/blob/main/boat-runners.md)
 owns setup commands, restore details, and recovery procedures.
 Read its implementation gaps before operating the pool.
 

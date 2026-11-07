@@ -10,7 +10,7 @@ Updating Chrome fixes one copy. The others stay old until you find them.
 
 ## Run the audit
 
-The script lives in `pooriaarab/scripts`. It is read-only.
+The script lives in `itsryanarmani/scripts`. It is read-only.
 
 ```bash
 ./black-october-audit --json /tmp/black-october.json

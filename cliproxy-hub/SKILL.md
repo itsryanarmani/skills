@@ -9,7 +9,7 @@ One home machine holds every Claude, Codex and xAI login. Every other host calls
 machine over Tailscale. Source guide:
 https://gist.github.com/t3dotgg/59a521d2ee8d70aaf90e280c175072af
 
-Tool: `cliproxy-hub` in pooriaarab/scripts.
+Tool: `cliproxy-hub` in itsryanarmani/scripts.
 
 ## Two hard rules
 
@@ -225,8 +225,8 @@ Claude Code and Codex seats run only in Codex. Never print, paste or commit the 
 Never log in to a Claude or Codex seat on this host. Do not edit the normal ~/.claude
 or ~/.codex config.
 
-1. Read the cliproxy-hub skill in pooriaarab/skills and use cliproxy-hub from
-   pooriaarab/scripts.
+1. Read the cliproxy-hub skill in itsryanarmani/skills and use cliproxy-hub from
+   itsryanarmani/scripts.
 2. Check Tailscale is on the same tailnet as the hub: tailscale status.
 3. Put the hub key in ~/.hub-key and the Tailscale key in ~/.ts-authkey, both mode 600.
    Copy them from the home Mac with scp, never through chat. Set HUB_URL and HUB_KEY_FILE.

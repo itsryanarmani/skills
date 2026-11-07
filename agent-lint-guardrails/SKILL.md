@@ -71,7 +71,7 @@ hatch, never the default fix.
 ## Rollout mechanics (fleet-scale)
 
 - **Fan-out unit = 2 self-contained files** (`.oxlintrc.json` + a standalone `oxlint.yml` that runs
-  `bunx oxlint` on `boat` for private `pooriaarab/*` repos, or `ubuntu-latest`
+  `bunx oxlint` on `boat` for private `itsryanarmani/*` repos, or `ubuntu-latest`
   for public repos), independent of each repo's existing
   turbo/eslint pipeline. Uniform, minimal blast radius, no per-repo bespoke wiring.
 - **No local clone needed** — create the branch and both files through the `gh` contents API

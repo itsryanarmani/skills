@@ -321,7 +321,7 @@ For Boat CI, first apply the [qualification rules](boat-ci-qualification.md).
 Read them before changing labels, snapshots, pool capacity, or job isolation.
 
 
-Use the warm Boat JIT pool for private `pooriaarab/*` Linux CI. Use `boat`
+Use the warm Boat JIT pool for private `itsryanarmani/*` Linux CI. Use `boat`
 for build, lint, typecheck, test, E2E, and deploy. Remove avoidable polling
 before adding capacity. Use `boat-8` for a
 heavy production build. Public repos and macOS/Windows jobs stay GitHub-hosted.
@@ -345,7 +345,7 @@ Keep Boxes warm; run one JIT runner at a time on each. The broker holds the
 GitHub token and hands configs to the Box agent. JIT labels do not include
 `self-hosted` unless passed. See [self-hosted-runner-fleet](../self-hosted-runner-fleet/SKILL.md)
 for pool setup and actionlint labels. These components are in progress in
-`pooriaarab/scripts` #508 and #509; a label edit alone does not create capacity.
+`itsryanarmani/scripts` #508 and #509; a label edit alone does not create capacity.
 
 ### Historical managed-runner comparison
 

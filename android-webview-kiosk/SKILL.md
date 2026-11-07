@@ -12,7 +12,7 @@ that avoids the renderer trap, and the failure modes that each cost a reboot
 before they were understood.
 
 Companion scripts: `webview-kiosk-build` and `webview-kiosk-update` in
-pooriaarab/scripts.
+itsryanarmani/scripts.
 
 ## The app shell
 
@@ -163,7 +163,7 @@ command-line tools package build a signed APK with zero Gradle. Roughly:
 3. `d8` → classes.dex, `zip -u` into the APK
 4. `zipalign` → `apksigner sign` with the persisted keystore
 
-`webview-kiosk-build` in pooriaarab/scripts is this pipeline parameterized on
+`webview-kiosk-build` in itsryanarmani/scripts is this pipeline parameterized on
 an app directory.
 
 ## Panel checklist

@@ -3,5 +3,5 @@
   "version": "0.1.0",
   "description": "Counts tool calls beside the spinner, adds /tally, and refuses force pushes",
   "author": { "name": "Pooria Arab" },
-  "repository": "https://github.com/pooriaarab/skills"
+  "repository": "https://github.com/itsryanarmani/skills"
 }

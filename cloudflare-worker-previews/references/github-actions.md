@@ -176,4 +176,4 @@ PREVIEW_BYOK_ENCRYPTION_KEY, then re-run."
    `github.event.pull_request.head.repo.full_name == github.repository`.
 
 Working example: private-repo-4ed5
-[`worker-preview.yml`](https://github.com/pooriaarab/private-repo-4ed5/tree/main/.github/workflows/worker-preview.yml).
+[`worker-preview.yml`](https://github.com/itsryanarmani/private-repo-4ed5/tree/main/.github/workflows/worker-preview.yml).

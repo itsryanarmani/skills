@@ -75,7 +75,7 @@ Create one named `box env` per repo. It carries `TURBO_API`, `TURBO_TOKEN`, and 
 Credentials are two separate switches, and they deserve opposite answers:
 
 - `--box-credentials false` — always. These let a Box create and control other Boxes, which is the escalation that actually matters.
-- `--agents-credentials true` — if you want to run agents there. I set this to `false` first, and it made every repo Box useless for delegated work: the agent CLI logins live in the separate `agent-roster` environment, so a Box started from a repo environment had no muse, pi, gemini or codex at all. Copy `agent-roster`'s five secret files into the repo environment (`box-env-provision --with-agents`) and turn the flag on. This does widen the blast radius, and it is a deliberate trade: the keys are already stored on ascii under `agent-roster`, so copying them does not hand them to anyone new — it only means more Boxes carry them. One `box new --environment private-repo-c4e6` then gives, with nothing uploaded from the laptop, in 8.4–10.7s: the repo cloned (5,870 files, on main), root `.env.local` with 7 keys, `apps/website/.env.local` with 221 keys, and 3 `TURBO_*` variables. 61 private repos now have an environment. Provision all with `box-env-provision --all --private-only` in `pooriaarab/scripts`.
+- `--agents-credentials true` — if you want to run agents there. I set this to `false` first, and it made every repo Box useless for delegated work: the agent CLI logins live in the separate `agent-roster` environment, so a Box started from a repo environment had no muse, pi, gemini or codex at all. Copy `agent-roster`'s five secret files into the repo environment (`box-env-provision --with-agents`) and turn the flag on. This does widen the blast radius, and it is a deliberate trade: the keys are already stored on ascii under `agent-roster`, so copying them does not hand them to anyone new — it only means more Boxes carry them. One `box new --environment private-repo-c4e6` then gives, with nothing uploaded from the laptop, in 8.4–10.7s: the repo cloned (5,870 files, on main), root `.env.local` with 7 keys, `apps/website/.env.local` with 221 keys, and 3 `TURBO_*` variables. 61 private repos now have an environment. Provision all with `box-env-provision --all --private-only` in `itsryanarmani/scripts`.
 
 Proof on a real Box:
 
@@ -174,7 +174,7 @@ Not worth wiring, with reasons:
 
 ## Attaching a worktree in ~1.5s
 
-Measured 2026-08-28 on real hardware. The old path (crabbox) takes ~84s end to end: ~13s lease, ~10s bootstrap, ~43s sync, ~9s install. The sync is rsync wrapped in fingerprint/git-seed/manifest-write/prune/finalize passes costing ~21.6s of FIXED per-run bookkeeping that does not shrink when you change one file. `box-fast-attach` in `pooriaarab/scripts` is faster: it detects the Box already has the repo, has the Box fetch your HEAD commit itself, then overlays only uncommitted files. Box ready 10.7s, first attach 27.6s, every attach after that 1.69/1.78s.
+Measured 2026-08-28 on real hardware. The old path (crabbox) takes ~84s end to end: ~13s lease, ~10s bootstrap, ~43s sync, ~9s install. The sync is rsync wrapped in fingerprint/git-seed/manifest-write/prune/finalize passes costing ~21.6s of FIXED per-run bookkeeping that does not shrink when you change one file. `box-fast-attach` in `itsryanarmani/scripts` is faster: it detects the Box already has the repo, has the Box fetch your HEAD commit itself, then overlays only uncommitted files. Box ready 10.7s, first attach 27.6s, every attach after that 1.69/1.78s.
 
 Transport round trips against a running Box:
 
@@ -190,7 +190,7 @@ Transport round trips against a running Box:
 
 Detecting what changed cost more than sending it. Hashing 694 files with one `shasum` process each took 8.4s locally against 0.6s of real work on the Box. Ask git instead (`git status --porcelain` plus `git diff --name-only <last-sha> HEAD`).
 
-Tool: `box-fast-attach` plus `box-unpack.sh` in `pooriaarab/scripts`.
+Tool: `box-fast-attach` plus `box-unpack.sh` in `itsryanarmani/scripts`.
 
 Safety:
 

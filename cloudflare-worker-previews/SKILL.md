@@ -275,7 +275,7 @@ if: >-
   github.repository_owner == '<your-org>'
 ```
 
-See the `private-repo-4ed5` [`worker-preview.yml`](https://github.com/pooriaarab/private-repo-4ed5/tree/main/.github/workflows/worker-preview.yml)
+See the `private-repo-4ed5` [`worker-preview.yml`](https://github.com/itsryanarmani/private-repo-4ed5/tree/main/.github/workflows/worker-preview.yml)
 for a complete example that checks the three values at the top, then guards every
 provision/deploy/verify/cleanup step with the same `configured` output.
 

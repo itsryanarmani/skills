@@ -5,7 +5,7 @@ description: "Use when building or submitting an Adobe Express add-on (a React p
 
 # Building an Adobe Express add-on
 
-An Express add-on is a **React panel that runs in a sandboxed iframe inside Adobe Express**, built on the **Add-on SDK** (`addOnUISdk` from the add-on UI runtime). Source lives in `integrations/adobe-express-addon/`. It is a thin frontend over your own backend — the SDK gives you the document + client storage; you supply the logic. Read this before the first file; the command-level playbook is in `pooriaarab/scripts` `scripts/adobe-express-addon/README.md`.
+An Express add-on is a **React panel that runs in a sandboxed iframe inside Adobe Express**, built on the **Add-on SDK** (`addOnUISdk` from the add-on UI runtime). Source lives in `integrations/adobe-express-addon/`. It is a thin frontend over your own backend — the SDK gives you the document + client storage; you supply the logic. Read this before the first file; the command-level playbook is in `itsryanarmani/scripts` `scripts/adobe-express-addon/README.md`.
 
 ## When to use
 

@@ -52,7 +52,7 @@ code and migrations are not counted. There is no label that clears the cap and
 no one to ask for one. Split the change.
 
 Settings for this repo are in `.github/pr-standards.json`. The standard is at
-https://github.com/pooriaarab/scripts/blob/main/pr-standards.md
+https://github.com/itsryanarmani/scripts/blob/main/pr-standards.md
 
 <!-- pr-standards:end -->
 
@@ -88,6 +88,6 @@ echo 'No test command detected'
 Follow the fleet PR standard in this repo's `AGENTS.md` (`<!-- pr-standards:start -->` block).
 Cloud agents need push access via Git integration and a successful environment Build.
 
-Setup guide: https://github.com/pooriaarab/scripts/blob/main/cursor-cloud-rollout.md
+Setup guide: https://github.com/itsryanarmani/scripts/blob/main/cursor-cloud-rollout.md
 
 <!-- cursor-cloud:end -->

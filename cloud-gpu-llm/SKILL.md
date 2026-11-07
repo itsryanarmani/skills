@@ -43,7 +43,7 @@ export GPU_VM_ACCOUNT=<your-account-email>   # optional
 
 ## Run it
 
-The script is `gpu-vm` in [pooriaarab/scripts](https://github.com/pooriaarab/scripts). Preview first. A dry run prints every `gcloud` command and runs none.
+The script is `gpu-vm` in [itsryanarmani/scripts](https://github.com/itsryanarmani/scripts). Preview first. A dry run prints every `gcloud` command and runs none.
 
 ```sh
 gpu-vm up --dry-run --gpu a100 \

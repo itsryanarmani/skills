@@ -2,7 +2,7 @@
 
 ## Identity
 
-`pooriaarab/skills` is a public library of Markdown playbooks for coding agents.
+`itsryanarmani/skills` is a public library of Markdown playbooks for coding agents.
 It covers AI-aware software work and personal operations.
 
 The repository is not an application, package, or hosted service. Each skill
@@ -68,7 +68,7 @@ Avoid promotional filler such as "seamless," "powerful," "revolutionary," or
 
 ## Naming
 
-- Write the repository name as `pooriaarab/skills`.
+- Write the repository name as `itsryanarmani/skills`.
 - Write skill names in lowercase kebab-case.
 - Keep a skill directory and its frontmatter `name` identical.
 - Use the established family prefix when a family exists.
@@ -96,7 +96,7 @@ changes often, and nearby documents already show how quickly counts drift.
 ## Marks and assets
 
 The repository has no canonical logo, icon, color palette, or typeface. Use the
-plain text name `pooriaarab/skills` as its wordmark when a label is required.
+plain text name `itsryanarmani/skills` as its wordmark when a label is required.
 
 Do not adopt a direction from `brand/` as the repository mark. Do not invent an
 agent mascot, gradient, monogram, or vendor-style logo without a separate brand

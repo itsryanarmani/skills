@@ -55,4 +55,4 @@ vibenotifications add eco
 
 Shows `♻️ ECO FULL · ~65% token savings` in your Claude Code status line and injects eco mode instructions into every session automatically.
 
-Source: [github.com/pooriaarab/vibenotifications](https://github.com/pooriaarab/vibenotifications)
+Source: [github.com/itsryanarmani/vibenotifications](https://github.com/itsryanarmani/vibenotifications)

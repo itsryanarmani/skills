@@ -1,4 +1,4 @@
-# pooriaarab/skills
+# itsryanarmani/skills
 
 Claude Code skills for AI-aware development and life organization.
 
@@ -109,7 +109,7 @@ to the skill that holds the lever. The others assume you already know which job 
 
 Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp32-iphone-agent, UxPlay name iPhone Agent, and an ESP32-S3 USB HID mouse on AssistiveTouch. A recipe step is written only after the phone shows it. Messages, Safari, Phone, Settings, Mail, T3 Code, Notification Centre, Facebook, Instagram, and TikTok are verified opens. TikTok leave is not verified.
 
-`npx skills add pooriaarab/skills/iphone-agent`
+`npx skills add itsryanarmani/skills/iphone-agent`
 
 ### Standalone
 
@@ -254,27 +254,27 @@ Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp3
 
 ## Install
 
-Via the [skills CLI](https://skills.sh). Skills live in this monorepo, so paths are `pooriaarab/skills/<skill>`.
+Via the [skills CLI](https://skills.sh). Skills live in this monorepo, so paths are `itsryanarmani/skills/<skill>`.
 
 ```bash
 # Everything in this repo
-npx skills add pooriaarab/skills
+npx skills add itsryanarmani/skills
 
 # Life organizer suite entry point
-npx skills add pooriaarab/skills/org-life-organizer
+npx skills add itsryanarmani/skills/org-life-organizer
 
 # Sub-skills still nested under organizer/ (see organizer/README.md for the full catalog —
 # eleven others have moved to top-level org-* skills and install individually)
-npx skills add pooriaarab/skills/organizer
+npx skills add itsryanarmani/skills/organizer
 
 # An individual organizer sub-skill (see organizer/README.md for the full list)
-npx skills add pooriaarab/skills/org-apple-notes
+npx skills add itsryanarmani/skills/org-apple-notes
 
 # An individual standalone skill — swap in any name from the table above
-npx skills add pooriaarab/skills/eco-mode
-npx skills add pooriaarab/skills/canada-census
-npx skills add pooriaarab/skills/schengen-visa-application
-npx skills add pooriaarab/skills/product-hunt-launch
+npx skills add itsryanarmani/skills/eco-mode
+npx skills add itsryanarmani/skills/canada-census
+npx skills add itsryanarmani/skills/schengen-visa-application
+npx skills add itsryanarmani/skills/product-hunt-launch
 ```
 
 ## Data source

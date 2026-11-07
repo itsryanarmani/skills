@@ -5,7 +5,7 @@ description: "Build and ship an Airtable extension (a React app under integratio
 
 # Building an Airtable extension
 
-An Airtable extension is a **React app that runs inside a base**, built on the **Airtable Blocks SDK** (`@airtable/blocks`, UI from `@airtable/blocks/ui`). Source conventionally lives in `frontend/`. It reads the base's tables/records and calls your own backend. Command-level playbook: `pooriaarab/scripts` `scripts/airtable-extension/README.md`.
+An Airtable extension is a **React app that runs inside a base**, built on the **Airtable Blocks SDK** (`@airtable/blocks`, UI from `@airtable/blocks/ui`). Source conventionally lives in `frontend/`. It reads the base's tables/records and calls your own backend. Command-level playbook: `itsryanarmani/scripts` `scripts/airtable-extension/README.md`.
 
 ## The trap that 404s your whole install: there is NO `@airtable/blocks-ui`
 

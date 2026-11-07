@@ -9,7 +9,7 @@ description: "Offload per-worktree dev work (installs, builds, dev server) to a 
 
 The original scripts below were hardcoded to one work repo on a work GCP project. They are now generalized into a **work/personal split** so any private repo offloads to its OWN GCP project — personal repos must NEVER run on Mozilla infra (same confidentiality boundary as `claude-work`/`claude-personal`).
 
-**Canonical scripts:** `pooriaarab/private-repo-b1e6` → `bin/crabbox/`. Installed to `~/.local/bin/` (on PATH) + configs to `~/.config/crabbox/`.
+**Canonical scripts:** `itsryanarmani/private-repo-b1e6` → `bin/crabbox/`. Installed to `~/.local/bin/` (on PATH) + configs to `~/.config/crabbox/`.
 
 **Two roles.** `crabbox warmup` has NO project/zone/image/account flags — selection is via the `CRABBOX_CONFIG` env var plus a matching gcloud configuration. Each wrapper (`crabbox-work`, `crabbox-personal`) exports its config and execs crabbox:
 

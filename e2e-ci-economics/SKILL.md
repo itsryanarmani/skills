@@ -197,7 +197,7 @@ plugin. It validates syntax, expressions, shell, and action inputs. It has no ru
 this rule for it.
 
 **A timing tool could carry the check. Do not build it speculatively.** `ci-job-timings` in
-[pooriaarab/scripts](https://github.com/pooriaarab/scripts) already ranks jobs by median duration and
+[itsryanarmani/scripts](https://github.com/itsryanarmani/scripts) already ranks jobs by median duration and
 knows which workflow file each job came from. The gating half needs a local checkout to read the
 YAML, plus name matching from a rendered matrix job (`e2e (webkit)`) back to its YAML key (`e2e`).
 That is real work for a check you can already do by hand:

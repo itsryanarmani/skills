@@ -268,7 +268,7 @@ mailbox, and confirm the OTP mail actually arrived before trusting the
 account exists. The same rfc822msgid discipline applies: a signup flow whose
 verification email never landed produced no inbound value.
 
-The fleet runs this sweep as `signup-sweep` in `pooriaarab/scripts`: it walks
+The fleet runs this sweep as `signup-sweep` in `itsryanarmani/scripts`: it walks
 every warmup domain config, signs each identity up for every service,
 requests the code, polls Gmail for the OTP, verifies, and stores the
 credential under `~/.local/state` (never in a repo). Three operational

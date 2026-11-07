@@ -365,7 +365,7 @@ Review takes days–weeks. Set a **durable cloud schedule** (claude.ai routine +
 
 Once an extension is stable enough to ship from CI, use the Chrome Web Store Publish API so every `release` push publishes both the Worker backend and the extension from the same commit.
 
-### Workflow pattern (see [`publish-extension.yml`](https://github.com/pooriaarab/private-repo-4ed5/tree/main/.github/workflows/publish-extension.yml) for a working example)
+### Workflow pattern (see [`publish-extension.yml`](https://github.com/itsryanarmani/private-repo-4ed5/tree/main/.github/workflows/publish-extension.yml) for a working example)
 
 ```yaml
 name: Publish extension

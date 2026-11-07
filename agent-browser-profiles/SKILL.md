@@ -9,7 +9,7 @@ Keep separate automation browsers for separate contexts. Each runs on its own
 profile. They never mix. And Chrome stops showing the "Allow remote debugging"
 prompt.
 
-Implementation lives in `pooriaarab/scripts` (`scripts/agent-browser/`). This
+Implementation lives in `itsryanarmani/scripts` (`scripts/agent-browser/`). This
 skill describes when and how to use it.
 
 ## First, fix AUTO_CONNECT
@@ -58,7 +58,7 @@ context's logins. Give each clone its own directory and its own port.
 
 ## Commands (shape only)
 
-Set up shell functions like these. See `pooriaarab/scripts` for the real script
+Set up shell functions like these. See `itsryanarmani/scripts` for the real script
 and full examples.
 
 ```sh

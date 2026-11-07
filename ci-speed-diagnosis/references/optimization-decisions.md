@@ -151,7 +151,7 @@ Use smaller checkouts only after confirming that selection and builds retain the
 Separate lightweight checks, heavy builds, and Docker work when their resource needs conflict.
 Scale capacity from queue delay, active demand, and idle cost. Do not oversubscribe without contention and flake measurements.
 
-For Boat, use the maintained [runner runbook](https://github.com/pooriaarab/scripts/blob/main/boat-runners.md).
+For Boat, use the maintained [runner runbook](https://github.com/itsryanarmani/scripts/blob/main/boat-runners.md).
 Check the current provider contract before copying API fields or pricing.
 Confirm hydration and an accepted running state before heavy work. Reject degraded health; handle an omitted optional health field.
 Keep snapshots small and exclude job workspaces and secrets, including new files that ignore rules do not cover.
@@ -184,5 +184,5 @@ A recurring agent audit can propose improvements; it must not silently change ga
 Creating an audit prompt alone does not create a running schedule.
 
 For execution tools and measurement commands, use the linked skills and
-[pooriaarab/scripts](https://github.com/pooriaarab/scripts).
+[itsryanarmani/scripts](https://github.com/itsryanarmani/scripts).
 Keep private source, host details, credentials, and personal data out of public examples and proof artifacts.

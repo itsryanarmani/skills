@@ -152,6 +152,33 @@ Traps:
   (about 96,000 `/search` 503s a day on six zones); that costs about $0.03 a day, so leave it.
 - Add the rule to the site launch step, or the next site starts unprotected.
 
+### Find one scraper by IP and network (a name list cannot)
+
+Signal: the biggest CPU user in a live tail had no crawler name. One IP with a faked phone user agent sent 495
+requests to one site, 68% of the CPU in an 8-minute tail of 8 sites (MEASURED, 1,033 requests). `robots.txt`
+and a name list cannot match it.
+
+Method: the tail event already carries `request.cf.asn`, `asOrganization`, `country` and the header
+`cf-connecting-ip`. Group the decoded tail by network and by IP, sorted by CPU. In that sample 297 distinct IPs
+sent requests and one sent 495; the next sent 48 (MEASURED). Check the other tail files you have for the same IP
+before you call it steady.
+
+Change: add the network to the same edge rule as the crawler names: `or ip.src.asnum eq <number>` (one rule slot).
+Block the network, not only the IP, because scrapers rotate IPs inside one network. Block a network only when it
+is a hosting, cloud or proxy provider. Never block a home ISP or a mobile carrier: this scraper faked a phone user
+agent, and a carrier network would take every real phone user with it. Read `asOrganization` first. Check also
+that your own monitors, CI and the crawlers you want do not come from that network. The tail showed ours came
+from other networks.
+
+Proof limits: a Free zone cannot read firewall events through GraphQL, so you cannot count blocked hits by network. A tail
+after the rule showing 0 requests from the network fits a block and also fits a scraper that stopped. Compare the
+site's normal rate before and after: it should not change.
+
+Trap I fell into: all 495 requests came in 80 seconds (about 6 a second), but I first wrote "about 1 a second over
+8 minutes" and priced it at $0.5 a day (ESTIMATE). At the burst pace it would be $3.2 a day if it ran all day
+(ESTIMATE), and in the other tail files I had, from two earlier days, the IP never appeared. Read first and last timestamps of the events before you state a rate. A block
+is cheap insurance when the frequency is unknown, but do not claim a saving you have not seen.
+
 ### Pause search jobs, staging and idle sites
 
 - **Signal.** Cron triggers or sync jobs that run on sites with no users.

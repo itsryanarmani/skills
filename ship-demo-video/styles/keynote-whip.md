@@ -98,7 +98,7 @@ bring it back to 1.0 over 0.6 s as the voice ends.
 
 ## Reference build
 
-`pooriaarab/scripts` → `demo-video/styles/keynote_whip.py` with `demo-video/examples/keynote-whip.json`.
+`itsryanarmani/scripts` → `demo-video/styles/keynote_whip.py` with `demo-video/examples/keynote-whip.json`.
 
 ## v2 polish (foxmate, second round)
 

@@ -1,6 +1,6 @@
 # Free preprint servers, archives and indexing services (extended)
 
-Checked 2026-10-16. Task: find free preprint servers, archives, repositories and indexing services beyond `free-venues.md` and `venues.md` in `pooriaarab/skills/paper-submission/references`.
+Checked 2026-10-16. Task: find free preprint servers, archives, repositories and indexing services beyond `free-venues.md` and `venues.md` in `itsryanarmani/skills/paper-submission/references`.
 
 Rules for reading the tables:
 

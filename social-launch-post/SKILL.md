@@ -69,7 +69,7 @@ text and media.
   as the next draft's `quote_post_url`, and schedule that draft (for example 2 days after N). A draft that is
   scheduled before its quote is set goes out unquoted.
 - **Run that step from a job, not from a session.** A chat session closes; a series of 20 posts takes 6
-  weeks. `typefully-quote-chain` in `pooriaarab/scripts` is a launchd job that does this every 15 minutes
+  weeks. `typefully-quote-chain` in `itsryanarmani/scripts` is a launchd job that does this every 15 minutes
   and stops when the chain is done. The job waits on a post that never publishes, so check that each one
   went live.
 - **Each platform keeps its own text.** An owner who edits a draft in the Typefully editor often changes only

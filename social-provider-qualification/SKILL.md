@@ -61,13 +61,13 @@ Treat Facebook, Instagram, and Threads as separate release gates. Their shared M
 
 ## Local proof
 
-Run the read-only matrix before console work from the `pooriaarab/scripts` repo root:
+Run the read-only matrix before console work from the `itsryanarmani/scripts` repo root:
 
 ```bash
 ./scripts/social-provider-qualification/qualification-matrix.sh x
 ```
 
-Set `CONTENT_RABBIT_REPO` to the Content Rabbit checkout path. Replace `x` with the provider slug. The script checks named production secrets and focused handler tests. It does not contact a social provider or create content. This skill depends on `pooriaarab/scripts#142`. Report `BLOCKED` when the script is unavailable.
+Set `CONTENT_RABBIT_REPO` to the Content Rabbit checkout path. Replace `x` with the provider slug. The script checks named production secrets and focused handler tests. It does not contact a social provider or create content. This skill depends on `itsryanarmani/scripts#142`. Report `BLOCKED` when the script is unavailable.
 
 For browser work, capture a screenshot before and after each irreversible console action. Keep credentials, tokens, and callback state out of screenshots and notes.
 

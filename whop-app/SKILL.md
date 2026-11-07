@@ -5,7 +5,7 @@ description: "Build and submit a Whop app (a React app under integrations/whop-a
 
 # Building a Whop app
 
-A Whop app is a **React app embedded as an iframe view inside a Whop** (a creator's community/storefront), built on the **Whop SDK** (`@whop/react`, `@whop/iframe`, `@whop/api`/`@whop/sdk`). Source lives in `integrations/whop-app/`. Thin frontend over your own backend. Command-level playbook: `pooriaarab/scripts` `scripts/whop-app/README.md`.
+A Whop app is a **React app embedded as an iframe view inside a Whop** (a creator's community/storefront), built on the **Whop SDK** (`@whop/react`, `@whop/iframe`, `@whop/api`/`@whop/sdk`). Source lives in `integrations/whop-app/`. Thin frontend over your own backend. Command-level playbook: `itsryanarmani/scripts` `scripts/whop-app/README.md`.
 
 ## The trap that wastes a day: Whop auth ≠ your service's auth
 

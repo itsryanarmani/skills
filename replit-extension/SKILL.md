@@ -5,7 +5,7 @@ description: "Build and submit a Replit Extension (a React tool panel under inte
 
 # Building a Replit Extension
 
-A Replit Extension is a **React tool panel inside the Replit workspace**, built on the **Replit Extensions API** (`@replit/extensions`). Source lives in `integrations/<name>/`. Thin frontend over your own backend — useful for "announce a shipped Repl" flows. Playbook: `pooriaarab/scripts` `scripts/replit-extension/README.md`.
+A Replit Extension is a **React tool panel inside the Replit workspace**, built on the **Replit Extensions API** (`@replit/extensions`). Source lives in `integrations/<name>/`. Thin frontend over your own backend — useful for "announce a shipped Repl" flows. Playbook: `itsryanarmani/scripts` `scripts/replit-extension/README.md`.
 
 ## The trap that cascades: over-typed result wrappers
 

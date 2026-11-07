@@ -116,12 +116,12 @@ List each path under its count.
 
 ## Implementation
 
-The script `prune-merged-worktrees.sh` in `pooriaarab/scripts` implements this
+The script `prune-merged-worktrees.sh` in `itsryanarmani/scripts` implements this
 workflow for one repo. It runs dry-run by default. Pass `--apply` to remove.
 
 ## Run it on a schedule
 
-Do not rely on remembering. `disk-hygiene` in `pooriaarab/scripts` runs the
+Do not rely on remembering. `disk-hygiene` in `itsryanarmani/scripts` runs the
 prune script on every repo under `$DISK_HYGIENE_ROOTS` (default
 `~/Documents/Personal`). When free space is under `$DISK_HYGIENE_THRESHOLD_GIB`
 (default 200), it also clears caches that rebuild: npm, bun, pnpm, Homebrew,

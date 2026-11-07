@@ -57,12 +57,12 @@ a stage that scaffolds a workflow does not reinvent them:
 - `main` is the default branch and deploys to the **staging** environment;
   `release` is production. `staging` and `production` are environment names,
   never branch names.
-- Private `pooriaarab/*` repos use `boat` for build, lint, typecheck, test,
+- Private `itsryanarmani/*` repos use `boat` for build, lint, typecheck, test,
   E2E, deploy and API waits. Use `boat-8` for a heavy production build.
   Public repos use GitHub-hosted runners. macOS and Windows jobs keep their
   GitHub-hosted images. The Dell fleet is retired.
 - Every repo carries `.github/workflows/vibecodereview.yml`
-  (`pooriaarab/vibecodereview@v1`).
+  (`itsryanarmani/vibecodereview@v1`).
 - **A workflow trigger naming a branch the repo does not have never fires and
   never errors.** Whenever a stage adds or copies a workflow, check its
   `branches:` filter against the branches that exist.

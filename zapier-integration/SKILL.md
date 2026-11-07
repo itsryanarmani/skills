@@ -9,7 +9,7 @@ Zapier is **CLI-first**: the `zapier-platform-cli` (`zapier`) builds/pushes/subm
 connector whose source lives in `integrations/zapier/` (`index.js`, `authentication.js`,
 `triggers/`, `searches/`, `creates/`). But the *submission* is NOT CLI-only — it's gated
 on live-usage validation you satisfy in the browser. Read this before writing the first
-file; command-level playbook is `pooriaarab/scripts` `scripts/zapier/README.md`.
+file; command-level playbook is `itsryanarmani/scripts` `scripts/zapier/README.md`.
 
 ## The one bug that wastes a day: auth is imperative
 

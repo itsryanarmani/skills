@@ -70,7 +70,7 @@ are open, use a rolling journal or arXiv and wait. Do not invent a date.
     [`references/publishing-runbook.md`](references/publishing-runbook.md). It
     orders the free same-day actions, the preprint servers, the one
     peer-reviewed venue, and the steps after the arXiv id appears. The
-    `paper-publish` tool in `pooriaarab/scripts` checks the paper, drafts the
+    `paper-publish` tool in `itsryanarmani/scripts` checks the paper, drafts the
     Zenodo record and writes one form file per venue.
 
 ## Steps

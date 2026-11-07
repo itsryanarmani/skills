@@ -5,7 +5,7 @@ description: "Use when building, packaging or publishing a VS Code extension to 
 
 # Building + publishing a VS Code extension
 
-A VS Code extension is a TypeScript module on the **Extension API** (`package.json` manifest with `contributes`, `activationEvents`, `main`). Source in `integrations/<name>/`. Publish to two marketplaces from one `.vsix`: the **Visual Studio Marketplace** (`vsce`) and **Open VSX** (`ovsx` — what Cursor / Windsurf / VSCodium / Gitpod install from). Command playbook: `pooriaarab/scripts` `scripts/vscode-extension/README.md`.
+A VS Code extension is a TypeScript module on the **Extension API** (`package.json` manifest with `contributes`, `activationEvents`, `main`). Source in `integrations/<name>/`. Publish to two marketplaces from one `.vsix`: the **Visual Studio Marketplace** (`vsce`) and **Open VSX** (`ovsx` — what Cursor / Windsurf / VSCodium / Gitpod install from). Command playbook: `itsryanarmani/scripts` `scripts/vscode-extension/README.md`.
 
 ## When to use
 

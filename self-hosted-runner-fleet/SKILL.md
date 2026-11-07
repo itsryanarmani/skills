@@ -23,14 +23,14 @@ A new runner process does not provide a fresh VM trust boundary.
 
 Before changing capacity or snapshots, read the
 [Boat CI qualification rules](../ci-cost-at-agent-scale/boat-ci-qualification.md).
-Use the [scripts runbook](https://github.com/pooriaarab/scripts/blob/main/boat-runners.md)
+Use the [scripts runbook](https://github.com/itsryanarmani/scripts/blob/main/boat-runners.md)
 for commands and current implementation gaps. A required safeguard in that
 runbook is not proof that the installed pool implements it.
 
 The broker is a Cloudflare Worker. It receives `workflow_job` webhooks and
 calls GitHub `generate-jitconfig`. The Box agent requests a config and runs
 it. Keep the GitHub token in the broker. Never store it on a Box. Code lives
-in `pooriaarab/scripts`: `workers/boat-runners/`, `boat-runner-agent` and
+in `itsryanarmani/scripts`: `workers/boat-runners/`, `boat-runner-agent` and
 `boat-pool` (work in progress in #508 and #509).
 
 A JIT runner gets ONLY the labels passed to `generate-jitconfig`. It does not

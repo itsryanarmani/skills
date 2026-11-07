@@ -10,7 +10,7 @@ now; review costs what it always did. Everything here exists to close that gap.
 
 **One issue. One PR. One concern. Under 500 lines. Show your work.**
 
-The rule and its checker live in [pooriaarab/scripts](https://github.com/pooriaarab/scripts):
+The rule and its checker live in [itsryanarmani/scripts](https://github.com/itsryanarmani/scripts):
 `pr-standards.md` is the standard, `pr-standards` is the program. Read the standard when you
 need the exact boundary; this skill is what to do.
 
@@ -215,7 +215,7 @@ Three ways a gate stops being real:
   green to anything that does not read both.
 
 On 2026-08-29 an unattended process holding the account token squash-merged six
-pull requests across `pooriaarab/skills` and `pooriaarab/private-repo-b1e6`, at
+pull requests across `itsryanarmani/skills` and `itsryanarmani/private-repo-b1e6`, at
 four-second intervals. One was skills#199. It carried four unaddressed CodeRabbit
 findings, two rated Major, one of them a documented command that does not exist.
 Every layer had run. Nothing blocked the merge.

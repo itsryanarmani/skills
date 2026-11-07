@@ -5,7 +5,7 @@ description: "Use when building or publishing a Superhuman Docs pack (formerly C
 
 # Building + publishing a Superhuman Docs pack
 
-Superhuman Docs is the 2026-07-08 rebrand of **Coda**. A pack is a `@codahq/packs-sdk` TypeScript module (`pack.ts`) whose formulas / actions / sync tables call your own REST API. It runs inside Superhuman Docs docs. Source in `integrations/<name>/`. Command playbook: `pooriaarab/scripts` `scripts/superhuman-docs-pack/README.md`.
+Superhuman Docs is the 2026-07-08 rebrand of **Coda**. A pack is a `@codahq/packs-sdk` TypeScript module (`pack.ts`) whose formulas / actions / sync tables call your own REST API. It runs inside Superhuman Docs docs. Source in `integrations/<name>/`. Command playbook: `itsryanarmani/scripts` `scripts/superhuman-docs-pack/README.md`.
 
 ## When to use
 

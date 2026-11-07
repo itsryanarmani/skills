@@ -5,19 +5,44 @@ description: "Use when you need to see an iOS app running without driving Xcode 
 
 # Seeing an iOS app without driving Xcode by hand
 
-## Answer this first, or you will waste an evening
+## Verify membership, access, and signing separately
 
-**Is the Apple Developer account free or paid ($99/yr)?** Nearly every tool that
-promises "install on your phone with no cable" assumes paid, and says so
-nowhere obvious. Check before you install anything:
+Confirm active Apple Developer Program membership in the developer account.
+Check the selected team, membership status, and renewal date.
+If account access is unavailable, record membership as unknown.
+Do not infer membership from local certificates or provisioning profiles.
+
+Next, check App Store Connect access and the user's role.
+An expired membership or an unsigned agreement can block program resources.
+The Account Holder must review and accept new agreements.
+Do not accept legal agreements on the owner's behalf.
+
+Finally, inspect local signing assets when the chosen workflow needs them:
 
 ```bash
-security find-identity -v -p codesigning | grep -ci distribution   # 0 means free
-ls ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/ | wc -l
+security find-identity -v -p codesigning
 ```
 
-Zero distribution certificates and zero profiles means a **free** account, which
-rules out most of the category:
+This command reports local signing identities. It does not report membership.
+Avoid publishing identity names or private account details in evidence.
+
+Paid teams can use cloud-managed distribution certificates without a local
+Apple Distribution identity. Check cloud signing permissions separately.
+A signing failure can indicate missing access, rather than free membership.
+Do not create duplicate certificates or revoke working assets to test this.
+
+Record three separate results: membership, account access, and signing.
+Use verified, blocked, or unknown for each result.
+Prove signing with a successful export for the intended distribution method.
+A development-signed archive alone does not prove TestFlight readiness.
+Export or upload only within the user's existing authorization.
+
+Sources checked November 6, 2026:
+[cloud-managed certificates](https://developer.apple.com/help/account/certificates/cloud-managed-certificates/),
+[access issues](https://developer.apple.com/help/account/access/resolving-access-issues/),
+and [roles](https://developer.apple.com/help/account/access/roles/).
+
+After verifying membership, choose the supported route:
 
 | Route | Needs | Free account |
 |---|---|---|

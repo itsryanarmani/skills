@@ -5,28 +5,31 @@ description: "Use when a GitHub login changes and every repo, workflow, script a
 
 # github-username-rename
 
-A GitHub login change does not break things at once. GitHub redirects the old
-login for web pages, `git` remotes, the API and `uses:` references. The redirect
-lasts only while nobody claims the old name. When someone does, every reference
-that still names it points at a stranger's repo. A workflow `uses:` line is the
-worst case, because it runs the stranger's code.
+A GitHub login change breaks some things at once and others later.
 
-So the job is a race with a deadline you cannot see. Do it soon, and do it in
-bulk.
+- GitHub does not redirect `uses:` references to actions and reusable workflows.
+  They can fail as soon as the rename lands. Fix them first.
+- Profile links return 404 at once.
+- GitHub redirects repository pages, `git` remotes and the API from the old login.
+  That redirect ends if someone registers the old login and creates a repo with
+  the same name. After that, a reference that still names the old login points at
+  their code. A workflow `uses:` line is the worst case, because it runs that code.
+
+So the job has a deadline you cannot see. Do it soon, and do it in bulk.
 
 ## What the rename touches
 
 | Place | Behaviour after the rename |
 | --- | --- |
-| `git` remotes, clone URLs | Redirect. Fix them anyway, with `git remote set-url`. |
+| `git` remotes, clone URLs | Redirect while the old login stays free. Fix them anyway, with `git remote set-url`. |
 | `gh` login and token | The token keeps working. `gh api user` shows the new login. The keyring label may keep the old name. |
-| `uses: owner/repo@ref` | Redirects now. Breaks, or runs foreign code, if the old name is claimed. |
+| `uses: owner/repo@ref` | Not redirected. Can fail now. Runs foreign code if the old login is claimed. Fix first. |
 | GitHub Pages | The old `owner.github.io` URL stops. Update it. |
 | Packages on `ghcr.io/<owner>` | The old path is not redirected. Check each image. |
 | GitHub Apps and installations | They follow the account. The App slug does not change. |
 | Self-hosted runners and brokers | Registered to `owner/repo`. Check the registration and any owner constant in the broker. |
 | MCP registry names `io.github.<owner>/*` | Tied to the login. They need a re-publish. Do not edit them in a rename PR. |
-| Marketplaces, `npx skills add owner/repo`, docs | Update the text. The redirect keeps the old text working for now. |
+| Marketplaces, `npx skills add owner/repo`, docs | Update the text. Repository redirects keep old text working for now. |
 
 ## Step 1: survey with a clone, not code search
 
@@ -48,10 +51,12 @@ A rename across 140 repos found these classes:
 
 **Change**
 - `github.com/<old>`, `github.com:<old>`, `api.github.com/repos/<old>`,
-  `raw.githubusercontent.com/<old>`, `ghcr.io/<old>`, `<old>.github.io`
+  `raw.githubusercontent.com/<old>`, `<old>.github.io`
 - `uses: <old>/<repo>@ref` (keep the ref)
 - `owner/repo` slugs: `gh -R`, `--repo`, `--owner`, `repository:` fields
 - package metadata URLs (`repository`, `homepage`, `bugs`)
+- `ghcr.io/<old>` image paths, only after the image exists under the new owner and a
+  pull works (see Step 6). Until then leave the reference and report it.
 - GitHub user mentions and `CODEOWNERS` entries
 
 **Leave**
@@ -119,7 +124,7 @@ parts that no PR can fix:
 
 - re-publish MCP registry entries under the new login
 - re-register runners and check broker owner constants
-- move `ghcr.io` images
+- move `ghcr.io` images first, check a pull, then change the references that use them
 - update the `gh` keyring label and any saved config that names the old login
 - keep the old login unclaimed, if GitHub allows it, until all of this is done
 

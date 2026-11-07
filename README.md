@@ -9,6 +9,7 @@ Use [web-performance-evidence](web-performance-evidence/SKILL.md) to measure fon
 ## Identity changes
 
 [public-identity-migration](public-identity-migration/SKILL.md) audits former names and handles, corrects owned surfaces, and tracks publisher requests.
+[github-username-rename](github-username-rename/SKILL.md) surveys old GitHub owner references and guides changes, reviews, and merges across repositories.
 
 ## Ad tracking skills
 

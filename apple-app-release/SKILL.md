@@ -114,6 +114,49 @@ Provide concrete test notes and the invitation route.
 An accepted upload is not proof that a tester can install the app.
 Do not treat internal availability as public App Review approval.
 
+## Complete the browser release
+
+Use [the App Store Connect field map](https://github.com/itsryanarmani/scripts/blob/main/apple-app-store-connect.md).
+Use [the release recovery lessons](https://github.com/itsryanarmani/scripts/blob/main/apple-release-lessons.md).
+Keep completed manifests and actual contacts in private storage.
+A saved privacy draft is not a published privacy label.
+Verify complete public policy text without sign-in or an email unlock.
+Check deployed website analytics separately from native app data collection.
+Keep database credits, licenses, and export obligations with every seed update.
+
+Verify the selected existing build, published privacy label, and stored review contacts after reload.
+Do not reupload a build to repair a version association or compliance answer.
+Check existing internal group membership before adding a newly eligible build.
+An all-builds group can receive it automatically after compliance processing.
+Keep legal declarations separate from technical encryption findings.
+If the owner defers EU distribution, verify each excluded EU territory and retained storefront.
+Do not resume cancelled trader verification or guess a declaration.
+
+## Monitor and release
+
+Record submission and release authorization separately.
+Read the latest owner instruction before each action.
+Update the existing monitor when explicit release approval supersedes an earlier hold.
+Keep the release setting manual when agreed; release only after Apple approves and authority exists.
+Ready for Review is a draft. Waiting for Review proves submission.
+Pending Developer Release proves approval with release still pending.
+
+Match each observation to the app, version, and build.
+Record unchanged checks without repeating builds, old CI checks, or stopped UI probes.
+Keep unresolved checks UNKNOWN; a successful submission does not resolve them.
+A browser timeout can follow a successful action.
+Inspect fresh server state before retrying an upload, submission, or release.
+Save a private pending release record before the click and verify Apple's result afterward.
+Do not repeat a release while the prior result remains uncertain.
+Verify storefront availability separately from acceptance of the release action.
+
+Inspect Apple's actual message when review raises an issue.
+Use [Apple's reply and resubmission guidance](https://developer.apple.com/help/app-review/after-submitting-for-review/review-status/).
+Do not resubmit when a reply alone resolves the request.
+Pause monitoring if the owner chooses to report email updates.
+Do not claim notification settings are enabled without evidence.
+Stop only an owned wake process after matching its PID, UID, arguments, and start time.
+
 ## Make updates repeatable
 
 Reuse existing Mac capacity when cost limits prohibit new paid CI.
@@ -125,6 +168,10 @@ Record the last successful upload only after Apple confirms success.
 Preserve failure artifacts and resume without duplicate uploads.
 Keep public submission behind the user's explicit review approval.
 Do not claim update automation exists until its full path is exercised.
+An interactive command can work while launchd cannot read a protected Documents path.
+Check the wrapper, runtime, and credential helper paths before attempting a repair.
+Stop failed owned jobs; do not repeatedly retry or grant broad disk access.
+Keep a reviewed local runtime design separate from the release instructions.
 
 Record setup time separately from build, tests, export, upload and processing time.
 Record model usage only for the exact session or job measured.

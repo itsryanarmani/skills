@@ -15,9 +15,10 @@ Never promise App Review approval.
 Use the existing project and build tools first.
 Do not install every overlapping MCP server or framework.
 Use Apple's Xcode tools where available and a supported build/test interface.
-Use [mobilebuildmcp-cli](../mobilebuildmcp-cli/SKILL.md) for its supported workflows.
-Use [swiftui-expert-skill](../swiftui-expert-skill/SKILL.md) for implementation guidance.
-Use [swiftui-pro](../swiftui-pro/SKILL.md) for engineering review.
+Install upstream skills separately; they are not bundled in this repository.
+Use [mobilebuildmcp-cli](https://www.mobilebuildmcp.com/docs/skills) for its supported workflows.
+Use [swiftui-expert-skill](https://github.com/AvdLee/SwiftUI-Agent-Skill) for implementation guidance.
+Use [swiftui-pro](https://github.com/twostraws/SwiftUI-Agent-Skill) for engineering review.
 
 Apple publishes apps for iPhone, iPad, Mac, Apple Watch, Apple TV and Apple Vision Pro.
 An iPhone model is not a separate store platform.

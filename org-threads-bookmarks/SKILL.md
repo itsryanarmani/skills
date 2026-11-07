@@ -10,7 +10,7 @@ Process Threads saved posts.
 ## Requirements
 
 - Threads account (Meta).
-- **`threadsclaw` CLI** — [pooriaarab/threadsclaw](https://github.com/pooriaarab/threadsclaw) (scaffold; needs implementation). Browser-cookie-based scraper in steipete's `*claw` style. Goal: claw saved posts into structured JSON.
+- **`threadsclaw` CLI** — [itsryanarmani/threadsclaw](https://github.com/itsryanarmani/threadsclaw) (scaffold; needs implementation). Browser-cookie-based scraper in steipete's `*claw` style. Goal: claw saved posts into structured JSON.
 - Logged-in Threads session in a browser (Meta auth — shares cookies with Instagram).
 - Fallback until `threadsclaw` is built: Meta's "Download Your Information" export, or Playwright on the web app.
 

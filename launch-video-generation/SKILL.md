@@ -16,7 +16,7 @@ Empirical, from building a real launch video (slackclaw) end to end: storyboard 
 - Multi-video suites: one film genre and twist per video, variations per stage (vibe, storyboard stills, cheap draft, full render) with human sign-off, movie-style variation grids, and a genre-lookbook method for pitching 5 to 10 styles.
 - Character consistency: one hero reference image with every shot an edit of it (frame-chaining drifts by shot 3), the Story2Board locked-reference method, and nano (gemini-2.5-flash-image/edit) reframing to square and inventing logos on two-image input.
 - Veo 3 on Vertex AI (ADC auth, predictLongRunning then fetchPredictOperation, inline base64 image conditioning, fixed 8 s clips); fast-cut pacing (12 to 15 cuts of about 2 s per 30 s); the constraint-sandwich prompt and a locked style-anchor library (Pixar/3D, claymation, 2D anime, hyperreal) with negative prompts.
-- A full pass on Google's models (Gemini image, Veo 3.1, Gemini TTS on Vertex AI): story-lock check, cast-sheet stills, a review gate before Veo, window picking, camera moves, ducked voice-over, listening-model verification. See the last section and the `storyboard-video` tool in pooriaarab/scripts.
+- A full pass on Google's models (Gemini image, Veo 3.1, Gemini TTS on Vertex AI): story-lock check, cast-sheet stills, a review gate before Veo, window picking, camera moves, ducked voice-over, listening-model verification. See the last section and the `storyboard-video` tool in itsryanarmani/scripts.
 - Audio and assembly: minimax music sings the lyrics field (use [instrumental]), TTS casting with minimax/speech-2.6-hd and ffmpeg voice effects, logo glow-halo compositing, genre wrappers (CCTV, found footage), puppeteer screencast to mp4, and ffmpeg traps (-shortest truncates video, aevalsrc has no mod/floor, hard-cut vs xfade audio sync, blur-fill for dual aspect).
 
 ## 1. Storyboard first, always
@@ -581,12 +581,12 @@ A launch trailer's opening frame is its scroll-stopper and its poster thumbnail.
 
 From a 30 s comic launch film made on Vertex AI alone: Gemini image for stills, Veo 3.1 for motion,
 Gemini TTS for the voice-over, ffmpeg for the edit. The `storyboard-video` tool in
-pooriaarab/scripts runs every step from one `board.json`. This section explains why each step
+itsryanarmani/scripts runs every step from one `board.json`. This section explains why each step
 is shaped the way it is.
 
 ### 0. Keep the record in board.json
 
-Every generated video keeps one `board.json` that follows `video.schema.json` in pooriaarab/scripts
+Every generated video keeps one `board.json` that follows `video.schema.json` in itsryanarmani/scripts
 (`storyboard-video/`). It is the only record of the decisions, so a recut, a new aspect ratio or
 a fix months later starts from the file, not from memory. `storyboard-video check` validates it
 and names each bad path. Unknown fields fail, so a typo cannot hide.

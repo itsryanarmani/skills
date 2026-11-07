@@ -10,12 +10,12 @@ the part that happens in the Figma desktop app once the plugin exists: minting a
 listing assets, the Data security form, and first publish. Everything below was verified by
 hand on 2026-08-28; none of it is in Figma's docs or in the `figma-plugin` skill.
 
-Companion playbook: `pooriaarab/scripts` `scripts/figma-plugin/README.md` — the
+Companion playbook: `itsryanarmani/scripts` `scripts/figma-plugin/README.md` — the
 command-level steps. This skill is the traps.
 
 Worked example: Content Rabbit, submitted 2026-08-28 —
 <https://www.figma.com/community/plugin/1675058575243742396>. Source is
-`integrations/figma-plugin/` in `pooriaarab/private-repo-c4e6`, and the filled-in
+`integrations/figma-plugin/` in `itsryanarmani/private-repo-c4e6`, and the filled-in
 listing copy and data-security answers are in that repo's
 `.claude/docs/figma/submission.md`.
 

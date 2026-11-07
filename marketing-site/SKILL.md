@@ -9,7 +9,7 @@ One landing page is a page. Twenty is a system. This skill is about the system:
 the content model that generates the pages, the shell that holds them, and the
 tests that stop the copy claiming things that are not true.
 
-**Worked example:** `pooriaarab/private-repo-f304` PR #45 — 60 pages, 26 free tools, 73
+**Worked example:** `itsryanarmani/private-repo-f304` PR #45 — 60 pages, 26 free tools, 73
 browser tests, built in one session from a seven-competitor audit.
 
 ## When to use

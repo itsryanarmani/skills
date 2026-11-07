@@ -98,7 +98,7 @@ branches are `main` and `release` simply never runs. There is no failure and no
 run, so nothing reports it. Every time you add or copy a workflow, read its
 `branches:` filter against the branches that actually exist (`git branch -r`).
 
-**CI runners.** Private `pooriaarab/*` repos use the warm Boat JIT pool.
+**CI runners.** Private `itsryanarmani/*` repos use the warm Boat JIT pool.
 Public repos use GitHub-hosted runners because fork PRs run untrusted code.
 macOS and Windows jobs keep their GitHub-hosted images. The Dell fleet is
 retired. JIT runners get only the labels passed; do not add `self-hosted`.
@@ -112,12 +112,12 @@ Declare `boat` and `boat-8` in `.github/actionlint.yaml`; see
 | waits on an external API (LLM review, notify, deploy trigger, secret scan) | `boat` |
 
 **PR review.** Every repo gets `.github/workflows/vibecodereview.yml`, which
-calls `pooriaarab/vibecodereview@v1`. Copy the current canonical file instead of
+calls `itsryanarmani/vibecodereview@v1`. Copy the current canonical file instead of
 retyping it:
 
 ```bash
 mkdir -p .github/workflows
-gh api repos/pooriaarab/private-repo-f304/contents/.github/workflows/vibecodereview.yml \
+gh api repos/itsryanarmani/private-repo-f304/contents/.github/workflows/vibecodereview.yml \
   --jq .content | base64 -d > .github/workflows/vibecodereview.yml
 ```
 
@@ -153,9 +153,9 @@ The workspace is now ready. Next:
 
 Do this before the first feature branch. A repo is non-conforming from the start if these are missing, and fixing them later means editing the same workflows a second time.
 
-Add the repo and a 2 to 4 letter lowercase prefix to `pooriaarab/scripts/repo-prefixes.json` before running the rollouts. The prefix lives in one place so the rollout does not derive it from the repo name. Deriving it twice is how two repos get the same prefix.
+Add the repo and a 2 to 4 letter lowercase prefix to `itsryanarmani/scripts/repo-prefixes.json` before running the rollouts. The prefix lives in one place so the rollout does not derive it from the repo name. Deriving it twice is how two repos get the same prefix.
 
-Run `pr-standards-rollout --repo <new> --apply` from a checkout of `pooriaarab/scripts`. It writes its files from `pr-standards-templates/` in the same checkout. Naming the repo explicitly matters: run without `--repo`, and there is nothing to say this rollout means the repo you just created rather than any other repo eligible for it.
+Run `pr-standards-rollout --repo <new> --apply` from a checkout of `itsryanarmani/scripts`. It writes its files from `pr-standards-templates/` in the same checkout. Naming the repo explicitly matters: run without `--repo`, and there is nothing to say this rollout means the repo you just created rather than any other repo eligible for it.
 
 `issue-standards-rollout --repo <new> --apply` does less. It creates the labels and prints the plan for everything else, because forms, the `AGENTS.md` block and the stub are a code change and go through one issue and one pull request like any other. Copy them from `issue-standards-templates/` yourself and open that pull request.
 

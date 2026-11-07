@@ -154,4 +154,4 @@ Statuses: `todo`, `applied`, `pending`, `invited`, `declined`, `dropped`.
 ## Related data
 
 The same venue dataset and its tooling are public: see the `reviewer-venues`
-folder in `pooriaarab/scripts` at <https://github.com/pooriaarab/scripts>.
+folder in `itsryanarmani/scripts` at <https://github.com/itsryanarmani/scripts>.

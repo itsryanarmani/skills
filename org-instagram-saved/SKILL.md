@@ -10,7 +10,7 @@ Process Instagram saved posts and collections.
 ## Requirements
 
 - Instagram account.
-- **`instaclaw` CLI** — [pooriaarab/instaclaw](https://github.com/pooriaarab/instaclaw) (scaffold; needs implementation). Browser-cookie-based scraper in steipete's `*claw` style. Goal: claw saved posts and collections into structured JSON.
+- **`instaclaw` CLI** — [itsryanarmani/instaclaw](https://github.com/itsryanarmani/instaclaw) (scaffold; needs implementation). Browser-cookie-based scraper in steipete's `*claw` style. Goal: claw saved posts and collections into structured JSON.
 - Logged-in Instagram session in a browser (Meta auth shared with Threads).
 - Fallback until `instaclaw` is built: Meta's "Download Your Information" data export, or Playwright on the web app.
 

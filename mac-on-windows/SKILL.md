@@ -65,7 +65,7 @@ choice that makes everything else fall into place:
   two modifiers
 
 A working, commented implementation lives at
-[`pooriaarab/scripts/scripts/mac-keys-windows`](https://github.com/pooriaarab/scripts/tree/main/scripts/mac-keys-windows).
+[`itsryanarmani/scripts/scripts/mac-keys-windows`](https://github.com/itsryanarmani/scripts/tree/main/scripts/mac-keys-windows).
 Prefer it over PowerToys Keyboard Manager, which is not context-aware and will
 happily break Alt+Tab and terminal keys with a blanket swap.
 

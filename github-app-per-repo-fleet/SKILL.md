@@ -1,7 +1,7 @@
 ---
 name: github-app-per-repo-fleet
 description: >-
-  Use when agents make high-volume GitHub API calls against one pooriaarab private repository.
+  Use when agents make high-volume GitHub API calls against one itsryanarmani private repository.
   Choose per-repo App tokens, personal gh access, or sec-fleet access.
   Check permissions, token scope, pushes, and merge gates without publishing the private registry.
 ---
@@ -34,16 +34,16 @@ Never copy private registry content into this public skill.
 
 ## Read the scripts guides
 
-Read the [per-repo fleet guide](https://github.com/pooriaarab/scripts/blob/main/github-app-per-repo-fleet.md).
+Read the [per-repo fleet guide](https://github.com/itsryanarmani/scripts/blob/main/github-app-per-repo-fleet.md).
 That guide lands with the scripts fleet PR.
-Until merge, follow [github-apps.md](https://github.com/pooriaarab/scripts/blob/main/github-apps.md) plus `./gh-app`.
+Until merge, follow [github-apps.md](https://github.com/itsryanarmani/scripts/blob/main/github-apps.md) plus `./gh-app`.
 
-The same PR adds [gh-app-per-repo-rollout](https://github.com/pooriaarab/scripts/blob/main/gh-app-per-repo-rollout).
+The same PR adds [gh-app-per-repo-rollout](https://github.com/itsryanarmani/scripts/blob/main/gh-app-per-repo-rollout).
 Use its documented interface after merge.
 Do not assume rollout options before reading its help and guide.
 
-Run the following commands from a `pooriaarab/scripts` checkout.
-Use its [gh-app helper](https://github.com/pooriaarab/scripts/blob/main/gh-app) for App creation, installation, and token minting.
+Run the following commands from a `itsryanarmani/scripts` checkout.
+Use its [gh-app helper](https://github.com/itsryanarmani/scripts/blob/main/gh-app) for App creation, installation, and token minting.
 
 ## Create and install
 
@@ -68,7 +68,7 @@ The local credential directory is `pooriaarab-<short>-fleet-app`.
   --perm actions=read \
   --perm checks=read \
   --perm statuses=read
-./gh-app install 'pooriaarab-<short>-fleet' --owner pooriaarab
+./gh-app install 'pooriaarab-<short>-fleet' --owner itsryanarmani
 ```
 
 Complete the creation form in the personal browser.
@@ -98,9 +98,9 @@ Run this block in Bash or Zsh after replacing `<short>` and `REPO`.
   export GH_TOKEN
   gh api installation/repositories \
     --jq '{total_count, repositories: [.repositories[].full_name]}'
-  gh api repos/pooriaarab/REPO --jq '{full_name, private}'
+  gh api repos/itsryanarmani/REPO --jq '{full_name, private}'
   gh api rate_limit --jq '{core: .resources.core, graphql: .resources.graphql}'
-  gh pr list --repo pooriaarab/REPO --limit 10
+  gh pr list --repo itsryanarmani/REPO --limit 10
 )
 ```
 
@@ -117,7 +117,7 @@ For a single command, use this form:
 
 ```sh
 GH_TOKEN="$(./gh-app token 'pooriaarab-<short>-fleet-app')" \
-  gh pr list --repo pooriaarab/REPO --limit 10
+  gh pr list --repo itsryanarmani/REPO --limit 10
 ```
 
 `GH_TOKEN` controls `gh`; it does not configure plain `git push`.

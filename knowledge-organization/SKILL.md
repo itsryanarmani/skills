@@ -178,8 +178,8 @@ Use the `google-drive-organizer` skill to restructure into the same taxonomy.
 ```
 
 ### GitHub
-Each code project gets its own repo. Personal scripts/tools → `pooriaarab/tools`.  
-Skills → `pooriaarab/skills`.
+Each code project gets its own repo. Personal scripts/tools → `itsryanarmani/tools`.  
+Skills → `itsryanarmani/skills`.
 
 ### Apple Notes / Obsidian
 Point Obsidian vault at `iCloud/Areas/Personal/Notes/` so notes sync automatically.

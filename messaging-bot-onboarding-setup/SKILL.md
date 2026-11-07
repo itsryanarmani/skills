@@ -39,7 +39,7 @@ the provider dashboard field. If either side is empty or they differ, every inbo
 | WhatsApp (Cloud API) | GET verify: `hub.verify_token`; POST auth: `x-hub-signature-256` (HMAC-SHA256 of body) | Meta app → WhatsApp → Configuration → Webhook: **Verify token** field (matches env); the HMAC key is the **App Secret** (App settings → Basic) | `WHATSAPP_VERIFY_TOKEN` (handshake) + `WHATSAPP_APP_SECRET` (HMAC) |
 
 Generate + deploy a shared secret (Cloudflare Workers example — see the companion
-`set-messaging-webhook-key.sh` in pooriaarab/scripts):
+`set-messaging-webhook-key.sh` in itsryanarmani/scripts):
 
 ```bash
 SECRET="sbwh_$(openssl rand -hex 24)"

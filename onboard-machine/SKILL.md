@@ -5,7 +5,7 @@ description: "Add a Windows, macOS, Linux or Android device to a personal tailne
 
 # onboard-machine
 
-Scripts: `pooriaarab/scripts` → `scripts/machine-onboarding/` (`onboard.sh`,
+Scripts: `itsryanarmani/scripts` → `scripts/machine-onboarding/` (`onboard.sh`,
 `onboard.ps1`, both idempotent).
 
 This is the layer *under* `self-hosted-runner-fleet` and `agent-devbox`. Those

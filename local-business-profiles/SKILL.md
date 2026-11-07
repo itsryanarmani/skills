@@ -1,6 +1,6 @@
 ---
 name: local-business-profiles
-description: "Create a Google Business Profile for a service-area business with no public address, and a Facebook Page for the same site: the screen-by-screen order, the traps that cost time on the first run (a prompt that links the new profile to an unrelated business, suggestion lists that cover the next field, a half-finished draft that comes back, a description Google rejects for a price or a URL, a verification step that asks for an address, a Facebook form that does nothing when the account is rate limited), the eligibility check to do before running it over many sites, and the gbp-create script in pooriaarab/scripts that runs the same steps. Use when a live site needs a local listing, when someone asks for a Google Business Profile or Facebook Page for a site, or after website-directory-submission for a site that serves a local area."
+description: "Create a Google Business Profile for a service-area business with no public address, and a Facebook Page for the same site: the screen-by-screen order, the traps that cost time on the first run (a prompt that links the new profile to an unrelated business, suggestion lists that cover the next field, a half-finished draft that comes back, a description Google rejects for a price or a URL, a verification step that asks for an address, a Facebook form that does nothing when the account is rate limited), the eligibility check to do before running it over many sites, and the gbp-create script in itsryanarmani/scripts that runs the same steps. Use when a live site needs a local listing, when someone asks for a Google Business Profile or Facebook Page for a site, or after website-directory-submission for a site that serves a local area."
 ---
 
 # local-business-profiles
@@ -9,7 +9,7 @@ A local listing gives a site one more place to be found. Creating one by hand
 is about ten screens of clicks. Google documents a Business Profile API, but it
 needs separate API access, so this skill drives the public sign-up screens. It
 records the order and the traps so the next run goes fast. The `gbp-create`
-script in `pooriaarab/scripts` runs the same steps for Google.
+script in `itsryanarmani/scripts` runs the same steps for Google.
 
 ## 0. Check eligibility first
 
@@ -112,7 +112,7 @@ optional, but it ties the Page to the site.
 
 ## 5. The script
 
-`gbp-create` in `pooriaarab/scripts` runs section 2 for every entry in a JSON
+`gbp-create` in `itsryanarmani/scripts` runs section 2 for every entry in a JSON
 spec.
 
 ```bash

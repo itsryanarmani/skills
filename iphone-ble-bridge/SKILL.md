@@ -9,16 +9,16 @@ An ESP32-S3 shows up to each iPhone as a Bluetooth mouse and keyboard. Assistive
 
 **Use when:** you must drive an iPhone and WebDriverAgent is blocked (no Developer Mode, iOS 16 with no usable developer image, no cable).
 
-Firmware, build script and the full doc: `pooriaarab/private-repo-32ef` (`hardware/`, `docs/ble-bridge.md`). CLI: `pooriaarab/scripts` (`ble-bridge`).
+Firmware, build script and the full doc: `itsryanarmani/private-repo-32ef` (`hardware/`, `docs/ble-bridge.md`). CLI: `itsryanarmani/scripts` (`ble-bridge`).
 
 ## Set up the board
 
-Do this before you pair any phone. Work in a `pooriaarab/private-repo-32ef` checkout.
+Do this before you pair any phone. Work in a `itsryanarmani/private-repo-32ef` checkout.
 
 1. Connect the ESP32-S3 to the Mac with USB.
 2. Flash it: `hardware/build.sh`. The script builds and uploads the firmware.
 3. Find the serial port: `ls /dev/cu.usbmodem*`.
-4. Send `ping` over that port with `ble-bridge` (`pooriaarab/scripts`). The board must answer `ok`.
+4. Send `ping` over that port with `ble-bridge` (`itsryanarmani/scripts`). The board must answer `ok`.
 5. Send `log`. It must show `adv=1`. The board now advertises as `Pad xxxx`.
 
 Do not go on if `ping` fails. Fix the board first.
@@ -76,4 +76,4 @@ Whether apps can detect this input path is not proven. Start with passive action
 
 ## Screen over USB
 
-Since 2026-10-24 the screen can come over a USB cable. It needs no AirPlay and no Developer Mode. Use `hardware/usbcap` in `pooriaarab/private-repo-32ef` (PR #12). Read `docs/usb-screen.md` there for the run steps.
+Since 2026-10-24 the screen can come over a USB cable. It needs no AirPlay and no Developer Mode. Use `hardware/usbcap` in `itsryanarmani/private-repo-32ef` (PR #12). Read `docs/usb-screen.md` there for the run steps.

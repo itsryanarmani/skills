@@ -10,7 +10,7 @@ Triage Slack DMs and the Saved Items queue.
 ## Requirements
 
 - Slack workspace with admin or user-level token (`xoxp-...`) — see Slack API docs.
-- **`slackclaw` CLI** — [pooriaarab/slackclaw](https://github.com/pooriaarab/slackclaw) (scaffold; needs implementation). Goal: parallel to steipete's `discrawl` (Discord) but for Slack — local SQLite archive of DMs and saved items, claw-able for agents.
+- **`slackclaw` CLI** — [itsryanarmani/slackclaw](https://github.com/itsryanarmani/slackclaw) (scaffold; needs implementation). Goal: parallel to steipete's `discrawl` (Discord) but for Slack — local SQLite archive of DMs and saved items, claw-able for agents.
 - Per-workspace scope (Slack tokens are per-workspace, not global).
 - Until `slackclaw` is built: use the Slack Web API directly (`conversations.list`, `conversations.history`, etc.) with a user-token from https://api.slack.com/apps.
 

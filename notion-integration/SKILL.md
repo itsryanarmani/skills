@@ -5,7 +5,7 @@ description: "Use when building or submitting a native Notion integration on the
 
 # Building a Notion integration
 
-A Notion integration is a **service that talks to the Notion API** (`https://api.notion.com/v1`), almost always via the official SDK **`@notionhq/client`**. Source lives in `integrations/notion-integration/`. It is a thin layer between Notion and your product's SDK / public REST API — Notion supplies content and database structure; your API supplies the business logic. Read this before the first file; the command-level playbook is `pooriaarab/scripts` `scripts/notion-integration/README.md`.
+A Notion integration is a **service that talks to the Notion API** (`https://api.notion.com/v1`), almost always via the official SDK **`@notionhq/client`**. Source lives in `integrations/notion-integration/`. It is a thin layer between Notion and your product's SDK / public REST API — Notion supplies content and database structure; your API supplies the business logic. Read this before the first file; the command-level playbook is `itsryanarmani/scripts` `scripts/notion-integration/README.md`.
 
 ## When to use
 

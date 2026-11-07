@@ -73,7 +73,10 @@ requests, KV reads, containers, Durable Objects, subscriptions. Rank yours befor
    Group by namespace or script, then map ids to names with the list APIs.
 3. **Per request CPU.** `wrangler tail --format json` shows `cpuTime`, `wallTime`,
    request headers, status and `scriptVersion`. Sample one site for a few minutes per
-   path. Workers Observability can also read logs.
+   path. Workers Observability can also read logs. The tail writes pretty-printed objects back to
+   back, not one per line: decode the stream. `cf-traffic-probe ua-cpu <files>` (scripts repo) does
+   that and splits CPU by crawler name and route kind. Its other probes read hourly CPU per Worker,
+   KV operations and storage per namespace, the top D1 queries by rows read, and zone traffic.
 4. **Per site spread.** Writes per request varied 40 times between sites (0.09 to 2.15).
    A fleet average hides the two or three sites that make half the bill. Rank by site.
 5. **Heavy tail.** Ask analytics for `quantiles { cpuTimeP50 cpuTimeP99 }` per script. CPU minus
@@ -104,9 +107,16 @@ share first (Measure, item 5). Here it was 71% of all CPU: a cold request cost a
 and a warm one about 50 ms, so the bill followed (number of cold starts) times (cost of one).
 Each site is its own Worker and each Cloudflare location starts its own isolate, so you mostly cannot
 cut how often they start (fewer, larger Workers would share isolates, which is a bigger change). You can cut what a start costs.
-- **Bytes are the main lever.** In a fresh local process the first request had a median of 589 ms (the next 20 had 6.6 ms). In a profiled first request of 642 ms, about 350 ms (55%) was V8 compiling the 25.7 MB OpenNext handler (a plain Node compile took 290 to 300 ms, about 11.5 ms per MB) and the rest was real start-up work.
+- **Bytes may matter, but two measurements disagree.** In a fresh local process the first request had a median of 589 ms (the next 20 had 6.6 ms). In a profiled first request of 642 ms, about 350 ms (55%) was V8 compiling the 25.7 MB OpenNext handler (a plain Node compile took 290 to 300 ms, about 11.5 ms per MB) and the rest was real start-up work. A plain Node compile suggests about 230 ms more for 20 MB more code. The slope test below measured about 70 to 90 ms more. Treat bytes as a possible lever, not the main one.
 
   Lazy `import()` does not help: OpenNext inlines dynamic imports into the same file.
+- **A bundle-size slope test, so far unproven either way.** I appended 10 MB and 20 MB of never-called
+  functions to a 25.8 MB handler, then timed one cold request per fresh local D1. The first request moved
+  from about 1.26 s with no extra code to 1.23 to 1.33 s with the function arms and 1.35 to 1.38 s with the
+  data arms (wall time; the local worker reports CPU only as 0 or 1000 ms, a one-second resolution). That test was weak (7 of 15 runs got the local 429 and measured
+  nothing, one or two valid samples per arm, and lazy parsing may hide a real cost), and the profile
+  of the first request put 48% in V8 "(program)" time. Run a clean slope test before you spend
+  a week on bytes, and read the V8 profile with `scripts/startup-profile.ts`.
 - **Find what fills the bundle.** On this fleet Turbopack copied shared modules into each route group
   (zod core 20 times, an app schema module 20 times), better-auth, drizzle and kysely were bundled
   once per rsc and ssr layer, and a 0.94 MB block of legacy encoding tables came from Next's body
@@ -121,11 +131,13 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   Keep it unconfirmed.
   Compare the same hours across days before you credit a change. Deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
-- **Do not pin a region on a live Worker as a fix.** We tried an explicit placement region through
-  the API to put every request in one place and keep one warm isolate. The API rewrote it as
-  `mode: targeted` and the home page went from 0.2 s to 3.3 s. Smart Placement was already on. Save
-  the current placement setting before any change and restore it at once if latency rises. In that
-  test the home page took 3.3 to 3.8 s; test on a copy first.
+- **A region pin per site is a switch, and its benefit is unproven.** An early test set a placement region
+  through the API; it was rewritten as `mode: targeted` and the home page went from 0.2 s to 3.3 s.
+  A later per-site variable that writes `placement.region` into the rendered config gave mixed one-hour
+  results (CPU per request fell on three sites, was flat on two and rose on one). A same-hours, cross-day
+  check over 27 pinned and 22 unpinned sites could not separate the pin from the crawler blocks made in the
+  same days (`optimizations.md`). Pin one site, compare the same hours against an unpinned control, and
+  undo it where it does not help. Save the old setting first.
 
 ### 1. Stop bot and router noise (CPU, requests, D1)
 
@@ -243,6 +255,19 @@ This removes the CPU, the D1 reads and the KV write for those pages.
 - Use `_headers` for cache headers and a trailing slash rule so URLs match the dynamic ones.
 - Keep dynamic routes for pages that need data per visitor.
 
+### 6. Block named crawlers and facet crawls (requests, CPU, D1)
+
+A tail split by crawler name found QlyzeBot at 33% of the sampled CPU on six heavy sites and GPTBot on
+`/search` facet links at about one request a second. Put the polite ones in `robots.txt` and the
+rest behind an edge rule that runs before any Worker. Details, proof and traps in `optimizations.md`
+("Name the crawlers that cost money"). Add the rule to the site launch step.
+
+### 7. Clean KV storage and read the KV cache through the regional cache (KV storage, KV reads)
+
+KV storage was 38.6 GB, 34 GB of it legacy cache entries that never expire and that no deploy reads. Swap the
+namespace; do not delete the keys one by one. A regional Cache API wrapper cut repeat KV reads on a page
+from 6 to 0. Details and traps in `optimizations.md` ("KV storage", "Read the KV cache through the regional Cache API").
+
 ## Process traps (rolled out as checks where possible)
 
 - **Honest targets.** An adversarial review refuted a "$50 a month" claim: the run rate was
@@ -323,6 +348,47 @@ request fee alone was about $1 a day ($0.30 per million over 10M a month), befor
 containers. A $50 a month target needs most requests answered without a Worker run: static assets,
 an edge block, or fewer visitors. State the floor your levers can reach, with a label that says it is an
 estimate, and report measured days beside it.
+
+Measured days on this fleet (billing feed): $126.85 on 2 Nov, $55.50 on 3 Nov (a new period), $17.23 on 4 Nov and
+$9.00 on 5 Nov, a 93% cut in three days. Part of that is traffic and billing lumps, not only the levers: requests fell by about
+half between 4 and 5 Nov, and the KV write line shows $5.00 on days over one million writes and $0.00 below that. The 5 Nov row was CPU $4.34, D1 rows $1.62, KV reads $1.00, requests $0.90,
+container memory $0.60 and KV storage $0.50. Analytics put fleet CPU at $6.98 on 4 Nov and $4.35 on 5 Nov.
+The run rate after the levers above is about $7 a day (ESTIMATE), about $210 a month. A $100 month
+(about $3.3 a day) and a $50 month (about $1.6 a day) were not reached. My floor estimate on Workers is
+$4 to $5 a day, because a Workers plan alone charges $5 a month and traffic is mostly bots that still reach a
+Worker unless an edge rule stops them. Reaching $50 needs a change of platform or of traffic, see below.
+
+## Leaving Cloudflare (verdict, with numbers)
+
+I priced a move for a fleet of 49 sites: 1.95M requests a day (about 23 a second), 20.7 GB a day served
+(0.62 TB a month, 11 KB a request, 6% cached), about 1.1 busy cores at 50 ms per warm request (ESTIMATE),
+about 17 GB of memory for 49 Next processes, D1 data near 0.15 GB (the API field may under-report), R2 22 GB.
+Prices came from provider pages and third-party summaries on 6 Nov 2026 (the GCP and AWS ones are unverified).
+Monthly cost at about $1.10 to the euro (ESTIMATE):
+
+| Option | Total | Why |
+|---|---|---|
+| Cloudflare now | about $270 | measured daily rate times 30 |
+| Cloudflare after the levers | about $190 to 210 | CPU about $75 to 90 plus D1, KV and requests |
+| Hetzner dedicated AX42, one box | about $95 | 79 euro a month plus a 49 euro setup, unlimited traffic, local SQLite; no failover |
+| Hetzner AX42, two boxes | about $185 | the same, with failover |
+| GCP Cloud Run | about $350 | per-request billing like Workers, plus egress at $0.12 a GB and a database |
+| GCP VM (8 vCPU, 32 GB) | about $200 to 270 | 2 to 3 times Hetzner, plus egress |
+| AWS Lambda | about $250 to 300 | duration, egress at $0.09 a GB, a database; cold starts stay |
+| AWS EC2 (8 vCPU) | about $350 | plus egress |
+
+Verdict: GCP and AWS cost the same or more than Cloudflare. Only Hetzner dedicated hardware is cheaper, because a
+flat rate removes the meters that remain: CPU, rows read, KV operations and cold starts. A move is a rewrite: about
+150 files read the Cloudflare environment, 38 use D1, 20 use KV, 11 use R2, and 5 side Workers (cron, fleet, inbound
+mail, queue consumer, Stripe router) must move or stay. Estimate 12 to 20 PRs and several weeks, with one-box and
+data-loss risk (back up SQLite to R2 with Litestream). The saving today is $0 to $175 a month. It grows with
+sites: Cloudflare adds about $0.13 per site per day (ESTIMATE), so at 100 sites it is about $400 to $470 against
+$95 to $185 on Hetzner. Even one box (about $95) is above $50 a month. A $50 month on Workers is not reachable
+without cutting most traffic at the edge.
+
+Do this before you decide: run one heavy site on one Hetzner box (Next standalone, SQLite) for two weeks and
+measure CPU, memory and effort. Decide again at about 80 sites. Hetzner Cloud dedicated-vCPU plans cost more
+per core than the dedicated AX line and showed "currently unavailable" when I checked.
 
 ## Rolling out to many repos
 

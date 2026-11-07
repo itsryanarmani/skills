@@ -48,6 +48,39 @@ any change. Traffic moves the meters more than most code changes do.
   not from cheaper requests.
 - **Trap.** Do not credit a code change for a drop that traffic explains.
 
+### Pin one site's Worker to a region (a switch, not a default)
+
+Smart Placement did nothing here: `cf-placement` answered `local-<colo>` from one client, so each
+data centre still started its own cold isolate. A cold first request cost about 1.3 s of wall time (the local worker reports CPU only as 0 or 1000 ms, a
+one-second resolution, and it said 1000); a warm one cost 14 to 28 ms (measured on a Boat box with real data and a fresh D1).
+
+Change: an optional per-site variable (`PRODUCTION_PLACEMENT_REGION`, like `aws:us-west-2`) that the render
+script writes as `env.production.placement.region` for the app Worker only. Unset keeps Smart Placement.
+Pick the region nearest the site's D1 primary (`wrangler d1 info`). Roll it out one site at a time.
+
+Result, one hour (MEASURED, CPU per request from hourly analytics, the hour before the pin against the first
+full pinned hour): site A 159 to 86 ms, site B 141 to 88, site C 157 to 129, site D 332 to 370 and
+site E 210 to 206 (no change), site F 196 to 344 (worse, so I unpinned it). An unpinned control stayed flat
+(36 to 40 ms). On site C wall p90 fell from 1,693 to 708 ms and no request failed.
+
+Result, same hours across days (MEASURED, hours 07 to 21 UTC, Nov 5 against Nov 6, 27 pinned and 22 unpinned
+sites): the pinned sites went from 207 to 143 ms per request (-31%) and total CPU fell 60%. The unpinned sites
+went from 80 to 175 ms per request (+120%) and total CPU fell 50%. Requests fell 42% on pinned and 77% on
+unpinned sites, because the crawler blocks removed cheap requests. The mix changed, so the pin effect is not
+separable. The benefit is unproven. Do not roll it out to the whole fleet from these numbers.
+
+Traps:
+- Compare like hours across days and keep an unpinned control. Time of day moved CPU per request 33 to 50%
+  on unpinned sites in the same window.
+- The pin applies to every request, not only cache misses, and the Cache API moves with the Worker.
+- An earlier test that set a region through the API rewrote it as `mode: targeted`, and the home page went
+  from 0.2 s to 3.3 s. A change made by config at deploy did not. Save the old setting and undo it at once if
+  latency rises. To undo: delete the variable and redeploy (`wrangler rollback` may keep the pin: UNCERTAIN).
+- A bundle-size test (append 10 or 20 MB of never-called code to the handler) moved the first request only
+  from about 1.26 s to about 1.35 s. That test was weak: 7 of 15 runs got the local 429 and measured nothing,
+  each arm had one or two valid samples, and dead functions may be parsed lazily. Treat "fewer bytes will fix
+  cold starts" as unproven until you run a clean slope test with a fresh D1 per run.
+
 ## Workers requests
 
 ### Turn off RSC prefetch on public links
@@ -83,6 +116,41 @@ any change. Traffic moves the meters more than most code changes do.
 - **Trap.** A `PUT` to the entrypoint replaces all custom rules. Save the old set
   first. Check for an uptime monitor, a webhook or a health check that sends no
   user agent. These can sit outside `/api/`.
+
+### Name the crawlers that cost money, and block the ones that ignore you
+
+Signal: a live tail shows the same few user agents on the slowest requests. Split the tail by crawler NAME,
+not by family. `cf-traffic-probe ua-cpu <tail files>` does it. A family such as "other bot" hid QlyzeBot,
+which was 33% of the sampled CPU on six heavy sites (MEASURED, 1,035 requests in 10 minutes; all 311 of its
+requests hit one site). Check each site apart, because a fleet total hides where one crawler lives.
+
+Change, in three layers:
+1. **`robots.txt` lists.** Block SEO-tool crawlers (SemrushBot, AhrefsBot, MJ12bot, DotBot, BLEXBot,
+   DataForSeoBot, serpstatbot) and crawlers that send nothing back (QlyzeBot, Bytespider, CCBot,
+   Reflectionbot, ElevenlabsCrawler, meta-externalagent and others). Keep Googlebot, bingbot, Applebot,
+   the answer engines (OAI-SearchBot, PerplexityBot, Claude-SearchBot), GPTBot and ClaudeBot, and the
+   link-preview bots. Keep PetalBot out: it is a search engine. A crawler must sit in one group only.
+2. **Facet URLs.** Disallow `/search?*category=`, `tier=`, `country=`, `region=`, `city=` and `sort=`.
+   A tail showed GPTBot sending about one `/search` request a second to two sites (85 to 88% of their
+   requests), and every URL was a facet toggle link. Leave `/search?q=` open if your schema uses it.
+3. **An edge rule for the ones that ignore `robots.txt`.** One custom firewall rule per zone:
+   `lower(http.user_agent) contains "qlyzebot" or ...`, action block. It runs before any Worker, so a
+   blocked request costs no request and no CPU. Keep the rule in a script in the fleet repo (plan, apply,
+   remove; idempotent by its description) so that anyone can rerun or undo it.
+
+Proof (MEASURED): SemrushBot fell from 128 events in a 9.9-minute tail to 2 events in a 6.9-minute tail after the `robots.txt` change.
+QlyzeBot, ElevenlabsCrawler, Bytespider and Reflectionbot still made 49.5% of requests on six sites
+three hours later, so they ignore `robots.txt`. After the edge rule a 200-second tail of the busiest site
+showed 0 QlyzeBot requests (it had been 284 of 326).
+
+Traps:
+- `robots.txt` stops only polite crawlers. Crawlers cache it for up to a day. Measure, then add the edge rule.
+- A Free zone allows 5 custom rules, the `contains` operator and `lower()`, but no regex. The token needs
+  Zone WAF edit. Count the rule slots before you add a second rule.
+- GraphQL on a Free zone has no client ASN and no query string field. Ask for status, country and agent.
+- The edge cannot tell a real browser from a faked one. Amazonbot and Googlebot also hit blocked facet URLs
+  (about 96,000 `/search` 503s a day on six zones); that costs about $0.03 a day, so leave it.
+- Add the rule to the site launch step, or the next site starts unprotected.
 
 ### Pause search jobs, staging and idle sites
 
@@ -155,6 +223,17 @@ data cache and causes a write wave is not supported.
   load size). Measure your own rows per query with `d1QueriesAdaptiveGroups`.
 - **Trap.** The window starts at the write. A key read once is a loss.
 
+### Do not raise the data cache window as the fix (a lesson from a closed PR)
+
+I proposed one hour instead of 300 s for every production site. The hub review showed the premise was wrong,
+and I closed the PR. Three facts: KV writes had already fallen by 27% between the same hours (00 to 21 UTC) of 5 Nov
+(236,842) and 6 Nov (172,728) before the change, so a before and after check would have credited it with a
+drop that had already happened. A whole-day figure for the second day is a partial day: label it. The
+per-route budget (`e2e/cost-budget.json`) shows a first view writes 2 to 6 keys and a repeat writes 0, so
+most writes are first views of long-tail keys that a longer window cannot remove. And the change would have
+made docs and an import message false. Find the writers first (the listing page's "nearby" block is keyed per
+city), apply the break-even rule to each, and compare the same UTC hours after the deploy.
+
 ### Set a per-site data cache window
 
 - **Signal.** A constant cache window shared by data and pages.
@@ -171,6 +250,25 @@ data cache and causes a write wave is not supported.
 KV reads were $1.00 on the day KV writes were $5.00 (MEASURED, billing feed). No
 read cut was measured in this work. Do not cut reads at the cost of writes or D1.
 
+### Read the KV cache through the regional Cache API
+
+Signal: KV reads are about 1.9M a day and the same few keys are read on every page view. On a Boat box one
+render of the home page made 6 KV gets, and a repeat made 6 again.
+
+Change: wrap the incremental cache in OpenNext's `withRegionalCache` in `short-lived` mode (60 s). A repeat
+read in the same data centre then comes from the free Cache API. A repeat made 0 KV gets.
+
+Traps:
+- On Next 16 the wrapper re-reads KV in the background on every hit by default. Set
+  `shouldLazilyUpdateOnCacheHit: false` and `bypassTagCacheOnCacheHit: false`, or the cost stays.
+- The tag cache is still checked on each read, so `revalidateTag` keeps working. Run the specs that write
+  and then read on the cached server (admin writes, menu items, guides, shared D1). The review asked for them.
+- Gate it on the same switch as the page cache (`EDGE_CACHE=on`), so a test server that clears KV keys behind
+  the cache keeps working. `RegionalCache.delete` builds its key without the cache type, so a deleted fetch
+  entry can stay up to a minute.
+- Ceiling: the KV read line was about $1 a day. Check KV reads per namespace for the same hours after the
+  deploy, and check that KV writes do not rise.
+
 ### Serve the sitemap index from KV, stale-safe
 
 - **Signal.** The sitemap index runs a count query on each request.
@@ -180,6 +278,32 @@ read cut was measured in this work. Do not cut reads at the cost of writes or D1
 - **Proof.** Not measured as a separate number. It moves reads from D1 to KV. Weigh
   it with the break-even rule. One KV read costs $0.0000005, a tenth of a write.
 - **Trap.** Never let the edge cache store the degraded copy.
+
+## KV storage
+
+### Find legacy cache entries, and swap the namespace
+
+Signal: the KV storage line ($0.50 per GB-month over 1 GB) was about $0.50 a day. `cf-traffic-probe kv-storage`
+showed 38.6 GB in about 560 namespaces, 34 GB of it cache entries (`inc-cache`). My first reading said 2.8 GB because
+the query returned only part of the rows. Raise the limit and check the row count.
+
+Cause: runtime cache writes got a 24-hour expiry on 22 Oct, but entries written before that never expire, and
+each deploy uses a new build id prefix, so the old entries are never read again. In a sample of 5,000 keys from
+two big namespaces, none had an expiry (a hand check, no log kept). A deploy seeds only about 8 files (145 KB), so deploys are not the cause.
+
+Change: do not delete millions of keys. Each delete is a write operation at $5 per million, about $12 for 2.4M
+keys. Create a fresh namespace, point the site's variable at it, deploy, and delete the old namespace later.
+Deleting a namespace is one call and free. Five sites held 19.8 GB (a hand count, no log kept).
+
+Traps:
+- Analytics namespace ids have dashes. The REST list has none. Strip them before you match, or every name
+  comes back "not listed".
+- Keep the old namespace until the next deploy of that site has succeeded. A failed deploy rolls back to the
+  previous version, and that version is bound to the old namespace.
+- Staging and preview namespaces of other projects in the same account can hold gigabytes too. Report them to
+  their owner.
+- A billing line can arrive in lumps: KV writes showed $5.00 on days over one million writes and $0.00 on a day
+  with 255,000. Compare analytics counts, not single billing rows.
 
 ## D1 rows read
 

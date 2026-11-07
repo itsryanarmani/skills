@@ -70,7 +70,7 @@ authors:
 version: 0.2.0
 date-released: "2026-10-16"
 license: MIT
-repository-code: "https://github.com/pooriaarab/benchmark-sycophancy"
+repository-code: "https://github.com/itsryanarmani/benchmark-sycophancy"
 url: "https://private-repo-337e.com/benchmarks/benchmark-sycophancy"
 keywords:
   - ai-benchmark
@@ -154,7 +154,7 @@ Brace balance checked by eye. Not compiled: this host has no TeX. Replace the pl
 | Card file | The dataset `README.md` is the card. YAML metadata sits at the top between `---` lines. | https://huggingface.co/docs/hub/en/datasets-cards | 2026-10-16 |
 | Paper link | A link to an HF paper page or an arXiv abstract or PDF in the card adds the tag `arxiv:<id>`. | same | 2026-10-16 |
 | Citation field | There is no YAML `citation` key in the doc excerpt I opened. The official template has a "Citation" section with `citation_bibtex` and `citation_apa` placeholders. Put the BibTeX in that section. | https://raw.githubusercontent.com/huggingface/huggingface_hub/main/src/huggingface_hub/templates/datasetcard_template.md | 2026-10-16 |
-| Agent action | The `hf/publish.py` script in `benchmark-family-paper` can add the section and the arXiv link. I did not read that script. | repo `pooriaarab/benchmark-family-paper` | not read |
+| Agent action | The `hf/publish.py` script in `benchmark-family-paper` can add the section and the arXiv link. I did not read that script. | repo `itsryanarmani/benchmark-family-paper` | not read |
 
 ### E6. npm `package.json`
 
@@ -207,7 +207,7 @@ Validated example (JSON parse passed; dataset description is 198 characters). Pl
     "sameAs": "https://huggingface.co/datasets/pooria/benchmark-sycophancy",
     "keywords": ["ai-benchmark", "llm-evaluation", "sycophancy"],
     "version": "0.2.0",
-    "isBasedOn": "https://github.com/pooriaarab/benchmark-sycophancy",
+    "isBasedOn": "https://github.com/itsryanarmani/benchmark-sycophancy",
     "distribution": {
       "@type": "DataDownload",
       "encodingFormat": "application/json",

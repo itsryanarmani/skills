@@ -31,7 +31,7 @@ their release live in [`benchmark-publishing`](../benchmark-publishing/SKILL.md)
    number: the cap in dollars.
 5. **Put a guard between the run and the money.** A proxy that refuses every
    model id that does not end in `:free`, counts requests per day, and halts if a
-   response reports a cost. The tools are in `pooriaarab/scripts`:
+   response reports a cost. The tools are in `itsryanarmani/scripts`:
    `free-only-proxy`, `eval-matrix`, `eval-analyze`, `trivial-policy-server`.
 6. **Run the free baselines first.** A battery of trivial policies (empty,
    constant, echo, refuse, first tool) costs nothing and runs through the same

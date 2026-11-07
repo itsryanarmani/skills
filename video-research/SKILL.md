@@ -9,7 +9,7 @@ Gemini reads a YouTube URL directly. There is no download, no transcript step,
 and no frame extraction. Point it at the URL and ask.
 
 For one video, call the API. For many, use the `gameref` pipeline in
-`pooriaarab/scripts`, which caches per video and pools the findings.
+`itsryanarmani/scripts`, which caches per video and pools the findings.
 
 ## One video
 

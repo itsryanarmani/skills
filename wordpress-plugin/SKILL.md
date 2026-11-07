@@ -5,7 +5,7 @@ description: "Use when building, testing or submitting a WordPress plugin that i
 
 # Building a WordPress plugin
 
-A WordPress plugin is **plain PHP with a header-comment manifest** — no build step, no framework SDK. The main file's header block (`Plugin Name`, `Version`, `Text Domain`, …) IS the manifest WordPress reads. Source lives in `integrations/wordpress-plugin/`. It is a thin frontend over your own public REST API: WordPress hooks supply the events (`save_post`, settings pages, editor metaboxes); `wp_remote_request` calls your API with the user's own team API key. Read this before the first file; the command-level playbook is in `pooriaarab/scripts` `scripts/wordpress-plugin/README.md`.
+A WordPress plugin is **plain PHP with a header-comment manifest** — no build step, no framework SDK. The main file's header block (`Plugin Name`, `Version`, `Text Domain`, …) IS the manifest WordPress reads. Source lives in `integrations/wordpress-plugin/`. It is a thin frontend over your own public REST API: WordPress hooks supply the events (`save_post`, settings pages, editor metaboxes); `wp_remote_request` calls your API with the user's own team API key. Read this before the first file; the command-level playbook is in `itsryanarmani/scripts` `scripts/wordpress-plugin/README.md`.
 
 ## When to use
 

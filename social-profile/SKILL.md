@@ -9,13 +9,13 @@ One command sets the avatar, banner and bio on many platforms. API platforms use
 tokens. Browser platforms drive a Playwright profile the user has already signed in to.
 Images are center-cropped to each platform's aspect ratio, then resized.
 
-Tool: `social-profile` in pooriaarab/scripts. Docs: `social-profile.md` in the same repo.
-Source PR: https://github.com/pooriaarab/scripts/pull/728
+Tool: `social-profile` in itsryanarmani/scripts. Docs: `social-profile.md` in the same repo.
+Source PR: https://github.com/itsryanarmani/scripts/pull/728
 
 ## Install
 
 ```sh
-gh api repos/pooriaarab/scripts/contents/social-profile -H "Accept: application/vnd.github.raw" > ~/.local/bin/social-profile
+gh api repos/itsryanarmani/scripts/contents/social-profile -H "Accept: application/vnd.github.raw" > ~/.local/bin/social-profile
 chmod +x ~/.local/bin/social-profile   # add ?ref=scr-727-social-profile until PR #728 merges
 pip install pillow                                        # required
 pip install playwright && playwright install chromium     # only for browser platforms

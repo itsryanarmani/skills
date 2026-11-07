@@ -231,7 +231,7 @@ Rules for this paper (Advice (mine)):
 
 ### D1. The humanizer pass
 
-- Run the `humanizer` skill on the abstract, introduction, captions, limitations and README text. The skill is referenced in pooriaarab/skills (`geo-aeo`, `marketing-site`, `repo-standards`) but is not stored there (git tree checked 2026-10-16).
+- Run the `humanizer` skill on the abstract, introduction, captions, limitations and README text. The skill is referenced in itsryanarmani/skills (`geo-aeo`, `marketing-site`, `repo-standards`) but is not stored there (git tree checked 2026-10-16).
 - After the pass, diff the text. Every number, interval, citation key and defined term must survive.
 - Reject edits that remove a hedge which carries scope. Reject edits that add rhythm tricks, lists of three, or praise words.
 - Do not run it on code, BibTeX, tables of results or commit messages.
@@ -264,7 +264,7 @@ Rules:
 - The caption states the takeaway, then the n, then what the bars mean. Rougier, Droettboom and Bourne, "Ten Simple Rules for Better Figures", PLOS Comput Biol 2014: rule 4 is "Captions Are Not Optional". Rule 7 is "Do Not Mislead the Reader". https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1003833 (2026-10-16).
 - Data comes from the repo. A script writes `results/*.csv`. The figure reads the CSV. No typed numbers. Commit the script and the CSV hash.
 - Build in LaTeX with TikZ and pgfplots so a plain `tectonic main.tex` works.
-- Dataviz skill: not in pooriaarab/skills (git tree checked 2026-10-16). The Claude Code host lists a `dataviz` skill. Use it for design choices, then re-implement in pgfplots. Advice (mine).
+- Dataviz skill: not in itsryanarmani/skills (git tree checked 2026-10-16). The Claude Code host lists a `dataviz` skill. Use it for design choices, then re-implement in pgfplots. Advice (mine).
 
 Tested on this Mac, 2026-10-16: Tectonic 0.17.0 built a grouped bar chart with CSV input, asymmetric error bars, Okabe-Ito colours and a hatch pattern. Output: 7.4 KiB vector PDF, fonts embedded, no raster images. One trap: `pattern=` needs `\usetikzlibrary{patterns}` or the build halts.
 

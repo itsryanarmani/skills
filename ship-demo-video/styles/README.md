@@ -63,5 +63,5 @@ Do not add a style that has not shipped at least one video.
 7. **Footage treatment** — card, frame, tilt, zoom values.
 8. **Music** — the generation prompt, the model, the tempo and how the variant was chosen.
 9. **SFX cue map** — which sound lands on which event.
-10. **Reference build** — the example spec and builder in `pooriaarab/scripts` `demo-video/`. Until a
+10. **Reference build** — the example spec and builder in `itsryanarmani/scripts` `demo-video/`. Until a
     style has a builder there, name the video it first shipped on.

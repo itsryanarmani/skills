@@ -4,7 +4,7 @@ An ordered run from a finished PDF to published copies. Follow the steps in orde
 
 Checked 2026-10-16. `UNVERIFIED` means no official page confirmed the fact. A person opens the page before acting. Re-open each source URL before you act: pages change.
 
-Tool: [`paper-publish`](https://github.com/pooriaarab/scripts/blob/main/paper-publish) in `pooriaarab/scripts`. It checks, drafts, archives and writes forms. It never submits, never solves a CAPTCHA and never ticks an agreement. Its failure modes are in `paper-publish.failure-modes.md` in the same repo.
+Tool: [`paper-publish`](https://github.com/itsryanarmani/scripts/blob/main/paper-publish) in `itsryanarmani/scripts`. It checks, drafts, archives and writes forms. It never submits, never solves a CAPTCHA and never ticks an agreement. Its failure modes are in `paper-publish.failure-modes.md` in the same repo.
 
 Inputs you need: the PDF, the arXiv tarball with a `.bbl` (see [`arxiv-independent-author.md`](arxiv-independent-author.md) section F2), a `CITATION.cff`, and a `meta.json` with `title`, `abstract`, `authors` (name, affiliation, ORCID), `license`, `keywords`, `subject_class`, `comments`, `code_url`, `data_concept_dois`, and `venues`.
 
@@ -60,7 +60,7 @@ The tool adds the code repo (`code_url`) and the data records (`data_concept_doi
 Free. No login. It archives the source and gives each repo a SWHID.
 
 ```sh
-paper-publish swh-save https://github.com/pooriaarab/benchmark-core https://github.com/pooriaarab/benchmark-family-paper
+paper-publish swh-save https://github.com/itsryanarmani/benchmark-core https://github.com/itsryanarmani/benchmark-family-paper
 ```
 
 Each line is `URL`, `status`, `SWHID`. The tool waits when the service says 429. A large repo can time out on the first call. Run the command again: it succeeded on the second try. The anonymous API answered `X-Ratelimit-Limit: 120` on 2026-10-16. The period is UNVERIFIED. Add the SWHID to `CITATION.cff` as an `identifiers` entry with `type: swh` (the CFF schema guide lists that type).

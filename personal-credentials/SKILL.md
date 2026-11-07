@@ -110,7 +110,7 @@ revokes. That drift is the recurring failure — see the repair below.
 
 ## Repair: `claude-subs-resync`
 
-`~/.local/bin/claude-subs-resync` (source: `pooriaarab/scripts` repo). Per
+`~/.local/bin/claude-subs-resync` (source: `itsryanarmani/scripts` repo). Per
 account in `~/.config/claude-subs/accounts.json`:
 
 1. Reads the live Keychain session for the account's config dir.

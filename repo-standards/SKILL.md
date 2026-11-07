@@ -6,7 +6,7 @@ description: "Bring a repository up to the repo standard: the README's front doo
 # repo-standards
 
 The standard itself lives in
-[`pooriaarab/scripts/repo-standards.md`](https://github.com/pooriaarab/scripts/blob/main/repo-standards.md).
+[`itsryanarmani/scripts/repo-standards.md`](https://github.com/itsryanarmani/scripts/blob/main/repo-standards.md).
 Read it once. Do not restate it here and do not paraphrase it into a README.
 This skill is the procedure for satisfying it, and the parts of the job no
 program can finish.
@@ -61,7 +61,7 @@ This is the step that gets skipped, and it is the one a reader notices. See
 ### 5. Write the README
 
 Start from the matching template in
-`pooriaarab/scripts/repo-standards-templates/`. Fill every `__PLACEHOLDER__`.
+`itsryanarmani/scripts/repo-standards-templates/`. Fill every `__PLACEHOLDER__`.
 Delete the instruction comment at the top first, so you cannot ship it.
 
 ### 6. Verify every command in it
@@ -76,7 +76,7 @@ to everyone who could have caught it.
 ### 7. Set the About panel
 
 ```bash
-gh repo edit pooriaarab/<repo> \
+gh repo edit itsryanarmani/<repo> \
   --description "<the same sentence>" \
   --homepage "https://<live url>" \
   --add-topic <topic> --add-topic <topic> --add-topic <topic> --add-topic <topic>
@@ -91,7 +91,7 @@ Topic names on a private repo are public. Do not name an unshipped product.
 
 Every repo, public or private. GitHub cannot serve a default one, because a
 license has to travel with the clone. Everything else in the community health
-set comes from [`pooriaarab/.github`](https://github.com/pooriaarab/.github)
+set comes from [`itsryanarmani/.github`](https://github.com/itsryanarmani/.github)
 and must not be copied into the repo.
 
 ### 9. The social preview
@@ -173,7 +173,7 @@ or Discord. Without one, the preview is a grey card with an avatar on it.
 Read the current state:
 
 ```bash
-gh api graphql -f query='{repository(owner:"pooriaarab",name:"skills"){
+gh api graphql -f query='{repository(owner:"itsryanarmani",name:"skills"){
   openGraphImageUrl usesCustomOpenGraphImage }}'
 ```
 

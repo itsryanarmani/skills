@@ -1,6 +1,6 @@
 ---
 name: registrar-transfer-to-cloudflare
-description: "Transfer a domain from Namecheap to Cloudflare Registrar end to end from the CLI: zone and DNSSEC preconditions, privacy off and unlock through the Namecheap API, the EPP code that has no API, the Cloudflare transfer-in call, approval of the confirmation mail through the Gmail CLI, and the status poll. Use for any domain move to Cloudflare Registrar. The fleet script domain-transfer-to-cloudflare in pooriaarab/scripts runs this flow."
+description: "Transfer a domain from Namecheap to Cloudflare Registrar end to end from the CLI: zone and DNSSEC preconditions, privacy off and unlock through the Namecheap API, the EPP code that has no API, the Cloudflare transfer-in call, approval of the confirmation mail through the Gmail CLI, and the status poll. Use for any domain move to Cloudflare Registrar. The fleet script domain-transfer-to-cloudflare in itsryanarmani/scripts runs this flow."
 ---
 
 # registrar-transfer-to-cloudflare
@@ -65,5 +65,5 @@ Whois lags the API. Trust the API over whois in the first hour.
 
 ## Related
 
-- `domain-transfer-to-cloudflare` in pooriaarab/scripts runs this flow.
+- `domain-transfer-to-cloudflare` in itsryanarmani/scripts runs this flow.
 - `cloudflare-domain-launch` covers a new domain buy and a Pages site.

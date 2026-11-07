@@ -5,7 +5,7 @@ description: "Build and submit a Vercel integration (an OAuth integration + conf
 
 # Building a Vercel integration
 
-A Vercel integration is an **OAuth app + a configuration UI + a webhook/event handler**, listed in the **Vercel Marketplace**. Source lives in `integrations/<name>/`. Thin server over your own backend. The natural hook: **on a successful deploy, draft a social announcement**. Playbook: `pooriaarab/scripts` `scripts/vercel-integration/README.md`.
+A Vercel integration is an **OAuth app + a configuration UI + a webhook/event handler**, listed in the **Vercel Marketplace**. Source lives in `integrations/<name>/`. Thin server over your own backend. The natural hook: **on a successful deploy, draft a social announcement**. Playbook: `itsryanarmani/scripts` `scripts/vercel-integration/README.md`.
 
 ## The trap: verify the deploy webhook before acting
 

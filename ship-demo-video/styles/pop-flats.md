@@ -89,4 +89,4 @@ Give every SFX its own audio track. The montage pops overlap.
 
 ## Reference build
 
-`pooriaarab/scripts` → `demo-video/styles/pop_flats.py` with `demo-video/examples/pop-flats.json`.
+`itsryanarmani/scripts` → `demo-video/styles/pop_flats.py` with `demo-video/examples/pop-flats.json`.

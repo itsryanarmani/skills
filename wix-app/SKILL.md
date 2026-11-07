@@ -5,7 +5,7 @@ description: "Build and submit a Wix app (a React dashboard page under integrati
 
 # Building a Wix app
 
-A Wix app is commonly an **embedded dashboard page** — a React app the site owner opens in their Wix dashboard, built on the **Wix SDK** (`@wix/sdk`, `@wix/dashboard`). Source lives in `integrations/<name>/`. Thin frontend over your own backend. Playbook: `pooriaarab/scripts` `scripts/wix-app/README.md`.
+A Wix app is commonly an **embedded dashboard page** — a React app the site owner opens in their Wix dashboard, built on the **Wix SDK** (`@wix/sdk`, `@wix/dashboard`). Source lives in `integrations/<name>/`. Thin frontend over your own backend. Playbook: `itsryanarmani/scripts` `scripts/wix-app/README.md`.
 
 ## The trap that fails the build: `import.meta.env` is untyped without vite-env.d.ts
 

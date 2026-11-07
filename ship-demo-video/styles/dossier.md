@@ -92,4 +92,4 @@ exactly where the demo should start. The beat detector read it at double tempo, 
 
 ## Reference build
 
-`pooriaarab/scripts` → `demo-video/styles/dossier.py` with `demo-video/examples/dossier.json`.
+`itsryanarmani/scripts` → `demo-video/styles/dossier.py` with `demo-video/examples/dossier.json`.

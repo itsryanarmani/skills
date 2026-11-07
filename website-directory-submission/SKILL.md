@@ -19,7 +19,7 @@ than no submission — directories reject it and some never let you resubmit.
 ## 0. Prepare the packet once, paste it everywhere
 
 Every directory asks for the same fields. Write them once, keep them in the
-repo (see `scripts/directory-submission` in `pooriaarab/scripts` for the
+repo (see `scripts/directory-submission` in `itsryanarmani/scripts` for the
 generator), and paste per directory:
 
 - **Name** (site name, no superlatives)
@@ -384,7 +384,7 @@ disproportionately GEO-friendly, so file them on every launch.
     surface. Public docs link required by publish date; test every tool in
     the MCP Inspector first — reviewers exercise them.
     - Automate it with `scripts/claude-connector/submit.mjs` in
-      pooriaarab/scripts: one JSON config per site, `--dry-run`,
+      itsryanarmani/scripts: one JSON config per site, `--dry-run`,
       `--status`, `--publish`. It drives the 10-step wizard
       (connection → tools → listing → use cases → company → auth →
       data handling → test & launch → compliance → review) in
@@ -407,7 +407,7 @@ disproportionately GEO-friendly, so file them on every launch.
     `<slug>-plugin/.mcp.json` (one remote server, `"type": "http"`) and
     `.codex-plugin/plugin.json` (author + interface + the
     `extensions.com.openai` review block: 5 positive + 3 negative test
-    cases, `commerce`, release notes). `pooriaarab/scripts`
+    cases, `commerce`, release notes). `itsryanarmani/scripts`
     `scripts/chatgpt-plugin/build.mjs` builds it from a site config.
     - Validator traps: `interface.shortDescription` ≤ 30 chars,
       `displayName` must carry the domain brand (`Example.fyi` — a bare
@@ -471,7 +471,7 @@ disproportionately GEO-friendly, so file them on every launch.
     bundle. Budget the asset build before the submission.
 
 The canonical machine-readable list — every tier above plus these channels,
-with a `method` field per entry — lives in `pooriaarab/scripts` at
+with a `method` field per entry — lives in `itsryanarmani/scripts` at
 `scripts/directory-submission/directories.json`. `check.mjs` next to it
 lists entries, probes their liveness, and prints a per-domain plan. New
 directories go there first; the template's `data/directories.json` is a
@@ -513,7 +513,7 @@ lists auto-close a PR that breaks the format.
 
 The fleet filed 78 PRs and issues to these lists in one run. The full records
 (entry format, PR title style, repo checks, links) are in
-`pooriaarab/scripts`, `scripts/directory-submit/specs/github-lists.jsonl`, with
+`itsryanarmani/scripts`, `scripts/directory-submit/specs/github-lists.jsonl`, with
 a how-to in `scripts/directory-submit/github-lists/README.md`. Look a list up
 with `python3 specs/lookup.py <name>`.
 
@@ -1292,7 +1292,7 @@ PY
    Stop the loop on the first 429 or "too many". Write `blocked` with a
    `retry_after` date and move to the next board.
 5. **Use one browser driver.** Run one driver at a time on one Chrome profile.
-   The helpers in `scripts/directory-submit` (pooriaarab/scripts) read the
+   The helpers in `scripts/directory-submit` (itsryanarmani/scripts) read the
    packet JSON for each site, run one driver per board, and write the ledger.
 6. **Verify on the destination.** Open the board's own list or status page.
    Read the product page, the search API or the "pending review" email. A

@@ -5,7 +5,7 @@ description: "Build and submit a Webflow app (a Designer extension + an OAuth/we
 
 # Building a Webflow app
 
-A Webflow app is commonly **two programs in one package**: a **Designer extension** (an iframe panel in the Webflow Designer, bundled by Vite) and a **Data client / server** (OAuth + CMS webhooks, run as Node ESM). Source lives in `integrations/<name>/` with two build targets. Thin frontend + thin backend over your own API. Playbook: `pooriaarab/scripts` `scripts/webflow-app/README.md`.
+A Webflow app is commonly **two programs in one package**: a **Designer extension** (an iframe panel in the Webflow Designer, bundled by Vite) and a **Data client / server** (OAuth + CMS webhooks, run as Node ESM). Source lives in `integrations/<name>/` with two build targets. Thin frontend + thin backend over your own API. Playbook: `itsryanarmani/scripts` `scripts/webflow-app/README.md`.
 
 ## The trap that wastes a build: NodeNext demands `.js` on every relative import
 

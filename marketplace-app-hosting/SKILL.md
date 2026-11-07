@@ -5,7 +5,7 @@ description: "Use when built iframe marketplace apps (Shopify, Wix, Whop, monday
 
 # Hosting iframe marketplace apps
 
-A marketplace that embeds your app in an `<iframe>` (Shopify admin, Wix dashboard, a Whop, a monday board, …) asks for **one thing: a live HTTPS URL**. Your built app (`dist/`) sitting in a repo has no URL — it must be *served*. This skill is the deploy half of the app 0→1: **one Cloudflare Worker serving every app** at `apps.<domain>/<app>/`. Command-level playbook: `pooriaarab/scripts` `scripts/marketplace-app-hosting/README.md`.
+A marketplace that embeds your app in an `<iframe>` (Shopify admin, Wix dashboard, a Whop, a monday board, …) asks for **one thing: a live HTTPS URL**. Your built app (`dist/`) sitting in a repo has no URL — it must be *served*. This skill is the deploy half of the app 0→1: **one Cloudflare Worker serving every app** at `apps.<domain>/<app>/`. Command-level playbook: `itsryanarmani/scripts` `scripts/marketplace-app-hosting/README.md`.
 
 ## When to use
 

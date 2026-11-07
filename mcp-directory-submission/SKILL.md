@@ -312,7 +312,7 @@ guessing. Required top-level: `$schema` (that const), `schema_version: 1`,
   tools. (`openWorldHint` = touches external systems/third parties.)
 - **`app_info`**: `display_name`, `subtitle` (≤30), `description` (≤4000),
   `category` (enum incl. PRODUCTIVITY, DEVELOPER_TOOLS, BUSINESS, …).
-- A ready generator + config shape: `pooriaarab/scripts/scripts/chatgpt-app-submission`.
+- A ready generator + config shape: `itsryanarmani/scripts/scripts/chatgpt-app-submission`.
 
 Two app ids exist: the **dev-mode connect** id and the **submission** id (the
 portal mints its own — read it from the edit URL

@@ -11,7 +11,7 @@ editing branding, versioning, the install link, and the marketplace submission
 form. Everything below was verified by hand in the Developer Center; none of it
 is in monday's docs.
 
-Companion script: `pooriaarab/scripts` `scripts/monday-app/check-app.mjs` —
+Companion script: `itsryanarmani/scripts` `scripts/monday-app/check-app.mjs` —
 verifies the install link and the reviewer credentials from the CLI before you
 submit.
 

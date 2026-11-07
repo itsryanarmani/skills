@@ -40,7 +40,7 @@ on the screen.
 ## Set up
 
 The `iphone-wda` script in
-[pooriaarab/scripts](https://github.com/pooriaarab/scripts) does every step:
+[itsryanarmani/scripts](https://github.com/itsryanarmani/scripts) does every step:
 
 ```sh
 IPHONE_WDA_TEAM=<team id> iphone-wda up   # build, install, tunnel, forward, wait

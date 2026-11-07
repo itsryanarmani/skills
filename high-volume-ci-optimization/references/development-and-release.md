@@ -1,7 +1,7 @@
 # Choose where CI proof runs
 
 Use this reference when broad CI repeats work already done locally or during
-deployment. Use the [scripts runbook](https://github.com/pooriaarab/scripts/blob/main/ci-cost-controls.md)
+deployment. Use the [scripts runbook](https://github.com/itsryanarmani/scripts/blob/main/ci-cost-controls.md)
 for commands, pool drains, billing evidence, and the cutover checklist.
 
 ## Keep the scheduler and compute choices separate
@@ -61,7 +61,7 @@ private-repository checks, and completed-parent checks.
 Verify the actual registered runner labels and useful job result. A successful
 code deployment does not prove that a live Durable Object uses the new version.
 Check a positive behavior before activating workflows that require the change.
-The [broker runbook](https://github.com/pooriaarab/scripts/tree/main/workers/boat-runners)
+The [broker runbook](https://github.com/itsryanarmani/scripts/tree/main/workers/boat-runners)
 describes one implementation. It does not establish capacity for another fleet.
 
 Retire obsolete checks after verifying their revision is included in the current

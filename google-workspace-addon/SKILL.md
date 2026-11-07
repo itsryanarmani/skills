@@ -10,7 +10,7 @@ the host sidebar** (Docs, Sheets, …). No frontend, no DOM, no Node — you wri
 functions that return cards. Source lives in `integrations/google-workspace-addon/`. It
 is a thin client over your own public REST API: CardService renders the UI, `UrlFetchApp`
 calls the API with a Bearer key. Read this before the first file; the command-level
-playbook is `pooriaarab/scripts` `scripts/google-workspace-addon/README.md`.
+playbook is `itsryanarmani/scripts` `scripts/google-workspace-addon/README.md`.
 
 ## When to use
 

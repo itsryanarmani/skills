@@ -31,7 +31,7 @@ provider cannot supply a fresh VM for every job in a burst.
 
 JIT runners get only the labels passed, without `self-hosted`. Use `boat` or
 `boat-8` alone. Declare both in `.github/actionlint.yaml`; see the pool skill.
-The pool code is in progress in `pooriaarab/scripts` #508 and #509. Confirm
+The pool code is in progress in `itsryanarmani/scripts` #508 and #509. Confirm
 capacity before changing workflows. Check queue delay and idle cost together.
 
 The retired desktop was fast per job but had a fixed service count and host

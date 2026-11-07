@@ -251,6 +251,6 @@ five-figure-plus aftermarket. Get that on the table in round one.
 
 **Not a skill**
 
-- `vibebrand` (`github.com/pooriaarab/vibebrand`) — npm package productizing
+- `vibebrand` (`github.com/itsryanarmani/vibebrand`) — npm package productizing
   `saas-brand-system`: 14 emotion-tagged directions, oklch tokens (light + dark),
   font pairings, generative logos, parametric mascot, CLI + SDK.

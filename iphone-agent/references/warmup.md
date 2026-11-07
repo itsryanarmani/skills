@@ -1,7 +1,7 @@
 # Warmup recipes
 
 Social media account warmup via the ESP32 iPhone agent. Uses the scripts in
-[`pooriaarab/scripts`](https://github.com/pooriaarab/scripts).
+[`itsryanarmani/scripts`](https://github.com/itsryanarmani/scripts).
 
 Every session is **different** — random action order, varied scroll distances,
 human-like pauses, tap jitter. No two runs are identical.

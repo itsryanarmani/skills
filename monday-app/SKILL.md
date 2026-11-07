@@ -5,7 +5,7 @@ description: "Build and submit a monday.com app (a React board/item view under i
 
 # Building a monday.com app
 
-A monday.com app is commonly a **board or item view** — a React app embedded in a monday board, built on the **monday apps SDK** (`monday-sdk-js` for context/API, `@mondaycom/apps-sdk` for server bits). Source lives in `integrations/<name>/`. Thin frontend over your own backend. Playbook: `pooriaarab/scripts` `scripts/monday-app/README.md`.
+A monday.com app is commonly a **board or item view** — a React app embedded in a monday board, built on the **monday apps SDK** (`monday-sdk-js` for context/API, `@mondaycom/apps-sdk` for server bits). Source lives in `integrations/<name>/`. Thin frontend over your own backend. Playbook: `itsryanarmani/scripts` `scripts/monday-app/README.md`.
 
 ## The trap: monday's session token ≠ your API's auth
 

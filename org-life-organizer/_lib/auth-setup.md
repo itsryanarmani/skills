@@ -301,7 +301,7 @@ For read-only DM/saved-items work, the bot needs to be added to relevant servers
 
 ## 9. Slack — Slack Web API (no CLI yet)
 
-**Status:** `slackclaw` repo created at https://github.com/pooriaarab/slackclaw but not yet implemented. Until then:
+**Status:** `slackclaw` repo created at https://github.com/itsryanarmani/slackclaw but not yet implemented. Until then:
 
 1. Create a Slack app at https://api.slack.com/apps.
 2. Add scopes: `users.profile:read`, `conversations.read`, `conversations.history`, `conversations.write`, `bookmarks.read`.

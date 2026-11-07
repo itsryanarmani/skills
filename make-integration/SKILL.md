@@ -8,7 +8,7 @@ description: "Build, push, and submit a Make (Integromat) custom app and get it 
 A Make app is NOT an npm package — the `app.json` in `integrations/make/` is the
 *export* of an app that lives in Make's own builder. You push it component-by-component,
 then request a QA review to list it publicly. Command-level tool + full API notes:
-`pooriaarab/scripts` `scripts/make/README.md` + `publish-app.py`.
+`itsryanarmani/scripts` `scripts/make/README.md` + `publish-app.py`.
 
 ## Push the app — prefer the SDK API (an agent can push the whole thing)
 

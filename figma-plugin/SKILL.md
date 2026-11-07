@@ -5,7 +5,7 @@ description: "Use when building or debugging a Figma plugin (code.js sandbox plu
 
 # Building a Figma plugin
 
-A Figma plugin is **two programs talking over `postMessage`**: `code.js` runs in Figma's plugin sandbox (no DOM, no `window`) and `ui.html` runs in an iframe (full DOM). `manifest.json` declares both (`main`, `ui`) plus `networkAccess.allowedDomains`. Source lives in `integrations/figma-plugin/`. It is a thin frontend over your own backend — your product's SDK or public REST API. Read this before the first file; the command-level playbook is in `pooriaarab/scripts` `scripts/figma-plugin/README.md`. To publish to Community, use `figma-plugin-submission`.
+A Figma plugin is **two programs talking over `postMessage`**: `code.js` runs in Figma's plugin sandbox (no DOM, no `window`) and `ui.html` runs in an iframe (full DOM). `manifest.json` declares both (`main`, `ui`) plus `networkAccess.allowedDomains`. Source lives in `integrations/figma-plugin/`. It is a thin frontend over your own backend — your product's SDK or public REST API. Read this before the first file; the command-level playbook is in `itsryanarmani/scripts` `scripts/figma-plugin/README.md`. To publish to Community, use `figma-plugin-submission`.
 
 ## When to use
 

@@ -134,11 +134,21 @@ restrictions; confirm the owner's intent before adding this access.
 
 1. Confirm that `cliproxyapi -h` lists `-antigravity-login`.
 2. Reuse the signed-in Antigravity app credential when possible.
-3. Validate token refresh and account identity before writing a hub credential.
+3. Validate token refresh with the OAuth client that CLIProxyAPI uses for refresh.
+   Validate account identity before writing a hub credential.
 4. Discover the project through `loadCodeAssist` with `metadata.ideType: ANTIGRAVITY`.
 5. Require a successful response and a project ID.
 6. Set the credential type to `antigravity`.
 7. Set a unique credential prefix, such as `antigravity-personal`.
+   Set `force-model-prefix: true` before adding the credential.
+   In the v8 config layout, this option lives under `routing`.
+   Older layouts use the top-level option. Check the installed version's layout.
+   Confirm the running value through the management API.
+   A saved file alone does not prove that the setting is active.
+   With `false`, unprefixed requests can use this credential when model IDs overlap.
+   With `true`, unprefixed requests use credentials without a prefix.
+   Check other prefixed credentials before changing this global option.
+   Update clients that use their unprefixed IDs to use the corresponding prefixed IDs.
 8. Stage the credential outside Git with mode `0600`.
 9. Parse the staged JSON before installing it in the hub auth directory.
 10. Back up an existing credential before replacement.
@@ -147,7 +157,8 @@ On macOS, the app's Keychain item uses service `gemini` and account
 `antigravity`. The value uses `go-keyring-base64:` around JSON with a nested
 `token` object. Read it inside one process. Decode it in that process.
 Never print the value. This storage format is verified on 2026-11-07 UTC.
-Use the matching OAuth client when refreshing. Preserve the app's Keychain entry.
+Use CLIProxyAPI's OAuth client when validating refresh compatibility.
+Preserve the app's Keychain entry.
 If reuse fails, follow the owner's seat-login rules. The supported login command
 is `cliproxyapi -antigravity-login -no-browser`; it still needs a browser callback.
 Never start a new login merely because model discovery fails.
@@ -161,7 +172,8 @@ issues, PRs, screenshots, and public examples.
 
 Run `cliproxy-hub verify` from an existing client.
 Read the authenticated `/v1/models` catalog through the existing shared HTTPS URL.
-Select an exact `antigravity-personal/<model>` ID from that catalog.
+Select an exact `<prefix>/<model>` ID from that catalog.
+Use the credential prefix configured in step 7.
 The prefix selects the Antigravity subscription when model names overlap.
 Send one small request to that ID. Require a successful inference response.
 Also check the provider's management seat state on the hub.
@@ -179,10 +191,13 @@ Claude subscription seats remain restricted to Claude Code.
 ### Check subscription usage
 
 Enable Antigravity in CodexBar's Providers settings.
-Run `codexbar usage --provider antigravity --json` on the hub.
+The usage JSON can contain an account email. Keep the raw output private.
+Capture `codexbar usage --provider antigravity --json` in a mode `0600` file on the hub.
+Compare its account email with the hub credential's `email` privately.
+Attribute quota to the hub credential only when the identities match.
 The signed-in app can supply measured weekly and five-hour quota windows.
 Check the reported source and quota fields before treating the result as live.
-The JSON can contain an account email. Share only selected quota fields.
+Share only selected quota fields.
 Request token counts describe a call; they do not measure remaining quota.
 
 See the upstream [CodexBar Antigravity notes](https://github.com/steipete/CodexBar/blob/main/docs/antigravity.md)

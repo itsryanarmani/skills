@@ -6,6 +6,10 @@ Claude Code skills for AI-aware development and life organization.
 
 Use [web-performance-evidence](web-performance-evidence/SKILL.md) to measure fonts, caching, API payloads, page loading, and server work.
 
+## Identity changes
+
+[public-identity-migration](public-identity-migration/SKILL.md) audits former names and handles, corrects owned surfaces, and tracks publisher requests.
+
 ## Ad tracking skills
 
 These skills share the `ad-conversion-hub` contract. Use the platform skill for

@@ -50,19 +50,24 @@ any change. Traffic moves the meters more than most code changes do.
 
 ### Pin one site's Worker to a region (a switch, not a default)
 
-Smart Placement did nothing here: `cf-placement` answered `local-<colo>` from a client in Vancouver, so each
-data centre still started its own cold isolate. A cold first request cost about 1.3 s of wall time and about
-1,000 ms of CPU; a warm one cost 14 to 28 ms (measured on a Boat box with real data and a fresh D1).
+Smart Placement did nothing here: `cf-placement` answered `local-<colo>` from one client, so each
+data centre still started its own cold isolate. A cold first request cost about 1.3 s of wall time (the local worker reports CPU only as 0 or 1000 ms, a
+one-second resolution, and it said 1000); a warm one cost 14 to 28 ms (measured on a Boat box with real data and a fresh D1).
 
 Change: an optional per-site variable (`PRODUCTION_PLACEMENT_REGION`, like `aws:us-west-2`) that the render
 script writes as `env.production.placement.region` for the app Worker only. Unset keeps Smart Placement.
 Pick the region nearest the site's D1 primary (`wrangler d1 info`). Roll it out one site at a time.
 
-Result (MEASURED, CPU per request from hourly analytics, before against the first full pinned hour):
-memorycarehomes 159 to 86 ms, adhdevaluations 141 to 88, itinagents 157 to 129, mriprices 332 to 370 and
-mcpdirectory 210 to 206 (no change), sleepstudies 196 to 344 (worse, so I unpinned it). An unpinned control
-stayed flat (36 to 40 ms). On itinagents wall p90 fell from 1,693 to 708 ms and no request failed.
-It helps some sites and not others. Do not roll it out to the whole fleet from tail samples.
+Result, one hour (MEASURED, CPU per request from hourly analytics, the hour before the pin against the first
+full pinned hour): site A 159 to 86 ms, site B 141 to 88, site C 157 to 129, site D 332 to 370 and
+site E 210 to 206 (no change), site F 196 to 344 (worse, so I unpinned it). An unpinned control stayed flat
+(36 to 40 ms). On site C wall p90 fell from 1,693 to 708 ms and no request failed.
+
+Result, same hours across days (MEASURED, hours 07 to 21 UTC, Nov 5 against Nov 6, 27 pinned and 22 unpinned
+sites): the pinned sites went from 207 to 143 ms per request (-31%) and total CPU fell 60%. The unpinned sites
+went from 80 to 175 ms per request (+120%) and total CPU fell 50%. Requests fell 42% on pinned and 77% on
+unpinned sites, because the crawler blocks removed cheap requests. The mix changed, so the pin effect is not
+separable. The benefit is unproven. Do not roll it out to the whole fleet from these numbers.
 
 Traps:
 - Compare like hours across days and keep an unpinned control. Time of day moved CPU per request 33 to 50%
@@ -116,8 +121,8 @@ Traps:
 
 Signal: a live tail shows the same few user agents on the slowest requests. Split the tail by crawler NAME,
 not by family. `cf-traffic-probe ua-cpu <tail files>` does it. A family such as "other bot" hid QlyzeBot,
-which was 33% of the sampled CPU on six heavy sites (MEASURED, 1,035 requests in 10 minutes). Check each
-site apart: all 284 QlyzeBot requests in a later sample hit ONE site, not six.
+which was 33% of the sampled CPU on six heavy sites (MEASURED, 1,035 requests in 10 minutes; all 311 of its
+requests hit one site). Check each site apart, because a fleet total hides where one crawler lives.
 
 Change, in three layers:
 1. **`robots.txt` lists.** Block SEO-tool crawlers (SemrushBot, AhrefsBot, MJ12bot, DotBot, BLEXBot,
@@ -130,10 +135,10 @@ Change, in three layers:
    requests), and every URL was a facet toggle link. Leave `/search?q=` open if your schema uses it.
 3. **An edge rule for the ones that ignore `robots.txt`.** One custom firewall rule per zone:
    `lower(http.user_agent) contains "qlyzebot" or ...`, action block. It runs before any Worker, so a
-   blocked request costs no request and no CPU. Rule, script and test: `scripts/ops/waf-bots.py` in the
-   directory repo (plan, apply, remove; idempotent by description).
+   blocked request costs no request and no CPU. Keep the rule in a script in the fleet repo (plan, apply,
+   remove; idempotent by its description) so that anyone can rerun or undo it.
 
-Proof (MEASURED): SemrushBot fell from 128 events to 2 in 7 minutes after the `robots.txt` change.
+Proof (MEASURED): SemrushBot fell from 128 events in a 9.9-minute tail to 2 events in a 6.9-minute tail after the `robots.txt` change.
 QlyzeBot, ElevenlabsCrawler, Bytespider and Reflectionbot still made 49.5% of requests on six sites
 three hours later, so they ignore `robots.txt`. After the edge rule a 200-second tail of the busiest site
 showed 0 QlyzeBot requests (it had been 284 of 326).
@@ -221,8 +226,9 @@ data cache and causes a write wave is not supported.
 ### Do not raise the data cache window as the fix (a lesson from a closed PR)
 
 I proposed one hour instead of 300 s for every production site. The hub review showed the premise was wrong,
-and I closed the PR. Three facts: KV writes had already fallen from 255,179 (5 Nov) to 172,728 (6 Nov) before
-the change, so a before and after check would have credited it with a drop that had already happened. The
+and I closed the PR. Three facts: KV writes had already fallen by 27% between the same hours (00 to 21 UTC) of 5 Nov
+(236,842) and 6 Nov (172,728) before the change, so a before and after check would have credited it with a
+drop that had already happened. A whole-day figure for the second day is a partial day: label it. The
 per-route budget (`e2e/cost-budget.json`) shows a first view writes 2 to 6 keys and a repeat writes 0, so
 most writes are first views of long-tail keys that a longer window cannot remove. And the change would have
 made docs and an import message false. Find the writers first (the listing page's "nearby" block is keyed per
@@ -278,16 +284,16 @@ Traps:
 ### Find legacy cache entries, and swap the namespace
 
 Signal: the KV storage line ($0.50 per GB-month over 1 GB) was about $0.50 a day. `cf-traffic-probe kv-storage`
-showed 38.5 GB in 564 namespaces, 34 GB of it cache entries (`inc-cache`). My first reading said 2.8 GB because
+showed 38.6 GB in about 560 namespaces, 34 GB of it cache entries (`inc-cache`). My first reading said 2.8 GB because
 the query returned only part of the rows. Raise the limit and check the row count.
 
 Cause: runtime cache writes got a 24-hour expiry on 22 Oct, but entries written before that never expire, and
 each deploy uses a new build id prefix, so the old entries are never read again. In a sample of 5,000 keys from
-two big namespaces, none had an expiry. A deploy seeds only about 8 files (145 KB), so deploys are not the cause.
+two big namespaces, none had an expiry (a hand check, no log kept). A deploy seeds only about 8 files (145 KB), so deploys are not the cause.
 
 Change: do not delete millions of keys. Each delete is a write operation at $5 per million, about $12 for 2.4M
 keys. Create a fresh namespace, point the site's variable at it, deploy, and delete the old namespace later.
-Deleting a namespace is one call and free. Five sites held 19.8 GB.
+Deleting a namespace is one call and free. Five sites held 19.8 GB (a hand count, no log kept).
 
 Traps:
 - Analytics namespace ids have dashes. The REST list has none. Strip them before you match, or every name

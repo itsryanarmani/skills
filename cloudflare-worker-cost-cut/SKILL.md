@@ -107,12 +107,13 @@ share first (Measure, item 5). Here it was 71% of all CPU: a cold request cost a
 and a warm one about 50 ms, so the bill followed (number of cold starts) times (cost of one).
 Each site is its own Worker and each Cloudflare location starts its own isolate, so you mostly cannot
 cut how often they start (fewer, larger Workers would share isolates, which is a bigger change). You can cut what a start costs.
-- **Bytes are the main lever.** In a fresh local process the first request had a median of 589 ms (the next 20 had 6.6 ms). In a profiled first request of 642 ms, about 350 ms (55%) was V8 compiling the 25.7 MB OpenNext handler (a plain Node compile took 290 to 300 ms, about 11.5 ms per MB) and the rest was real start-up work.
+- **Bytes may matter, but two measurements disagree.** In a fresh local process the first request had a median of 589 ms (the next 20 had 6.6 ms). In a profiled first request of 642 ms, about 350 ms (55%) was V8 compiling the 25.7 MB OpenNext handler (a plain Node compile took 290 to 300 ms, about 11.5 ms per MB) and the rest was real start-up work. A plain Node compile suggests about 230 ms more for 20 MB more code. The slope test below measured about 70 to 90 ms more. Treat bytes as a possible lever, not the main one.
 
   Lazy `import()` does not help: OpenNext inlines dynamic imports into the same file.
 - **A bundle-size slope test, so far unproven either way.** I appended 10 MB and 20 MB of never-called
   functions to a 25.8 MB handler, then timed one cold request per fresh local D1. The first request moved
-  from about 1.26 s to about 1.35 s. That test was weak (7 of 15 runs got the local 429 and measured
+  from about 1.26 s with no extra code to 1.23 to 1.33 s with the function arms and 1.35 to 1.38 s with the
+  data arms (wall time; the local worker reports CPU only as 0 or 1000 ms, a one-second resolution). That test was weak (7 of 15 runs got the local 429 and measured
   nothing, one or two valid samples per arm, and lazy parsing may hide a real cost), and the profile
   of the first request put 48% in V8 "(program)" time. Run a clean slope test before you spend
   a week on bytes, and read the V8 profile with `scripts/startup-profile.ts`.
@@ -130,12 +131,13 @@ cut how often they start (fewer, larger Workers would share isolates, which is a
   Keep it unconfirmed.
   Compare the same hours across days before you credit a change. Deploy it to one
   site and read `cpuTime` from the tail before you roll it out.
-- **Pin a region per site, by config, and keep it a switch.** An early test set a placement region
+- **A region pin per site is a switch, and its benefit is unproven.** An early test set a placement region
   through the API; it was rewritten as `mode: targeted` and the home page went from 0.2 s to 3.3 s.
-  A later per-site variable that writes `placement.region` into the rendered config helped some sites and
-  not others (MEASURED, `optimizations.md`): CPU per request fell 46% on one site and 38% on another, and
-  was flat or worse on three. Pin one site, compare the same hours against an unpinned control, keep it
-  where it helps, and undo it where it does not. Save the old setting first.
+  A later per-site variable that writes `placement.region` into the rendered config gave mixed one-hour
+  results (CPU per request fell on three sites, was flat on two and rose on one). A same-hours, cross-day
+  check over 27 pinned and 22 unpinned sites could not separate the pin from the crawler blocks made in the
+  same days (`optimizations.md`). Pin one site, compare the same hours against an unpinned control, and
+  undo it where it does not help. Save the old setting first.
 
 ### 1. Stop bot and router noise (CPU, requests, D1)
 
@@ -262,7 +264,7 @@ rest behind an edge rule that runs before any Worker. Details, proof and traps i
 
 ### 7. Clean KV storage and read the KV cache through the regional cache (KV storage, KV reads)
 
-KV storage was 38.5 GB, 34 GB of it legacy cache entries that never expire and that no deploy reads. Swap the
+KV storage was 38.6 GB, 34 GB of it legacy cache entries that never expire and that no deploy reads. Swap the
 namespace; do not delete the keys one by one. A regional Cache API wrapper cut repeat KV reads on a page
 from 6 to 0. Details and traps in `optimizations.md` ("KV storage", "Read the KV cache through the regional Cache API").
 
@@ -348,7 +350,8 @@ an edge block, or fewer visitors. State the floor your levers can reach, with a 
 estimate, and report measured days beside it.
 
 Measured days on this fleet (billing feed): $126.85 on 2 Nov, $55.50 on 3 Nov (a new period), $17.23 on 4 Nov and
-$9.00 on 5 Nov, a 93% cut in three days. The 5 Nov row was CPU $4.34, D1 rows $1.62, KV reads $1.00, requests $0.90,
+$9.00 on 5 Nov, a 93% cut in three days. Part of that is traffic and billing lumps, not only the levers: requests fell by about
+half between 4 and 5 Nov, and the KV write line shows $5.00 on days over one million writes and $0.00 below that. The 5 Nov row was CPU $4.34, D1 rows $1.62, KV reads $1.00, requests $0.90,
 container memory $0.60 and KV storage $0.50. Analytics put fleet CPU at $6.98 on 4 Nov and $4.35 on 5 Nov.
 The run rate after the levers above is about $7 a day (ESTIMATE), about $210 a month. A $100 month
 (about $3.3 a day) and a $50 month (about $1.6 a day) were not reached. My floor estimate on Workers is

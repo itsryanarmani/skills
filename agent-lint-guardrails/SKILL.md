@@ -27,6 +27,37 @@ pre-commit. Default agent budgets:
 
 The canonical `.oxlintrc.json` + workflow live in `~/oxlint-rollout/` on the author's machine.
 
+## Calibrate cleanup rules before enforcement
+
+Record the repository's pinned linter and compiler versions before changing a rule.
+Write accepted and rejected fixtures before changing code or configuration.
+A cleanup rule must reject measured failures and accept valid code.
+Keep each fixture's source, expected result, actual exit status, and tool version.
+Run the fixtures through the same command that the repository gate uses.
+
+| Rule area | Accepted cases to preserve | Rejected cases to detect |
+|---|---|---|
+| Unused bindings | Public exports, type references, required initializer effects | Private bindings with proved unused values |
+| Duplicate imports | Type-only imports, import attributes, distinct module contracts | Redundant runtime imports with the same contract |
+| Unreachable code | Valid branches, intentional compiler checks, required cleanup | Statements after an unconditional exit |
+| Dependency use | CSS imports, package exports, build tools, peer and type contracts | Packages with no supported consumer |
+
+A rejected valid import blocks that rule's enforcement.
+Keep its fixture and report the limitation. Do not rewrite valid code to satisfy a false positive.
+A missing source reference does not prove that a binding or dependency is unused.
+Check entry points, tests, public exports, runtime registration, and string-based calls separately.
+Retain uncertain uses until their reachability is resolved.
+
+Remove a binding only when required initializer effects remain.
+Run the existing caller E2Es and required builds after each cleanup group.
+Save changed source and the failed result before restoring a failed group.
+Keep source restoration separate from generated-data and runtime restoration.
+Generate profile-specific test data in an explicit setup step.
+Check that test commands preserve that prepared input and all other tracked source.
+Restore the original fixture after the profile completes, including when a check fails.
+
+React hook restrictions below express style policy. They do not prove unused code or duplicate behavior.
+
 ## Ship it warn-first, then ratchet — the only way to fan out
 
 Strict-as-**error** is a trap for an existing fleet. Measured on one real repo (private-repo-4944, 702 TS
@@ -34,10 +65,10 @@ files): strict budgets produced **~470 blocking errors** — 266 complexity, 121
 big-file, plus hundreds of `correctness`/`perf` category errors. Multiply across 40 repos and you
 have a multi-week refactor campaign, not a rollout — and every PR red-CIs and blocks its own merge.
 
-So: **every rule ships as `warn`.** CI stays green, the PR auto-merges, and the violation counts
-become visible on every run. Then ratchet per repo over time — promote `correctness` to error
-first (real bugs), then the size/complexity budgets as you burn them down. A simple counter beats
-a grand plan: pick one repo, fix its top violations, flip those rules to error, move on.
+Ship existing size and complexity budgets as `warn` while measuring their violations.
+Promote one rule when its calibration cases pass and its existing violations are resolved.
+A calibrated correctness rule may start at `error` when the repository already passes it.
+Keep advisory counts separate from required checks. Apply every repository review and merge gate.
 
 ## Three gotchas that will bite you (all learned the hard way)
 
@@ -46,9 +77,9 @@ a grand plan: pick one repo, fix its top violations, flip those rules to error, 
    oxlint; the React bans live in **eslint**. Two linters, two jobs.
 2. **Parse errors can't be downgraded by config.** oxlint keeps a couple of parser-level errors
    (`Empty parenthesized expression`, missing-semicolon on some TSX) at error severity no matter
-   what `categories` say — so the job exits 1 even in an all-`warn` config. Fix: the CI step runs
-   `bunx oxlint@^1 --config .oxlintrc.json || true` during the warn-first phase. Drop the `|| true`
-   when you ratchet that repo to enforcement.
+   what `categories` say — so the job exits 1 even in an all-`warn` config.
+   Validate configuration and parsing before the rollout. Keep the linter's real exit status.
+   Do not use `|| true` in a required gate. Report advisory measurements separately.
 3. **Most personal repos have "Allow auto-merge" OFF.** `gh pr merge --auto` then fails. Either the
    PR is immediately mergeable (direct `--squash`) or it is BLOCKED by a required review — do NOT
    admin-bypass a required review to land a lint config; that defeats the guardrail. Leave it for
@@ -80,11 +111,10 @@ hatch, never the default fix.
 - **Skip forks and empty scaffolds.** `isFork==true` → never lint someone else's code. A 3–4 KB
   repo is an empty scaffold — skip it.
 - **Deploy guard before merge.** Check whether the PR's base branch has a deploy/release workflow
-  triggered by push to it. On the standard layout the default branch `main` deploys to the staging
-  environment and only `release` deploys production, so a `main` merge is safe and a PR based on
-  `release` is not. Merge freely where the base deploys to staging or a demo; hold where merging it
-  deploys production. `staging` and `production` are environment names — never retarget to a branch
-  by those names, and never create one.
+  triggered by push to it. Read the actual trigger, target environment, and repository shipping rules.
+  Do not infer the environment from a branch name. A push to `main` can deploy production.
+  Complete required local checks, independent review, and any required Preview walk before merge.
+  Do not create or retarget deployment branches to fit an assumed convention.
 - **Check the trigger against the branches that exist.** A `branches:` filter naming a branch the
   repo does not have never fires and never errors, so a fanned-out workflow can land in dozens of
   repos and run in none of them. Read `git branch -r` (or the repo's default branch from the API)

@@ -1,6 +1,6 @@
 ---
 name: chatgpt-business-claim
-description: "Claim a verified Businesses in ChatGPT profile for each site of a multi-site directory monorepo, using DNS TXT verification on Cloudflare. Covers the Business Hub flow, the exact TXT record shape, the 30-minute challenge expiry, the stop rules that keep you from claiming someone else's business, and a script that repeats the flow per site. Use when a site needs a verified ChatGPT business profile, a blue check, or Business Hub access."
+description: "Claim a verified Businesses in ChatGPT profile for each site of a multi-site directory monorepo, using DNS TXT verification on Cloudflare. Covers the Business Hub flow, the exact TXT record shape, the challenge expiry seen in one claim (about 30 minutes), the stop rules that keep you from claiming someone else's business, and a script that repeats the flow per site. Use when a site needs a verified ChatGPT business profile, a blue check, or Business Hub access."
 ---
 
 # Claim a ChatGPT business profile
@@ -38,8 +38,8 @@ There is no bulk API. Each site is one pass through the Hub.
    | Name or host | `openai-business-profile.<domain>` |
    | Value or content | `openai-business-profile=<one-time token>` |
 
-   **The challenge expires about 30 minutes after it appears.** Add the record
-   in that window.
+   In the one claim this skill is based on, the Hub showed an expiry about 30
+   minutes after the challenge appeared. Add the record inside that window.
 6. Add the record with a TTL of 60. Check it with
    `dig +short TXT openai-business-profile.<domain>`.
 7. Select "Verify domain". Success moves the page to "Help people get to know
@@ -53,7 +53,9 @@ There is no bulk API. Each site is one pass through the Hub.
 # List sites: id, name, domain
 node chatgpt-business-claim.mjs plan <repo-dir>
 
-# Dry run: names the sites and writes nothing
+# Check the name and domain of every site you will claim before --yes.
+# A claim attests to OpenAI that you own the domain.
+# Dry run: makes no DNS or Hub change and checks nothing else
 node chatgpt-business-claim.mjs claim <repo-dir> <site>
 
 # Real claim: name each site and the customer type. No default for either.
@@ -73,11 +75,18 @@ The script has no "all sites" mode on purpose. Name each site.
 
 ## Stop rules
 
+- **Before any Hub click** the script checks that the token sees one active
+  zone for the domain and that no TXT record exists at the challenge name. It
+  stops with `zone-not-usable` or `existing-txt`. It never replaces a record,
+  because another verifier may own it. It only ever adds one.
 - **Hub match:** the script stops with `hub-has-match`. Review by hand.
-- **No challenge found:** the Hub UI changed. Update the selectors.
+- **No challenge found or `unexpected-host`:** the Hub UI changed. The Hub
+  may now hold a pending profile for the site. Finish or delete it by hand,
+  then update the selectors.
 - **Verify failed or `dns-not-visible`:** the record is written. Open the
   Hub's pending profile for the site and select "Verify domain" by hand. Do not
-  re-run `claim`: the Hub issues a new challenge on each run.
+  re-run `claim`. A re-run stops at `existing-txt`, and the Hub may list the
+  pending profile as a match.
 - **A site fails mid-run:** the script records an `error:` stage for that site,
   saves `result.json`, and goes on to the next site.
 - **Never** commit a token, a TXT value or a signed-in browser profile.

@@ -32,11 +32,11 @@ There is no bulk API. Each site is one pass through the Hub.
 4. Enter the site URL and continue.
 5. The Hub shows a TXT record:
 
-   | Field | Value |
+   | Hub label | Value |
    | --- | --- |
    | Type | `TXT` |
-   | Name | `openai-business-profile.<domain>` |
-   | Value | `openai-business-profile=<one-time token>` |
+   | Name or host | `openai-business-profile.<domain>` |
+   | Value or content | `openai-business-profile=<one-time token>` |
 
    **The challenge expires about 30 minutes after it appears.** Add the record
    in that window.
@@ -56,9 +56,13 @@ node chatgpt-business-claim.mjs plan <repo-dir>
 # Dry run: names the sites and writes nothing
 node chatgpt-business-claim.mjs claim <repo-dir> <site>
 
-# Real claim, one site at a time
-CLOUDFLARE_API_TOKEN=... node chatgpt-business-claim.mjs claim <repo-dir> <site> --yes
+# Real claim: name each site and the customer type. No default for either.
+CLOUDFLARE_API_TOKEN=... node chatgpt-business-claim.mjs claim <repo-dir> <site> --type online-store --yes
 ```
+
+`--type` is `online-store` or `physical-location`. It is a factual claim to
+OpenAI, so the script has no default. After the record is written, the script
+waits until a public resolver returns it, then selects "Verify domain".
 
 It needs the `browse` CLI attached to a browser that is signed in to ChatGPT, and
 a Cloudflare token that can edit DNS on the zone. It exits non-zero if any
@@ -71,8 +75,11 @@ The script has no "all sites" mode on purpose. Name each site.
 
 - **Hub match:** the script stops with `hub-has-match`. Review by hand.
 - **No challenge found:** the Hub UI changed. Update the selectors.
-- **Verify failed:** DNS may not have settled. Run again once `dig` shows the
-  record. A repeat run replaces the record and does not add a second one.
+- **Verify failed or `dns-not-visible`:** the record is written. Open the
+  Hub's pending profile for the site and select "Verify domain" by hand. Do not
+  re-run `claim`: the Hub issues a new challenge on each run.
+- **A site fails mid-run:** the script records an `error:` stage for that site,
+  saves `result.json`, and goes on to the next site.
 - **Never** commit a token, a TXT value or a signed-in browser profile.
 
 ## Not covered

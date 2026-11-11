@@ -27,6 +27,8 @@ instrument can see a positive case first.
 - The platform merges a browser and a server event only when the event name
   AND the event id are the same.
 - The server sends `Lead` only on a first sign-up. It returns the event id.
+  It uses the id the browser sent, if any, or a stable key. See
+  [events-and-dedup.md](events-and-dedup.md).
 - The browser fires its copy of `Lead` only when the server returned an id.
   A repeat sign-up returns no id, so neither side sends a second Lead.
 

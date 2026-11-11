@@ -14,7 +14,7 @@ Start at `ad-research-to-creative` (research, angles, persona; it is a separate 
 1. **Set the offer and the goal.** One video, one offer, one primary event to win. A free guide's primary event is `Lead`. A paid kit's is `Purchase`, and `InitiateCheckout` is the signal on the way. See `ad-conversion-hub` for the event names.
 2. **Pick a hook formula** from [hook-formulas](references/hook-formulas.md). Match the formula to the goal. Write one line on why.
 3. **Write five beats.** Hook 0-3 s, Cost 3-7 s, Turn 7-13 s, Proof 13-20 s, Afterthought 20-25 s. One job per beat.
-4. **Fit the words to the time.** The voice runs about 2.4 words a second. Count the words per shot and compare with the shot length. A 25 s video holds about 58 words. A draft of 71 words needed 30 s and had to be cut.
+4. **Fit the words to the time.** The voice runs about 2.4 words a second. Count the words per shot and compare with the shot length. A 25 s video holds about 60 words. A draft of 71 words needed 30 s and had to be cut.
 5. **Fill the claim-check column.** Each shot names the source line it relies on: a line of the guide, a price in the store file, or "opinion, no claim". A shot with no source gets cut or labeled EXAMPLE on screen.
 6. **Render the storyboard** with [the tool](tools/build_storyboard.py) and review it in a browser. See [the example](examples/example-scripts.json) for the file shape (a made-up business).
 7. **Get approval, then produce.** Voice, then lipsync, then cut-aways, then render. See "Production notes".
@@ -74,7 +74,7 @@ Meta covers the edges of a vertical ad with its own interface: the profile and l
 - [ ] The end card holds 3 s and has one ask.
 - [ ] No first-person claim, no invented stat.
 - [ ] The Page and the currency are listed as open decisions.
-- [ ] Every caption and the host's face sit inside the safe frame (see below).
+- [ ] Every caption and the host's face sit inside the safe frame (see above).
 
 ## Lessons log
 

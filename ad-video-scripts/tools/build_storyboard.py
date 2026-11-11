@@ -110,7 +110,12 @@ def main():
     if len(sys.argv) < 3:
         sys.exit(__doc__)
     src, out = sys.argv[1], sys.argv[2]
-    base = sys.argv[sys.argv.index("--img-base") + 1] if "--img-base" in sys.argv else ""
+    base = ""
+    if "--img-base" in sys.argv:
+        i = sys.argv.index("--img-base") + 1
+        if i >= len(sys.argv):
+            sys.exit("--img-base needs a value")
+        base = sys.argv[i]
     if base and not base.endswith("/"):
         base += "/"
     try:

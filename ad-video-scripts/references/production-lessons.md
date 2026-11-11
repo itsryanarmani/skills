@@ -17,7 +17,7 @@ Totals: 77 s of finished video, $1.99 spent (balance drop), about 29 min wall ti
 ## What wasted money or time
 - The 480p vs 720p comparison cost $0.25 for two clips, and one of them (about $0.10) was thrown away. The frames looked alike at phone size. Skip the comparison next time and use 480p for small faces.
 - The price command printed 0.06 (480p) and 0.09 (720p) per unit, but the real charge was about $0.10 and $0.147 for a 5 s clip. Measure one real run from the balance before you plan a budget.
-- Padding short lines to the 5 s minimum meant paying for 5 s of video to get 1 to 3 s of talk. Three end-card clips carried 1.1 to 2.8 s of speech. About $0.50 of lipsync bought roughly 7 s of useful mouth movement.
+- Padding short lines to the 5 s minimum meant paying for 5 s of video to get 1 to 3 s of talk. Three end-card clips carried 1.1 to 2.8 s of speech. About $0.40 of lipsync bought roughly 7 s of useful mouth movement.
 - One TTS model read the style instruction aloud as part of the speech. Check one audition by transcript before you use it.
 - The lipsync model dropped a raised pointing arm in one clip and kept it in another with the same still. Do not plan a shot around a hand pose surviving lipsync.
 - A balance shown with 2 decimals at the start and 3 at the end leaves about $0.01 of error. About $0.05 of spend stayed unexplained. Log the balance with the same precision at every step.

@@ -40,10 +40,10 @@ Output: `summary.md`, `ads.csv`, `builder-prospects.csv`.
 - Image: WaveSpeed `wavespeed-ai/jib-mix-qwen-image/text-to-image` ($0.02). Prompt: no name tag, no text, alone in frame, no hands. Naming the persona in the prompt makes a name tag appear.
 - Make two options. Review before any video spend.
 - **Identity comes from the image, not the prompt.** A prompt rebuilt from a chosen image gives the same style but a different face. Once the owner picks a face, keep that image as the reference, in a private place. Make new poses, outfits and backgrounds with the edit model ($0.02, `images` must be an array). The recipe is in `personas/persona-recipe.json`.
-- Keep outfits polished and fitted. Meta rejects ads that read as sexually suggestive, and one rejection can hurt the whole ad account. A warm smile and eye contact carry the appeal.
+- Keep outfits polished and fitted. Meta rejects ads that read as sexually suggestive, and repeated rejections can restrict the ad account. A warm smile and eye contact carry the appeal.
 - No data says that one hair or eye color sells more. Test two faces against each other.
 - Faces look alike across sites unless the prompt changes age, hair and style. Vary them.
-- Video: HeyGen (use v3, v2 is deprecated) or WaveSpeed lipsync (about $0.10 for a 5 s clip at 480p and about $0.15 at 720p; the model accepts 5 to 20 s of audio per clip and its billing floor can differ from that, so price a clip with `wavespeed price` and measure one real run from the balance). A personal brand should use the real person, not a character.
+- Video: HeyGen (check the vendor's current API version first) or WaveSpeed lipsync (about $0.10 for a 5 s clip at 480p and about $0.15 at 720p; the model accepts 5 to 20 s of audio per clip and its billing floor can differ from that, so price a clip with `wavespeed price` and measure one real run from the balance). A personal brand should use the real person, not a character.
 
 ## 4. Scripts and creatives
 - Script shape, 20 to 35 seconds: hook (2 s), pain, one fix, proof from the guide itself, free next step.
@@ -75,7 +75,7 @@ Rules:
 - Read the pixel with `GET /{pixel_id}/stats?aggregation=event&start_time=<unix>&end_time=<unix>` (give a time range). Fire a test event first.
 - Check business verification before spend. The status is in Business settings, Security centre.
 - Build the campaign paused. Show the owner the exact settings. The owner approves the budget.
-- Start with a small test, about $300 to $600 for a guide priced under $100. Set the stop line before launch from the economics: The rules differ by goal. A **Lead test** stops when spend reaches about 3 times the target cost per Lead with zero Leads. A **purchase test** stops when spend reaches about 3 to 5 times the profit left on one order after all per-order costs with zero purchases, even if some Leads came in, and it also stops if Leads come in but none buy after the same spend. The owner's cap wins when it is lower.
+- Start with a small test, about $300 to $600 for a guide priced under $100. Set the stop line before launch from the economics: the rules differ by goal. A **Lead test** stops when spend reaches about 3 times the target cost per Lead with zero Leads. A **purchase test** stops when spend reaches about 3 to 5 times the profit left on one order after all per-order costs with zero purchases, even if some Leads came in, and it also stops if Leads come in but none buy after the same spend. The owner's cap wins when it is lower.
 
 ## Worked example
 A directory site, 2026-11-10: about 800 live ads read for one topic, 33 contractor advertisers found, one free-guide ad in the whole set, and no guide ads aimed at the premium segment. Keep project names, products and hooks in a private notes file, not here.

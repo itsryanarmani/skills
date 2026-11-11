@@ -111,7 +111,7 @@ Tweaks that matter on a small budget:
   with a read token shows event counts. A pixel that shows 6 PageViews in a
   week has no signal. Set `META_TEST_EVENT_CODE` and watch the Test events tab
   before you spend.
-- **Business verification.** An unverified portfolio allows one system user and
+- **Business verification.** An unverified portfolio has fewer system users and
   lower limits. Reading the verification status needs the
   `business_management` permission. A marketing token lacks it. Check in the
   Business settings Security centre.

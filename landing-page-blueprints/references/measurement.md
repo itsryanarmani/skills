@@ -33,7 +33,8 @@ Check the arithmetic: 16 × 0.2 × 0.8 / 0.05² = 2.56 / 0.0025 = 1,024.
 - **Can:** large effects. At p = 0.20 a change of 0.10 needs about 256 visitors per arm. A rewrite that doubles sign-ups shows in a few hundred visits.
 - **Can:** whether the page works at all, which tracking events fire, and where visitors drop (use step counts, not rates).
 - **Cannot:** small effects. A 1-point change on a 10% page needs thousands of visitors per arm. Do not read it from 200 visits.
-- **Cannot:** paid-product conversion on low volume. Test the free step first; its rate is higher, so it needs fewer visitors.
+- **Cannot:** paid-product conversion on low volume. A paid step has a low rate, so even a large relative lift is a tiny absolute change. Test the free step first.
+- **Absolute versus relative.** For a fixed absolute change δ, n rises with p up to 50%: a 2-point change needs 3,600 per arm at p = 10% and 6,400 at p = 20%. For a relative lift r, δ = r·p and n ≈ 16(1−p)/(r²·p), which falls as p rises: a 20% lift needs 3,600 per arm at p = 10% and 1,600 at p = 20%. Say which kind of change you mean before you plan.
 - If you cannot reach the sample size in a reasonable time, test a bolder change, not a finer one.
 - A single result is a lead, not proof. Repeat a win once before you keep it.
 

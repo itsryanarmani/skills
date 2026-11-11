@@ -15,7 +15,9 @@ COLS = ["slug", "funnel_type", "screens", "first_screen_words", "total_words",
         "cta_count", "person_in_hero", "nav", "urgency", "price_shown"]
 MONEY = re.compile(r"[$₹£€]|\bgbp\b|crore|\bcr\b|figure", re.I)
 OUTCOME = re.compile(r"revenue|income|sales|earn|figure|pipeline|crore|\bcr\b|/month|per month|in \d+ days", re.I)
-GAPS = re.compile(r"blank|empty|did not render|cut off|capped|not loaded|half-loaded", re.I)
+FREE = re.compile(r"[\s(]*(?:\$0|0|100% free|free|no cost|complimentary)(?![\w.,])")
+CAP = 23040  # screenshot height limit of the capture tool
+GAPS =re.compile(r"blank|empty|did not render|cut off|capped|not loaded|half-loaded", re.I)
 
 
 def income_claim(d):
@@ -31,8 +33,8 @@ def price_shown(d):
     (batch notes differ). Here a free offer is 0, even with a struck-through
     or 'value' price; a free first step with a paid tier is 1."""
     o = d["offer"]
-    text = o.get("price_text") or ""
-    free_only = re.match(r"\(?free\b", text, re.I) and not re.search(r"vip|monthly|subscri", text, re.I)
+    text = (o.get("price_text") or "").strip().lower()
+    free_only = FREE.match(text) and not re.search(r"vip|monthly|subscri", text)
     return int(bool(o["price_shown"]) and not free_only)
 
 
@@ -97,7 +99,7 @@ def json_report(docs):
           "| guarantee", allk(lambda d: d["offer"]["guarantee"]),
           "| income claim (heuristic)", allk(income_claim),
           "| capture gaps (heuristic)", allk(lambda d: GAPS.search(d["limits"])),
-          "| capped at 23040 px", allk(lambda d: d["image"]["height"] >= 23000))
+          f"| capped at {CAP} px", allk(lambda d: d["image"]["height"] == CAP))
     print("urgency types:", dict(Counter(t for d in docs for t in d["urgency"]["types"]).most_common()))
     pres = Counter(t for d in docs for t in {s["type"] for s in d["sections"]})
     print("pages with section type:", dict(pres.most_common()))

@@ -12,7 +12,7 @@ Use this skill to choose a page structure and its length, proof and ask before y
 54 landing pages from the public SwipePages creator gallery (https://swipepages.com/landing-page-inspiration/industry/creator/). Credit SwipePages as the source of the pages. This skill copies no page copy or images.
 
 - Evidence is one full-page desktop screenshot per page. No live page, no mobile view, no clicks, no video, no forms behind buttons.
-- 14 of 54 captures have blank or cut areas, and 4 stop at a 23,040 px cap (script count). Their lengths are lower bounds.
+- 14 of 54 captures have blank or cut areas, and 3 stop at a 23,040 px cap (script count). Their lengths are lower bounds.
 - The gallery's own text contradicted the screenshot on 25 of 54 pages (hand count from the batch notes, not script output). This skill trusts the screenshots.
 - The pages are about a year old. Word counts are estimates by eye, within about 15-20%.
 - There is no conversion data. Everything here is a pattern of what exists, not proof of what converts.

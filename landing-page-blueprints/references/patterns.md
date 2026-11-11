@@ -17,14 +17,14 @@ Counts are pages out of 54, from `tools/aggregate_teardowns.py`. Frequency is no
 | 11 | A paid price visible | 15 | Shows the cost up front and filters out poor fits | `alex-harmozi-scale-business-workshop` shows its price only in the last FAQ |
 | 12 | A guarantee | 13 | Moves risk to the seller | Often conditional: `ads-course-ad-system` needs a minimum spend |
 | 13 | Anchoring (struck price or value total) | 22 | A high reference makes the price look small | Used on free items on `sjak-card-reading-healer-workshop` |
-| 14 | Income or result claims (h) | 27 | A concrete outcome is the strongest hook | Absent on most short free pages; carries legal and trust risk |
+| 14 | Income or result claims (h) | 27 | A concrete outcome is the strongest hook | Absent on most short pages with no visible price; carries legal and trust risk |
 | 15 | A short page (2.2 screens or less) | 17 | One action needs little argument | Only 5 of the 17 have a testimonial; `marie-forleo-free-writing-class` is 0.6 screens |
 
 Pattern 6: 48 = 54 minus the 6 pages with a form field in the first screen.
 
 ## Length and price
 
-Pages that show a paid price have a median of 4.8 screens (n=15). Pages that show none have 3.3 (n=39). The link is weak. A $1,297 page (`think-media-youtube-cohort`) is 4.3 screens. Free pages run from 0.5 screens (`siddharth-rajsekar-ai-coaching-workshop`) to 11.9 (`persuasion-experience-performance-agency`).
+Pages that show a paid price have a median of 4.8 screens (n=15). Pages that show none have 3.3 (n=39). The link is weak. A $1,297 page (`think-media-youtube-cohort`) is 4.3 screens. Pages with no visible price run from 0.5 screens (`siddharth-rajsekar-ai-coaching-workshop`) to 11.9 (`persuasion-experience-performance-agency`).
 
 ## Other section counts
 

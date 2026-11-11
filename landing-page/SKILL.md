@@ -17,6 +17,8 @@ audience, per use case, per competitor, a free-tools channel, a mega-menu shell 
 that is **marketing-site**, which owns the content model those pages are generated
 from. Build the home page here; generate the other fifty there.
 
+For funnel-type blueprints and benchmarks counted from 54 public pages, see **landing-page-blueprints**.
+
 ## Two modes — name yours first
 
 1. **CREATE new** — intake → aesthetic direction → section plan → build → review gates.

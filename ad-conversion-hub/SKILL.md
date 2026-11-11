@@ -45,8 +45,76 @@ Keep the event names stable across products and vendors:
 | `subscription_start` | A paid subscription becomes active | `event_id`, `subscription_id`, `value`, `currency` |
 | `refund` | A payment provider records a refund | `event_id`, `order_id`, `value`, `currency` |
 
-Use the payment-provider transaction ID for `event_id` when possible. Use a
+Use the payment-provider transaction ID for `event_id` when possible. With Stripe Checkout, use the payment session id for both the browser and the server copy, so the two paths share one id. Use a
 separate event ID for a refund. Do not reuse the purchase ID for a later event.
+
+## Event ladder for a small ad test (relay names)
+
+The taxonomy above is the vendor-neutral model. A conversion relay and a
+multi-site directory template use these names. Map them once, and keep the map in one file.
+
+| Relay name | Meta event | Fires when | How the two copies share one id |
+|---|---|---|---|
+| `page_view` | PageView | A page loads | Browser pixel only. The server has no matching event |
+| `view_content` | ViewContent | A product or guide page is viewed | The page script makes the id, queues the pixel event and posts the id to a server beacon (the page may be cached) |
+| `lead` | Lead | A visitor gives an email for a free guide | The server makes the id when the claim is stored and sends its copy. A short cookie with only the id lets the next page send the browser copy |
+| `checkout_created` | InitiateCheckout | A paid checkout starts | The browser makes the id on submit, the form posts it, and the server reuses it |
+| `purchase` | Purchase | The payment provider confirms | The payment session id is the event id for both copies |
+
+`checkout_created` here is `begin_checkout` in the table above. Pick one name
+per project and say so in the code.
+
+The `purchase` browser copy fires on the page the buyer returns to. That address
+holds the payment session id, which is an id and not an access token. Send it only
+when the order is paid, read from the server, and never from a page whose address
+holds a download or access token. The server copy needs no page at all.
+
+Tweaks that matter on a small budget:
+
+- **Send every event except PageView twice, with one id.** Send it from the browser pixel and
+  from the server. Meta keeps one when both carry the same event name and the
+  same `event_id`, and both reach the same pixel within 48 hours. A different
+  name, a different id, a different pixel or a copy that arrives after 48 hours
+  counts twice, so a buyer who returns later can produce a second Purchase. The
+  browser copy can be lost to an ad blocker, and the page can leave before it
+  sends.
+- **Make the id where the event starts.** The browser fires `InitiateCheckout`
+  on submit, before the server creates the payment session, so the browser
+  cannot know the session id. Let the browser make the id and post it, and let
+  the server reuse it for its copy. Accept it only if it matches a strict
+  pattern, and fall back to an id built from the session when it is missing.
+- **A test makes too few purchases.** Meta learns from about 50 optimization
+  events an ad set a week. A small test buys few purchases: at an assumed
+  $1.50 a click and a 1% click-to-purchase rate, $300 buys about 200 clicks and
+  about 2 purchases. Replace both numbers with your own. Optimize for `lead` only if the offer has a real free step (an
+  opt-in that leads to the paid offer) and you can measure how many Leads buy.
+  Cheap Leads that never buy are a false win. With no such step, optimize for
+  `checkout_created`, and move to `purchase` when the volume is there.
+- **Read price and title from the server.** A beacon route must never trust a
+  value from the client. Read both from the product catalog.
+- **No database read per page view.** A read on every view adds cost and latency
+  and defeats edge caching of the page. Take the data from a static catalog.
+- **Keep the consent rules for every event.** No consent, no event. A privacy
+  opt-out (GPC or DNT) means no event. A token page (a purchase link, an
+  unsubscribe link) sends nothing. A health or other sensitive site sends no ad
+  events at all.
+- **Keep emails and access tokens out of ad events.** Do not put them in an event,
+  in a URL the pixel sends, or in the cookie that carries an event id between two
+  pages. That cookie holds only the id, lives a few minutes, and the next page
+  clears it. A page whose own address holds a token (a purchase link, an
+  unsubscribe link) sends no events at all.
+- **One pixel for many sites mixes the signal.** Add the site and product to
+  each event, and filter audiences by URL. A pixel for each site is cleaner.
+- **A failed send never blocks.** Log fixed words only. Do not log relay text,
+  an email or a click id.
+- **Check the pixel, not the page.** `GET /{pixel_id}/stats?aggregation=event&start_time=<unix>&end_time=<unix>`
+  with a read token shows event counts. A pixel that shows 6 PageViews in a
+  week has no signal. Set `META_TEST_EVENT_CODE` and watch the Test events tab
+  before you spend.
+- **Business verification.** An unverified portfolio has fewer system users and
+  lower limits. Reading the verification status needs the
+  `business_management` permission. A marketing token lacks it. Check in the
+  Business settings Security centre.
 
 ## Event envelope
 

@@ -28,4 +28,4 @@
 - Let a loop propose actions. A human approves. Claim each approved action inside one database transaction before it runs, so two approvals cannot both spend.
 - Get owner and policy approval before a page goes on a launchable ad. Get legal approval for claims, prices, guarantees and comparisons.
 - Block a page from a live ad while it is draft, rejected, archived or changed since approval.
-- When you build a Reddit login flow, request a permanent token. Use HTTP Basic auth on the token exchange. Without both, no refresh token is issued and the exchange is rejected.
+- When you build a Reddit login flow, request a permanent token (`duration=permanent`) to get a refresh token. Use HTTP Basic auth with the app id and secret on the token exchange. Check Reddit's current OAuth docs before you ship, because they change.

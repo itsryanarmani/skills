@@ -53,7 +53,7 @@ Do not stamp attribution at signup. Signup-time stamping depends on timing. A lo
 
 For server events:
 
-- Use the real client id from the `_ga` cookie. Fall back to the user id only when the cookie is truly absent. A user id does not join the visitor's session.
+- Use the real client id from the `_ga` cookie. Measurement Protocol needs a `client_id`, and a user id cannot replace it. When the cookie is absent, make a new random `client_id` and keep it for later events of that visitor. A new id starts a new session and does not join the earlier visit.
 - Keep the Google click id with its capture time. Google's upload guide does not say to send the first click. It says only to capture the id from the ad click URL. It also says a successful response does not prove attribution. Send the click id that you tested against your attribution setting.
 - Send the latest Meta and Reddit click id from the latest-click cookie, not the first-touch value. Keep first touch for source reports only.
-- Send the raw `_fbc` cookie value as is. Build it from `fbclid` only when the cookie is missing. Send `_fbp` too. The cookie keeps the original click time, and `_fbp` raises match quality.
+- Send the `_fbc` cookie value. Rebuild it from the URL `fbclid` when the cookie is missing or when the URL value differs from the cookie. Send `_fbp` too. `_fbp` raises match quality.

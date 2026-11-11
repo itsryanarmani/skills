@@ -183,7 +183,7 @@ Rules for acting on it:
 ## 11. Experiment log and the optimise loop
 
 Each ad is an experiment. Keep one record per ad in the plan: the hypothesis,
-the expected range, and after the run an outcome (confirmed or refuted, and why)
+the expected range, and after the run an outcome (confirmed, refuted or inconclusive, and why; for inconclusive, say what evidence is missing)
 and a next hypothesis. A test that ends without a next hypothesis taught
 nothing. The reserve creatives you did not launch are the first candidates.
 

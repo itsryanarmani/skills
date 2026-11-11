@@ -34,7 +34,7 @@ Use this skill to choose a page structure and its length, proof and ask before y
 - No fake scarcity, no countdown timer that resets, no struck-through price you never charged.
 - No income or result claims. The data shows these on about half of the pages, and they carry legal and trust risk.
 - Cite benchmarks with n. A median of 3 pages is an anecdote.
-- Rerun `python3 -I tools/aggregate_teardowns.py --table data/teardown-summary.csv` to recheck the table numbers. The JSON inputs are not shipped, so the lever and section counts cannot be rerun from this repo.
+- Rerun `python3 -I tools/aggregate_teardowns.py --table data/teardown-summary.csv` to recheck the table numbers. The JSON inputs are not shipped, so the lever, section and testimonial counts cannot be rerun from this repo.
 
 ## Files
 

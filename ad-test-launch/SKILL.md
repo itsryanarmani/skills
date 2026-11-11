@@ -118,6 +118,14 @@ Follow `ad-landing-tracking`. Test-specific rules:
 - Render the story ratio with the platform's safe zones: leave about 250 px at
   the top and 340 px at the bottom free of text and buttons.
 - Build more creatives than you launch. Keep the rest as the next stage's tests.
+- Do not name or imply the viewer's personal hardship, such as debt, a lost
+  home or a health problem. Write about the offer. Platforms reject it, and it
+  targets people at a weak moment.
+- Quote every claim from a source the site already cites. Keep the source link
+  in the plan next to the line.
+- Have a separate reviewer read the copy and the code diff. It ranks findings
+  by severity and lists what it could not verify. The author does not review
+  their own work.
 
 ## 8. Create the objects paused
 
@@ -130,6 +138,11 @@ Follow `ad-landing-tracking`. Test-specific rules:
 - Refuse a plan with no geo, no lifetime cap or no hypothesis. A tool that
   defaults the geo to another country spends money in the wrong place.
 - Set the Page, pixel and account from the environment. Never print a token.
+- Follow the tool rules in [launch-tooling.md](references/launch-tooling.md):
+  rate-limit backoff, duplicate guard, full read-back, `python3 -I`.
+- Check the Meta API traps in [meta-api-traps.md](references/meta-api-traps.md)
+  before the first create: budget sharing, Instagram identity, special ad
+  categories, account currency, Page access.
 
 ## 9. Go-live gate
 
@@ -142,6 +155,8 @@ Follow `ad-landing-tracking`. Test-specific rules:
 5. Read the real state back. A success reply from the platform is not proof.
    Ask each object for its effective status. Ads may sit in review for a while.
 6. Start the monitor (step 10) the same hour. Pause an ad at its kill gate.
+7. The next day, check the platform's event manager. Reports lag by up to a
+   day. Until then, say which events are unproven.
 
 Platform traps seen on a first run:
 
@@ -205,7 +220,13 @@ Report cost per qualified lead, and work out cost per customer from the
 referral-to-customer rate before you raise spend. Join platform rows to server
 rows by UTM and ad id so each ad has its own funnel.
 
-## 12. Read-out
+## 12. Many sites
+
+When one template runs many sites, keep a per-site status table, exclude
+restricted sites from batch launches, and follow one readiness order. See
+[fleet-readiness.md](references/fleet-readiness.md).
+
+## 13. Read-out
 
 Report impressions, reach, frequency, CPM, link clicks, CTR, CPC, landing views,
 click-to-view loss, form starts and submits. Join platform rows to server rows by

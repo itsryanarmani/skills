@@ -35,6 +35,9 @@ Do not use it to pick a platform or write ad copy.
 4. **Vary.** Serve each variant at a fixed slug. Put the arm in the UTM fields and a `variant` param. Details: [variants-and-naming.md](references/variants-and-naming.md).
 5. **Read.** Use one metric window for all channels. Keep the last good report. Details: [reporting-and-launch.md](references/reporting-and-launch.md).
 6. **Launch.** Follow the checklist below.
+7. **Prove.** Check pixel and server events on the live page with a clean browser. An automated browser sends nothing by default. Details: [verify-events-live.md](references/verify-events-live.md).
+
+For page rules (canonical, no header or footer, catalog-built copy, no paid content), see [ad-landing-pages.md](references/ad-landing-pages.md).
 
 ## Launch checklist for a small test
 
@@ -58,6 +61,8 @@ Stop at the first item that fails.
 | Page shows `{{token}}` | A token had no value | Replace it with a default or empty text |
 | Leads vanish with no error | Login check covers the lead API | Exempt the public lead API and test as anonymous |
 | Report went blank | Every row failed to measure | Keep the last good report |
+| Zero pixel events in an automated check | `navigator.webdriver` is true or a blocker runs | Use the clean check in [verify-events-live.md](references/verify-events-live.md) |
+| Lead counts twice | Event names or ids differ, or the server sends Lead on repeat sign-ups | Same name and id on both sides; send Lead on first sign-up only |
 
 ## What we could not find
 

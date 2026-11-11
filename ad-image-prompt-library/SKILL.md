@@ -12,6 +12,8 @@ A library of copy-paste **ad-creative recipes**, in two families:
 
 Everything here is generic — swap the `[PLACEHOLDERS]` for your product, palette, and copy. **Truthfulness still applies:** no fabricated quotes/reviews/ratings, no impersonation of a real person or platform, only real features (see `ad-creative-templates` §6).
 
+For candid, phone-photo style statics (12 prompt templates, overlay and CTA rules, policy checklist, A/B test plan), read [organic-static-ads.md](organic-static-ads.md).
+
 ## Which format for which goal (selector)
 
 | Goal | Reach for |

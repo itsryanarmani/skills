@@ -10,7 +10,7 @@ Counts are pages out of 54, from `tools/aggregate_teardowns.py`. Frequency is no
 | 4 | Testimonials of any kind | 37 | Others' words are cheaper to trust than your own | 17 pages have none; 12 of the 17 are short pages |
 | 5 | A host or founder block | 34 | Answers "who is this?" before the ask | `codie-sanchez-boardroom-growth` and `janel-loi-newsletter-system` have no bio block |
 | 6 | One button first, form later | 48 | Asking for the commitment after the reason lowers the first step | `brendon-buchard-productivity-sheet-download`: email field in the first screen |
-| 7 | Urgency of some kind | 25 | A deadline removes the option to delay | All 8 lead magnets use none; 28 pages use none |
+| 7 | Urgency of some kind | 25 | A deadline removes the option to delay | All 8 lead magnets use none; 29 pages use none |
 | 8 | A video on the page | 29 | Voice and face carry trust fast | `flute-gandharvas-flute-lessons-webinar`: the embed shows an error in the capture |
 | 9 | A logo or press strip | 22 | Borrowed credibility | The logos on `think-media-youtube-cohort` were too faint to read |
 | 10 | An FAQ block | 26 | Answers the last doubts without a call | Rows are closed on many pages, so answers stay hidden |

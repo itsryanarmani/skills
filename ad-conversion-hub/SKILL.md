@@ -241,6 +241,7 @@ dispatch. Record consent and retention decisions with the event metadata.
 
 Use the platform-specific `*-ads` skill for vendor endpoints and console steps.
 Use `ad-experiments` for hypothesis design, seed sizing, and budget control.
+Use [ad-landing-tracking](../ad-landing-tracking/SKILL.md) for click-id capture, first-touch cookies, and landing page setup.
 Use `ads-google`, `ads-meta`, and `ads-reddit` as detailed examples of adapter
 pitfalls and server-side verification.
 

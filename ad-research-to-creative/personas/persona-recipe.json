@@ -1,0 +1,24 @@
+{
+ "note": "Generic recipe. Keep the chosen face image, names and scene details in a private place, never in this public repo.",
+ "model_first_pass": "wavespeed-ai/jib-mix-qwen-image/text-to-image",
+ "model_edits": "wavespeed-ai/qwen-image/edit-2511",
+ "size": "768*1024",
+ "cost_usd_per_image": 0.02,
+ "first_pass_template": "Photorealistic vertical portrait of a beautiful, approachable woman, {age}, {hair}, {eyes}, flawless natural skin, warm genuine smile, direct eye contact. {outfit}. Standing in {scene}. Soft golden key light, shallow depth of field, shot on a high-end phone. She is alone in the frame. No hands, no name tag, no text, no logo.",
+ "prompt_rules": [
+  "Never put the persona's name in the prompt: it appears as a name tag.",
+  "Say 'no hands' and 'alone in the frame', or a stray hand appears.",
+  "Vary age, hair and styling between sites, or the faces look alike.",
+  "Keep outfits polished and fitted."
+ ],
+ "finding_prompt_alone_fails": "A prompt rebuilt from a chosen image gives the same style, outfit and setting but a different face. A prompt cannot hold an identity.",
+ "finding_edit_model_keeps_identity": "The edit model with the chosen image as the reference kept the face, hair and setting across new poses, a new outfit and a new background.",
+ "edit_recipe": {
+  "step_1": "Upload the reference once: wavespeed upload <image> (prints a CDN URL; the URL is public, so use AI-made images only).",
+  "step_2": "Write a JSON input file. images must be an array: {\"prompt\": \"...\", \"images\": [\"<url>\"], \"size\": \"768*1024\", \"seed\": 7, \"output_format\": \"jpeg\"}. A plain string fails with HTTP 400.",
+  "step_3": "wavespeed run wavespeed-ai/qwen-image/edit-2511 --input-file in.json --download out.jpg",
+  "prompt_pattern": "The same woman, same face and hair, now <change>. Keep her identity exactly."
+ },
+ "reproducibility": "The same model, size, prompt and seed usually give the same image, but a hosted model can change.",
+ "video": "Use the chosen image, or an edit of it, as the portrait for lipsync. Do not regenerate the person from a prompt for video."
+}

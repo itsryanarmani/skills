@@ -28,7 +28,7 @@
 
 ## Indexing and caching
 
-- Send `noindex` as a response header and in page metadata on every ad page. Many thin pages risk a duplicate-content penalty on the main site.
+- Send `noindex` as a response header and in page metadata on every ad page. Ad pages are thin and near copies, and they should not compete with your main pages in search.
 - Send `no-store` and `noindex` on preview routes. Do not record conversions in preview.
 - Keep published page assets cacheable.
 

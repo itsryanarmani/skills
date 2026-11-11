@@ -2,9 +2,12 @@
 
 ## One shared event id
 
-Build the id from a stable key, such as `signup:<user id>`. Compute it in the browser and on the server. No id then travels in the request.
+Make the id once. Both sides must send the same string. Use one of two ways.
 
-For a lead with no account, build it from a hashed-email prefix plus a time value. Use a random value when there is no email. Make sure the server receives the same string.
+1. **Stable key.** When the event has a stable key, derive the id from it on both sides, such as `signup:<user id>` or `purchase:<order id>`. No id needs to travel in the request.
+2. **Created once.** When no stable key exists, such as a lead with no account, make a random id once in the browser. Send it to the server in the request body. The server reuses it and never makes its own.
+
+Never make a random or time-based id on each side separately. The two strings differ, and the platform counts two events.
 
 ## Exact field names
 
@@ -27,7 +30,7 @@ A wrong case means no dedup.
 ## First page view and pixels
 
 - Send the first page view from the inline analytics init script. Do not send it from an effect that runs after hydration. Skip the first client-side mount. Fast ad bounces leave before hydration and record nothing.
-- Load ad pixels as inline scripts that run before hydration.
+- Load ad pixels as inline scripts that run before hydration, but only after the consent check passes. Use the same consent rule as [ad-conversion-hub](../../ad-conversion-hub/SKILL.md): no ad event without `measurement: true`, and no hashed identity without `ad_user_data: true`. Where the law needs opt-in, load no ad pixel before consent. Queue the first page view and send it after consent.
 
 ## Raw events
 
@@ -38,7 +41,7 @@ A wrong case means no dedup.
 
 ## Offline conversion import
 
-1. Key each upload by click id. Send the time in UTC, in the platform's format. Send one conversion per click.
+1. Key each upload by click id, conversion action and order id. One click can lead to repeat purchases or to several conversion actions. Send the time in UTC, in the platform's format. Set a unique order id per conversion action. Google's upload guide calls it the way to prevent duplicate imports, and it rejects repeats of the same order id.
 2. Turn on partial failure. Map each error back to its row by index. One bad row must not block the batch.
 3. Skip rows with no click id. Skip rows with a bad timestamp. Log both counts, so a skipped row is visible.
 4. Use the conversion category your API version accepts. A generic value can be rejected where a specific one works. Enums change between versions. Record the version you tested, and run a dry run first.

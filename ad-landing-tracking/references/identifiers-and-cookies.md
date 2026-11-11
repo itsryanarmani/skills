@@ -4,11 +4,12 @@
 
 - Capture the click id of every paid platform you run, plus the five standard UTM fields. A platform matches a conversion to a click only with its own id.
 - Keep this list: `gclid`, `gbraid`, `wbraid`, `dclid` (Google), `fbclid` (Meta), `rdt_cid` (Reddit). Add `ttclid`, `msclkid`, `li_fat_id` or `twclid` only when you run that platform. A short list stays correct.
+- Add `variant` to the allowlist, next to the UTM fields. See [variants-and-naming.md](variants-and-naming.md).
 - Keep click ids and UTM fields in two lists. Build one allowlist from both. Cookie capture and link forwarding must use the same set.
 - Forward only the allowlist across domains. Do not forward other keys such as `utm_id`. This stops junk and leaks.
 - Add params to a link only when its host equals the target host. Sibling sites must never receive visitor params.
 - Capture the ad platform's dynamic fields with each lead: keyword, match type, campaign id, ad group id, creative, device, network, placement, position, location. Do not forward them. Analysis needs them. The destination does not.
-- Store the full raw query string, capped at 2000 characters, next to the parsed fields. Later analysis then covers params you did not know on day one.
+- Never store the full query string. It can hold tokens, codes or emails. Store only allowlisted params. Keep the raw `utm_*` values for the UTM fields only, so a tag that does not parse still shows in reports.
 - Clean every captured value. Strip control characters, collapse spaces, trim, and cap the length at 200. URL values are untrusted.
 
 ## First-touch cookie
@@ -42,6 +43,6 @@ Do not stamp attribution at signup. Signup-time stamping depends on timing. A lo
 For server events:
 
 - Use the real client id from the `_ga` cookie. Fall back to the user id only when the cookie is truly absent. A user id does not join the visitor's session.
-- Keep the first Google click id. The import wants the original paid click.
+- Keep the Google click id with its capture time. Google's upload guide does not say to send the first click. It says only to capture the id from the ad click URL. It also says a successful response does not prove attribution. Send the click id that you tested against your attribution setting.
 - Keep the latest Meta and Reddit click id. Their server APIs should follow the latest click that can lead to a sale.
 - Send the raw `_fbc` cookie value as is. Build it from `fbclid` only when the cookie is missing. Send `_fbp` too. The cookie keeps the original click time, and `_fbp` raises match quality.

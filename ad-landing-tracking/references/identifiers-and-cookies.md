@@ -23,7 +23,8 @@ Use two cookies. They have two jobs.
 
 - The latest-click cookie must be readable by script, so it cannot be `HttpOnly`. Put nothing else in it: no visitor key, no user id, no email. Keep `HttpOnly` for the first-touch cookie and for every visitor key or session cookie.
 - Report source from first touch. Send the platform the latest click id. Meta says to store and send the most recent `fbclid` value, and to rebuild `_fbc` when the URL value differs from the cookie ([Meta: fbp and fbc](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc)). Apply the same rule to the Reddit id. Check Reddit's current docs before you ship.
-- First touch: keep the first value per param. Merge in params that are new on later visits. A visitor who clicked ads on two platforms keeps both first touches.
+- First touch: write the cookie once, as one whole record, on the first visit that carries any allowlisted param. Do not merge later params into it, because that mixes source, campaign and content from different clicks. Keep each platform's click id in the latest-click cookie, so a visitor who clicked ads on two platforms still sends the right id to each.
+- The latest-click cookie holds the newest click id for every platform you run, Google ids included (`gclid`, `gbraid`, `wbraid`). Overwrite each id only when a new one arrives. Send each platform its own id.
 - Latest click: overwrite the id when the URL carries a different value. Keep the Google id as the Rules below say.
 - Write a cookie only when a param is new or changed. A `Set-Cookie` on every response breaks CDN caching. Never add `Set-Cookie` to a cacheable response without a new or changed param.
 - Set cookies on every response path, including redirects and rewrites. A redirect drops the query string. The id is lost if that response sets nothing.

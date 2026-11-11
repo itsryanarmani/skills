@@ -4,7 +4,8 @@
 
 - Serve each variant at a stable path slug. Fix the slug after the first publish. Live ad URLs must never break.
 - Resolve the page by slug, not by campaign id. Carry the arm in `utm_campaign`, `utm_content` and a `variant` param. The path survives a campaign rename. The params do the attributing.
-- Use one slug and one campaign tag per arm. Give each arm its own audience, creative, page and UTM set. Cost per conversion then reads per arm with no join.
+- Use one slug and one campaign tag per arm, so cost per conversion reads per arm with no join. Change one element between arms: the page, or the creative, or the audience. Keep the other two the same, or you cannot say which change moved the result.
+- Put the arm in both names, as the last part (see the naming table). The `variant` param carries the same arm value.
 - Resolve an ad's destination in this order: the ad's approved variant URL, then the campaign default. Old ads keep working with no migration.
 - Ship one fixed template first. Prove the data model. Add template choice later.
 - To test a hero, keep the copy identical and change one element. Then the result has one cause.
@@ -38,8 +39,8 @@
 |---|---|---|
 | `utm_source` | the platform | `meta` |
 | `utm_medium` | the traffic type | `paid_social` |
-| `utm_campaign` | `{experiment}_{platform}_{vertical}_{geo}` | `e07_meta_bakery_uk` |
-| `utm_content` | `{creative}_{angle}_{format}` | `fieldnotes_savings_video` |
+| `utm_campaign` | `{experiment}_{platform}_{vertical}_{geo}_{arm}` | `e07_meta_bakery_uk_a` |
+| `utm_content` | `{creative}_{angle}_{format}_{arm}` | `fieldnotes_savings_video_a` |
 | `utm_term` | the audience seed | `lookalike_buyers` |
 
 - Use lowercase words with underscores. One spelling means one row in every report.

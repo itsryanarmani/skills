@@ -29,7 +29,8 @@
 
 ## Indexing and caching
 
-- Send `noindex` as a response header and in page metadata on every ad page. Ad pages are thin and near copies, and they should not compete with your main pages in search.
+- Send `noindex` as a response header and in page metadata on every throwaway ad page, such as a variant or persona page. They are thin and near copies, and they should not compete with your main pages in search.
+- A lasting ad page built from the store catalog is the exception: keep it indexable with a canonical to the product page. See [ad-landing-pages.md](ad-landing-pages.md).
 - Send `no-store` and `noindex` on preview routes. Do not record conversions in preview.
 - Keep published page assets cacheable.
 

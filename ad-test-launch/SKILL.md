@@ -1,6 +1,6 @@
 ---
 name: ad-test-launch
-description: "Use when launching a small paid-social test (a few hundred dollars or less) for a service or product and you need the whole path: research the category's ads, model cost and allowable CAC, write persona hypotheses, build UTMs and per-persona landing pages, render static creatives, create the platform objects paused, and gate going live. Covers what a tiny budget can and cannot prove, the targeting-floor and default-geo traps, lifetime budgets and flight dates, and a read-out. Meta first; the method holds for other platforms."
+description: "Use when launching a small paid-social test (a few hundred dollars or less) for a service or product and you need the whole path: research the category's ads, model cost and allowable CAC, write persona hypotheses, build UTMs and per-persona landing pages, render static creatives, create the platform objects paused, and gate going live. Covers what a tiny budget can and cannot prove, the targeting-floor and default-geo traps, lifetime budgets and flight dates, monitoring a live test with verdicts and a kill gate, an experiment log, and a read-out. Meta first; the method holds for other platforms."
 ---
 
 # ad-test-launch
@@ -13,8 +13,8 @@ creative), `ad-creative-templates` (rendering), `ads-meta` (pixel and server eve
 and `ad-auto-optimizer` (running it).
 
 The tools: `ad-creatives-render` renders static creatives from a spec.
-`meta-ad-test` creates the Meta objects paused from a plan file, then activates
-or pauses them.
+`meta-ad-test` creates the Meta objects paused from a plan file, then activates,
+pauses or reports on them. Run either with no arguments to read its usage.
 
 ## 0. Decide what the budget can read
 
@@ -41,7 +41,8 @@ Do this before anything else. It sets the whole design.
    habits. Count by format. Save a few creatives locally.
 4. Write down the white space: the audience nobody addresses. In a test with a
    thin audience, that is the angle.
-5. Cap scraper spend. A pass costs well under 5 in credit. Never save a key.
+5. Cap scraper spend before you start: set a currency, a maximum charge and a
+   request limit. A pass costs well under 5 in credit. Never save a key.
 
 ## 2. Model cost and allowable CAC
 
@@ -138,9 +139,73 @@ Follow `ad-landing-tracking`. Test-specific rules:
 3. The owner approves the spend in words, for this test.
 4. Activate with the approval flag. Do not edit the ad set mid-flight: each
    significant edit restarts learning.
-5. Check delivery after a day. Pause an ad at its kill gate.
+5. Read the real state back. A success reply from the platform is not proof.
+   Ask each object for its effective status. Ads may sit in review for a while.
+6. Start the monitor (step 10) the same hour. Pause an ad at its kill gate.
 
-## 10. Read-out
+Platform traps seen on a first run:
+
+- Meta allows one call per object every 30 seconds. Setting the flight and then
+  the status on the same ad set in a row fails with a rate-limit error. Wait,
+  then retry.
+- Meta locks a start time that is under 15 minutes away. Set the flight once
+  and keep the saved dates if the lock answers.
+- A half-activated test can spend. If any step fails, pause every object again
+  and say so. Then read the statuses before you retry.
+
+## 10. Monitor
+
+Do not leave a live test unwatched. Run the tool's report on a schedule: every
+three to six hours for the first two days, then daily. It only reads, so it is
+safe to automate.
+
+The report gives each ad a verdict:
+
+| Verdict | Meaning |
+|---|---|
+| WAIT | No delivery, or under 1,000 impressions. Say nothing yet. |
+| ON TRACK | Click-through is inside the range the plan expected. |
+| LEADING | Click-through is above the range. |
+| WATCH | Click-through is below the range on enough impressions. |
+| KILL | The ad hit its kill gate: spent the stated amount with too few link clicks. |
+
+Rules for acting on it:
+
+- The kill gate is the owner's rule, written in the plan before the spend. The
+  tool may pause an ad that hit it, with the explicit apply flag. A gate it
+  cannot parse is flagged, never acted on.
+- Any change that raises spend, adds an ad set, or edits a live object needs the
+  owner. Pausing a failing ad does not.
+- With under about 15 clicks per ad, differences in click-through and cost per
+  click are noise. Do not call a winner on them.
+- Check the first hour: impressions above zero, no ad rejected, spend moving.
+
+## 11. Experiment log and the optimise loop
+
+Each ad is an experiment. Keep one record per ad in the plan: the hypothesis,
+the expected range, and after the run an outcome (confirmed or refuted, and why)
+and a next hypothesis. A test that ends without a next hypothesis taught
+nothing. The reserve creatives you did not launch are the first candidates.
+
+Run the loop in this order. Change one thing at a time:
+
+1. Creative: keep the leading angle, retire the failing one, test its reserve.
+2. Audience: widen or narrow only when click-through differs across audiences
+   with enough clicks to read.
+3. Landing page: if clicks are fine and landing views are low, fix speed and
+   the first screen. If views are fine and submits are low, fix the form.
+4. Offer and bidding last. Move to a conversion objective only when you can feed
+   it about 50 events per ad set per week.
+
+Cheaper later stages: retarget site visitors who did not submit, then build a
+look-alike from your own customers. A customer list sends personal data to a
+third party, so it needs the owner's explicit approval.
+
+Report cost per qualified lead, and work out cost per customer from the
+referral-to-customer rate before you raise spend. Join platform rows to server
+rows by UTM and ad id so each ad has its own funnel.
+
+## 12. Read-out
 
 Report impressions, reach, frequency, CPM, link clicks, CTR, CPC, landing views,
 click-to-view loss, form starts and submits. Join platform rows to server rows by

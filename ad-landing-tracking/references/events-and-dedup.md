@@ -4,7 +4,7 @@
 
 Make the id once. Both sides must send the same string. Use one of two ways.
 
-1. **Stable key.** When the event has a stable key, derive the id from it on both sides, such as `signup:<user id>` or `purchase:<order id>`. No id needs to travel in the request.
+1. **Stable key.** When the event has a stable key, derive an opaque id from it on the server, such as `HMAC-SHA256(secret salt, "signup:<user id>")` as hex. Use the same call for `purchase:<order id>`. The server gives the id to the browser. Ad platforms see the id, so never send a raw user id, order number or plain hash. A random id stored with the record also works.
 2. **Created once.** When no stable key exists, such as a lead with no account, make a random id once in the browser. Send it to the server in the request body. The server reuses it and never makes its own.
 
 Never make a random or time-based id on each side separately. The two strings differ, and the platform counts two events.
@@ -35,7 +35,8 @@ A wrong case means no dedup.
 ## Raw events
 
 - Store raw events apart from daily totals. Raw rows support audit and replay. Totals feed dashboards.
-- Dedupe by workspace, goal, visitor key and a time window.
+- Dedupe by workspace, event name and a stable key, such as the order id. Repeat purchases by one visitor stay separate events.
+- If an event has no stable key, a visitor key plus a time window is a last resort. It merges real repeats inside the window and misses retries outside it. Count that loss in the report.
 - Add rate limits, bot filters and replay protection before you trust the numbers.
 - Do not store direct personal data in raw rows. Prefer hashed or pseudonymous visitor keys. Define retention and deletion first.
 

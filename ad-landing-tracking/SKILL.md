@@ -1,6 +1,6 @@
 ---
 name: ad-landing-tracking
-description: "Track a paid ad click from landing page to payment: click-id and UTM allowlist, first-touch cookie, ids carried through checkout into payment metadata, one shared event id for browser and server dedup, variant pages keyed by a fixed slug, UTM naming, safe reports, dry-run spend scripts, and a paused-first launch. Use when you build or audit ad landing pages, attribution capture, or a small paid test, and conversions do not match clicks."
+description: "Track a paid ad click from landing page to payment: click-id and UTM allowlist, first-touch and latest-click cookies, ids carried through checkout into payment metadata, one shared event id for browser and server dedup, variant pages keyed by a fixed slug, UTM naming, safe reports, dry-run spend scripts, and a paused-first launch. Use when you build or audit ad landing pages, attribution capture, or a small paid test, and conversions do not match clicks."
 ---
 
 # ad-landing-tracking
@@ -20,7 +20,7 @@ Do not use it to pick a platform or write ad copy.
 ## Rules that never bend
 
 - Allowlist the params you keep. Drop the rest.
-- Write the cookie on the first touch and on new params only.
+- Write cookies on the first touch and on new or changed params only, after consent where the law needs it.
 - Read ids at the purchase click. Do not stamp them at signup.
 - Use one event id in the browser and on the server. Make it once.
 - Show unknown as unknown. Never show it as zero.
@@ -29,7 +29,7 @@ Do not use it to pick a platform or write ad copy.
 
 ## Workflow
 
-1. **Capture.** Keep click ids and UTM fields in two lists. Build one allowlist from both. Store the first value per allowlisted param. Never store the raw query string. Details: [identifiers-and-cookies.md](references/identifiers-and-cookies.md).
+1. **Capture.** Keep click ids and UTM fields in two lists. Build one allowlist from both. Keep first touch for source reports and the latest Meta and Reddit click id for sending. Write cookies only after consent where the law needs it. Never store the raw query string. Details: [identifiers-and-cookies.md](references/identifiers-and-cookies.md).
 2. **Carry.** Put the allowlisted params on the CTA link, in storage, and into checkout metadata. Read them back in the payment webhook. Details: same file.
 3. **Send.** Make one event id once: derive it from a stable key, or create it in the browser and send it to the server. Use each platform's exact field name. Details: [events-and-dedup.md](references/events-and-dedup.md).
 4. **Vary.** Serve each variant at a fixed slug. Put the arm in the UTM fields and a `variant` param. Details: [variants-and-naming.md](references/variants-and-naming.md).
@@ -41,7 +41,7 @@ Do not use it to pick a platform or write ad copy.
 Stop at the first item that fails.
 
 1. Fire a test event from the browser and one from the server. Use the platform's test id. Confirm both appear and merge into one event.
-2. Click a live ad URL. Confirm the cookie holds the click id and the UTM fields.
+2. Click a live ad URL. Confirm the first-touch cookie holds the UTM fields and the latest-click cookie holds the click id.
 3. Buy through checkout with a test card. Confirm the webhook reads the click id from the payment metadata.
 4. Check the spend cap. Use a lifetime or total cap where the platform has one. Otherwise set a daily budget times the days, with an end date. Also set a hard account spend limit. A daily budget alone is not a cap.
 5. Create the ad paused. Read back targeting, link and budget. Compare with your plan. Activate only if all match.

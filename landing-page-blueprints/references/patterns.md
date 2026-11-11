@@ -9,7 +9,7 @@ Counts are pages out of 54, from `tools/aggregate_teardowns.py`. Frequency is no
 | 3 | Numbers as proof (students, years, ratings) | 43 | A number is specific and quick to scan | `marie-forleo-productivity-masterclass-page`: proof is logos and press only |
 | 4 | Testimonials of any kind | 37 | Others' words are cheaper to trust than your own | 17 pages have none; 12 of the 17 are short pages |
 | 5 | A host or founder block | 34 | Answers "who is this?" before the ask | `codie-sanchez-boardroom-growth` and `janel-loi-newsletter-system` have no bio block |
-| 6 | One button first, form later | 48 | Asking for the commitment after the reason lowers the first step | `brendon-buchard-productivity-sheet-download`: email field in the first screen |
+| 6 | No form in the first screen | 48 | A button first asks for less than a field. The screenshots do not show what sits behind the button, so the sequence is a hypothesis | `brendon-buchard-productivity-sheet-download`: email field in the first screen (a counter-example) |
 | 7 | Urgency of some kind | 25 | A deadline removes the option to delay | All 8 lead magnets use none; 29 pages use none |
 | 8 | A video on the page | 29 | Voice and face carry trust fast | `flute-gandharvas-flute-lessons-webinar`: the embed shows an error in the capture |
 | 9 | A logo or press strip | 22 | Borrowed credibility | The logos on `think-media-youtube-cohort` were too faint to read |

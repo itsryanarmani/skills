@@ -34,7 +34,8 @@ def price_shown(d):
     or 'value' price; a free first step with a paid tier is 1."""
     o = d["offer"]
     text = (o.get("price_text") or "").strip().lower()
-    free_only = FREE.match(text) and not re.search(r"vip|monthly|subscri", text)
+    free_text = FREE.match(text) or re.search(r"\bnow free\b|\bfree$", text)
+    free_only = free_text and not re.search(r"vip|monthly|subscri", text)
     return int(bool(o["price_shown"]) and not free_only)
 
 

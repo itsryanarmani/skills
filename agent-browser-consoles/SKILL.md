@@ -225,3 +225,10 @@ a stale headless process from an earlier run can still be driving the tab.
 
 Rule of thumb: if the next sentence to the user is "do X in the browser," it
 must be headed first.
+
+## 16. Facebook's Page editor
+
+The Page editor has its own traps: a welcome dialog that blocks clicks, a
+session left acting as a Page after a failed run, and a picture endpoint that
+reports a silhouette for a real photo. See
+`local-business-profiles/references/page-trust.md`, section 3.

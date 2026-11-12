@@ -1,6 +1,6 @@
 ---
 name: local-business-profiles
-description: "Create a Google Business Profile for a service-area business with no public address, and a Facebook Page for the same site: the screen-by-screen order, the traps that cost time on the first run (a prompt that links the new profile to an unrelated business, suggestion lists that cover the next field, a half-finished draft that comes back, a description Google rejects for a price or a URL, a verification step that asks for an address, a Facebook form that does nothing when the account is rate limited), the eligibility check to do before running it over many sites, and the gbp-create script in itsryanarmani/scripts that runs the same steps. Use when a live site needs a local listing, when someone asks for a Google Business Profile or Facebook Page for a site, or after website-directory-submission for a site that serves a local area."
+description: "Create a Google Business Profile for a service-area business with no public address, and a Facebook Page for the same site: the screen-by-screen order, the traps that cost time on the first run (a prompt that links the new profile to an unrelated business, suggestion lists that cover the next field, a half-finished draft that comes back, a description Google rejects for a price or a URL, a verification step that asks for an address, a Facebook form that does nothing when the account is rate limited), the minimum Page trust setup before ads (profile photo, cover, bio, link, category, built with fb-page-polish), the eligibility check to do before running it over many sites, and the gbp-create script in itsryanarmani/scripts that runs the same steps. Use when a live site needs a local listing, when someone asks for a Google Business Profile or Facebook Page for a site, or after website-directory-submission for a site that serves a local area."
 ---
 
 # local-business-profiles
@@ -104,11 +104,16 @@ Do this instead:
 1. Make one attempt. Take a screenshot. If the page did not change, stop.
 2. Do not click again. More attempts may lengthen the block.
 3. Open the Pages list and check that no duplicate was made.
-4. Ask a person to click the button, or try again after an hour.
+4. Ask a person to click the button on a later day. The limit is a few new
+   Pages per day. See [page-trust.md](references/page-trust.md).
 
 Add the logo, the cover image, the About text and the website link after the
 Page exists. Then link the Page from the site's `sameAs` data. That markup is
 optional, but it ties the Page to the site.
+
+Before the Page runs ads, give it the minimum trust setup: profile photo,
+cover, bio, website link and category. Build them from the site's brand with
+`fb-page-polish`. See [page-trust.md](references/page-trust.md).
 
 ## 5. The script
 

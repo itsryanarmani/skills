@@ -206,13 +206,15 @@ Follow `ad-landing-tracking`. Test-specific rules:
 1. Every landing page answers 200 on production. A merge to a staging branch
    does not ship it.
 2. A form submit stores the UTMs. Test it once with a fake lead.
-3. The owner approves the spend in words, for this test.
-4. Activate with the approval flag. Do not edit the ad set mid-flight: each
+3. Run the Page polish (`fb-page-polish`) before the first ad. People tap the
+   Page name before they click. See `local-business-profiles`, page-trust.md.
+4. The owner approves the spend in words, for this test.
+5. Activate with the approval flag. Do not edit the ad set mid-flight: each
    significant edit restarts learning.
-5. Read the real state back. A success reply from the platform is not proof.
+6. Read the real state back. A success reply from the platform is not proof.
    Ask each object for its effective status. Ads may sit in review for a while.
-6. Start the monitor (step 10) the same hour. Pause an ad at its kill gate.
-7. The next day, check the platform's event manager. Reports lag by up to a
+7. Start the monitor (step 10) the same hour. Pause an ad at its kill gate.
+8. The next day, check the platform's event manager. Reports lag by up to a
    day. Until then, say which events are unproven.
 
 Platform traps seen on a first run:

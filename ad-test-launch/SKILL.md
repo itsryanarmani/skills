@@ -72,6 +72,16 @@ Write one line per ad before it runs:
 > `<persona>` in `<geo>` will click `<angle>` at `<CTR>` and `<CPC>`, and submit
 > at `<rate>` of landing views. Stop if `<kill gate>`.
 
+Start each hypothesis from the trigger: the event that makes this buyer need
+the service now, and the decision it blocks. Write a table before any copy:
+buyer, trigger event, the decision stuck behind it, what the service gives
+them, and the hook. Examples of a trigger: a claim stalls and the file
+disagrees with the treating doctor, a hearing date is close and the file needs
+an expert report, an employee is off work longer than planned. An ad aimed at
+the trigger ("Disputed claim? Get an independent opinion.") beats one aimed at
+the service in general. Attention is short: name the thing, the speed and the
+price in a few words, not the process.
+
 Give each ad a kill gate, for example "stop at 20 spent with fewer than 4 link
 clicks". Keep the personas, hypotheses, copy, expected metrics and links in one
 plan file. Generate everything else from it.
@@ -113,6 +123,16 @@ Follow `ad-landing-tracking`. Test-specific rules:
   When the form reads the URL's query, the UTMs reach the lead row even when the
   visitor declines cookies. The pixel and click ids still need consent.
 - Keep the pages out of the index and the sitemap.
+- The page must repeat every claim the ad makes. An ad that promises a speed or
+  a price its page never mentions loses trust and quality score. Before a
+  claim goes live, the owner confirms exactly what it counts (referral to
+  appointment, or referral to report) and you hold the proof, for example a
+  dated price comparison for a "best price". Put the same words on the page.
+- Keep the page focused: the logo and one call-to-action button in the header,
+  no site menu, no footer links. Make it a per-page setting so a page can keep
+  the full header when that suits it. A form that collects personal details
+  still needs a privacy notice beside it, so add one line under the form when
+  you remove the footer.
 - Taxonomy: `utm_source` is the platform, `utm_medium` is `paid_social`,
   `utm_campaign` is `<site>_<yymm>_<geo>_<test>`, `utm_content` is the ad id,
   `utm_term` is the persona. Lowercase, underscores. Add the platform's own ids
@@ -124,8 +144,24 @@ Follow `ad-landing-tracking`. Test-specific rules:
 
 - Template text, UI and logo-heavy creatives (`ad-creative-templates`). Do not
   let an image model draw words.
-- Use only claims the site already makes. No superlatives, no figures without a
-  source, no testimonials, no head counts. Mock UIs show roles, not made-up names.
+- By default use only claims the site already makes: no superlatives, no figures
+  without a source, no testimonials, no head counts. An owner may confirm a
+  claim such as a turnaround or a best price for the ads. Then keep the proof on
+  file and put the claim on the page too (see section 6). Mock UIs show roles,
+  not made-up names.
+- Write direct creatives that name the service in plain words, with the speed
+  and the price as short chips, and one trigger per ad. A process headline
+  ("Status is a lookup, not a chase") that never says what the service is fails
+  a skimming buyer. Test a changed creative against its twin: same headline
+  and page, one change, so the result reads cleanly.
+- Photos of people can lift attention, but generated people are unnamed
+  illustration, not staff or customers. Show unnamed professionals at work, not
+  looking at the camera, with no patient in frame, no name, title, credential
+  or "our team" beside a face, and no accreditation badge. Screens and papers
+  angled away so no text reads. Check the full-size render for a brand mark on a
+  device, a shirt or a bezel, and for garbled text, and regenerate or paint it
+  out. Label the people as illustrations wherever you show the set. Budget well
+  under a dollar for a set of six.
 - Check the render, not the template. Tight display-font tracking runs words
   together. A headline that says "name" must show names.
 - Render the story ratio with the platform's safe zones: leave about 250 px at
@@ -134,8 +170,9 @@ Follow `ad-landing-tracking`. Test-specific rules:
 - Do not name or imply the viewer's personal hardship, such as debt, a lost
   home or a health problem. Write about the offer. Platforms reject it, and it
   targets people at a weak moment.
-- Quote every claim from a source the site already cites. Keep the source link
-  in the plan next to the line.
+- Quote every claim from a source the site already cites, or from proof the
+  owner holds for a claim they confirmed. Keep the source or the proof note in
+  the plan next to the line.
 - Have a separate reviewer read the copy and the code diff. It ranks findings
   by severity and lists what it could not verify. The author does not review
   their own work.
@@ -181,11 +218,30 @@ Platform traps seen on a first run:
 - A half-activated test can spend. If any step fails, pause every object again
   and say so. Then read the statuses before you retry.
 
+## Swapping ads on a live test
+
+After the first read you often replace ads. Do it without a gap and without
+more spend:
+
+- Add the new ads to the same ad set, live. The platform reviews an ad when it
+  goes live, and an unreviewed ad does not deliver. The old ads keep running
+  meanwhile. The budget stays the same cap and the ads share it.
+- Retire the old ads only after every new ad is approved and active. If one new
+  ad is rejected, retire nothing and read the reason first.
+- The tool's `--add` creates the plan's new ads in the existing ad set and
+  `--retire old --after new` pauses the old ones, refusing until the new ones
+  are active. Never retire an ad as its own replacement, and never add an ad
+  that was already retired.
+- Never raise the budget, add an ad set, or edit a live ad to fix a read. A
+  swap changes the creatives only.
+
 ## 10. Monitor
 
 Do not leave a live test unwatched. Run the tool's report on a schedule: every
 three to six hours for the first two days, then daily. It only reads, so it is
-safe to automate.
+safe to automate. Keep the scheduled job's copy of the tool at a stable path
+that nothing cleans up. A job that called the tool from a temporary worktree
+failed the first time that folder was removed.
 
 The report gives each ad a verdict:
 

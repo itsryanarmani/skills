@@ -152,7 +152,8 @@ The reliable route is the Graph API with a Page access token:
 3. Queue ready posts per Page. Each post passed the section 6 checks.
 4. Post one per day per Page, as the Page.
 5. Dry run by default. Post only with an explicit apply flag.
-6. Call an approval hook before each post.
+6. Call an approval hook before each post. A person approves; the owner
+   approves sensitive posts.
 7. Give each post a key. Skip a key that is already posted. Why: a retry must
    not post twice.
 

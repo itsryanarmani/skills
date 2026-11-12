@@ -15,12 +15,11 @@ category before the first ad runs.
 - Check: open the Page as a visitor. All five fields show in the header and
   the intro.
 
-Next level: posts and a contact method.
+Then, still before the first ad: hide the two auto-posts and add three starter
+posts (sections 6 and 7). Add a contact method when the owner has one.
 
-- Why: posts show the business is active. Posts are public, so the owner
-  approves each one first.
+- Why: a Page with 0 posts looks abandoned even with a good header.
 - Never invent reviews, followers or testimonials.
-- Check: each post has the owner's written approval before it goes up.
 
 ## 2. Build the assets from the site's brand
 
@@ -81,3 +80,101 @@ Rule: match the Page name and photo to the offer when you can.
 - Do not tie the owner's personal profile to brand Pages in public. Use
   generic brand names, such as "Example Sheds", not a person's name.
 - Check: preview one ad. The name and photo match the landing page brand.
+
+## 6. Starter posts
+
+Rule: post three short posts per brand Page. Post 1 says what the Page is, from
+the site's own tagline. Posts 2 and 3 each give one useful fact from the site.
+
+- Author: the Page. Switch into the Page before you post. Never post as the
+  owner's profile. Why: a post from the profile ties the owner to the brand in
+  public.
+- Source: draft only from the site's own public text. Each post carries a
+  source quote. The quote is a verbatim substring of the cited file.
+- Digits: the post may contain no digit that its quote lacks. Why: a model
+  rounds, converts or invents numbers. A wrong price or date is a false claim.
+- Sensitive topics: hold health, money, legal, immigration and sobriety posts
+  for the owner to read first.
+- Review: a person reads every post before it goes up. The script is a
+  filter, not a review. The owner reads every sensitive post.
+- Pace: space the posts out or post them in one batch. Why: the order and the
+  timing matter less than the text. Never trade review for speed.
+- Never invent followers, reviews, results or testimonials.
+- Check: a script runs both tests on every draft before any post. It fails the
+  batch when a quote is not in the file or a post has a new digit. The script
+  cannot catch a new claim in words, so the human read must.
+
+Example draft record:
+
+```json
+{"page": "Example Sheds", "file": "site/about.md",
+ "quote": "Custom garden sheds, built and delivered.",
+ "post": "Example Sheds: custom garden sheds, built and delivered."}
+```
+
+## 7. Auto-posts and admin-only labels
+
+Facebook makes two posts by itself: "updated their profile picture" and
+"updated their cover photo". The only option is "Hide from Page".
+
+- Rule: hide both after the polish. Why: they push the starter posts down and
+  look like filler.
+- Admins see "Published by <owner name>" and "Comment as <owner name>" on Page
+  posts. The public never sees these labels.
+- Rule: do not read an admin-only label as public exposure.
+- Check: before you conclude the owner is exposed, open the Page as a visitor.
+  Scan the About, Page transparency and Photos tabs for the owner's name.
+
+## 8. Browser posting traps
+
+- The final "Post" button is not ready right after "Next". Wait, then retry
+  the click until the dialog closes.
+- A failed click publishes nothing and shows no error.
+- Check: after the run, count each post on the Page. Match the full first
+  line, not a short prefix. Why: a short prefix matched the Page name and
+  counted a post that did not exist.
+- The "What's on your mind" box renders late. Wait for it with
+  `waitForFunction`, not a fixed sleep.
+- Do not use the Graph `picture` endpoint as a check. It flags real photos as
+  silhouettes. Use header screenshots (section 3).
+
+## 9. Daily posting (plan, not yet built)
+
+The browser route is a fallback only. It needs the owner's machine on and
+Chrome logged in. It breaks when Facebook changes its page text.
+
+The reliable route is the Graph API with a Page access token:
+
+1. Grant the system user "create content" on each Page.
+2. Generate a system user token with `pages_show_list`, `pages_manage_posts`
+   and `pages_read_engagement`. Read each Page's own access token from it.
+   These permissions can need Advanced Access or app review.
+3. Queue ready posts per Page. Each post passed the section 6 checks.
+4. Post one per day per Page, as the Page.
+5. Dry run by default. Post only with an explicit apply flag.
+6. Call an approval hook before each post. A person approves; the owner
+   approves sensitive posts.
+7. Give each post a key. Skip a key that is already posted. Why: a retry must
+   not post twice.
+
+Engine: the public npm package `agentic-publish`. It routes brand queues
+through approval hooks. A Facebook Page route is part of this plan.
+
+Exists now: `fb-page-polish` in the public scripts repo has `post`,
+`hide-autoposts` and `verify` subcommands for the browser route.
+
+## 10. News and daily content (plan, not built)
+
+A per-site `/news` section is one tagged blog post per item.
+
+- Sources: an allow-list of feeds only. Use a recency window. Dedupe items.
+- Shape: a two-sentence TL;DR first, then a "why it matters" line, the source
+  link and a link to the site's own guide.
+- Numbers: every number and date in the output must appear in the source
+  text. Check it with the same script test as section 6.
+- Summarize. Never copy the source text.
+- Sensitive niches need a human read before publish.
+- Why: mass-produced thin pages risk a search penalty. Each item must add
+  context that the source does not give.
+- Discovery: the public npm package `agentic-scout`. A new news pipeline
+  package is planned.

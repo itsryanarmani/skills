@@ -77,9 +77,9 @@ the service now, and the decision it blocks. Write a table before any copy:
 buyer, trigger event, the decision stuck behind it, what the service gives
 them, and the hook. Examples of a trigger: a claim stalls and the file
 disagrees with the treating doctor, a hearing date is close and the file needs
-an expert report, an employee is off work longer than planned. An ad aimed at
-the trigger ("Disputed claim? Get an independent opinion.") beats one aimed at
-the service in general. Attention is short: name the thing, the speed and the
+an expert report, an employee is off work longer than planned. Treat this as a hypothesis to test: an ad
+aimed at the trigger ("Disputed claim? Get an independent opinion.") may draw
+more of the right clicks than one aimed at the service in general. Attention is short: name the thing, the speed and the
 price in a few words, not the process.
 
 Give each ad a kill gate, for example "stop at 20 spent with fewer than 4 link
@@ -124,15 +124,20 @@ Follow `ad-landing-tracking`. Test-specific rules:
   visitor declines cookies. The pixel and click ids still need consent.
 - Keep the pages out of the index and the sitemap.
 - The page must repeat every claim the ad makes. An ad that promises a speed or
-  a price its page never mentions loses trust and quality score. Before a
+  a price its page never mentions loses trust. Before a
   claim goes live, the owner confirms exactly what it counts (referral to
-  appointment, or referral to report) and you hold the proof, for example a
-  dated price comparison for a "best price". Put the same words on the page.
+  appointment, or referral to report) and you hold proof that covers the
+  claim's scope, market, conditions and date, for example a dated price
+  comparison for a "best price". If you cannot back a comparative claim, leave
+  it out. Put the same words on the page. Owner approval is not platform or
+  legal approval: check the platform's policies and the local advertising rules
+  for the sector (health and legal services are restricted) before it runs.
 - Keep the page focused: the logo and one call-to-action button in the header,
-  no site menu, no footer links. Make it a per-page setting so a page can keep
-  the full header when that suits it. A form that collects personal details
-  still needs a privacy notice beside it, so add one line under the form when
-  you remove the footer.
+  no site menu, no navigation footer. Make it a per-page setting so a page can
+  keep the full header when that suits it. Keep what must stay: a form that
+  collects personal details needs an accessible privacy policy link beside it,
+  so add one line under the form when you remove the footer, and keep any
+  disclosure your sector or platform requires.
 - Taxonomy: `utm_source` is the platform, `utm_medium` is `paid_social`,
   `utm_campaign` is `<site>_<yymm>_<geo>_<test>`, `utm_content` is the ad id,
   `utm_term` is the persona. Lowercase, underscores. Add the platform's own ids
@@ -160,8 +165,10 @@ Follow `ad-landing-tracking`. Test-specific rules:
   or "our team" beside a face, and no accreditation badge. Screens and papers
   angled away so no text reads. Check the full-size render for a brand mark on a
   device, a shirt or a bezel, and for garbled text, and regenerate or paint it
-  out. Label the people as illustrations wherever you show the set. Budget well
-  under a dollar for a set of six.
+  out. Label each creative's people as illustration wherever you show it, and
+  check the whole creative does not suggest they are real providers. Set a
+  spend cap before you generate: one model cost a fraction of a dollar per image
+  in 2026, plus retries.
 - Check the render, not the template. Tight display-font tracking runs words
   together. A headline that says "name" must show names.
 - Render the story ratio with the platform's safe zones: leave about 250 px at
@@ -220,17 +227,18 @@ Platform traps seen on a first run:
 
 ## Swapping ads on a live test
 
-After the first read you often replace ads. Do it without a gap and without
-more spend:
+After the first read you often replace ads. Do it so the test is never
+empty and the cap does not change:
 
 - Add the new ads to the same ad set, live. The platform reviews an ad when it
   goes live, and an unreviewed ad does not deliver. The old ads keep running
   meanwhile. The budget stays the same cap and the ads share it.
 - Retire the old ads only after every new ad is approved and active. If one new
   ad is rejected, retire nothing and read the reason first.
-- The tool's `--add` creates the plan's new ads in the existing ad set and
-  `--retire old --after new` pauses the old ones, refusing until the new ones
-  are active. Never retire an ad as its own replacement, and never add an ad
+- `meta-ad-test --add` creates the plan's new ads in the existing ad set and
+  `meta-ad-test --retire old --after new` pauses the old ones, refusing until
+  the new ones are active. The tool checks status only: the swap itself still
+  needs the owner's approval first. Never retire an ad as its own replacement, and never add an ad
   that was already retired.
 - Never raise the budget, add an ad set, or edit a live ad to fix a read. A
   swap changes the creatives only.

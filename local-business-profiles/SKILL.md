@@ -104,7 +104,8 @@ Do this instead:
 1. Make one attempt. Take a screenshot. If the page did not change, stop.
 2. Do not click again. More attempts may lengthen the block.
 3. Open the Pages list and check that no duplicate was made.
-4. Ask a person to click the button, or try again after an hour.
+4. Ask a person to click the button on a later day. The limit is a few new
+   Pages per day. See [page-trust.md](references/page-trust.md).
 
 Add the logo, the cover image, the About text and the website link after the
 Page exists. Then link the Page from the site's `sameAs` data. That markup is

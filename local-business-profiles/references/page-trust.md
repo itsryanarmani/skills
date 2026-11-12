@@ -15,8 +15,12 @@ category before the first ad runs.
 - Check: open the Page as a visitor. All five fields show in the header and
   the intro.
 
-Next level: posts and a contact method. Posts are public, so the owner approves
-each one first. Never invent reviews, followers or testimonials.
+Next level: posts and a contact method.
+
+- Why: posts show the business is active. Posts are public, so the owner
+  approves each one first.
+- Never invent reviews, followers or testimonials.
+- Check: each post has the owner's written approval before it goes up.
 
 ## 2. Build the assets from the site's brand
 

@@ -232,3 +232,7 @@ The Page editor has its own traps: a welcome dialog that blocks clicks, a
 session left acting as a Page after a failed run, and a picture endpoint that
 reports a silhouette for a real photo. See
 `local-business-profiles/references/page-trust.md`, section 3.
+
+Posting as a Page adds more: a "Post" button that is not ready after "Next",
+failed clicks that publish nothing, and admin-only labels that look like
+public exposure. See sections 7 and 8 of the same file.

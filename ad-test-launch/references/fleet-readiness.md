@@ -33,7 +33,9 @@ Do the steps in this order. Stop at the first one that fails.
 
 1. Landing pages answer 200 on production.
 2. The Page has a profile photo, cover, bio, website link and category. Run
-   `fb-page-polish` first. See `local-business-profiles`.
+   `fb-page-polish` first. The auto-posts are hidden, and three starter posts
+   from the site's own text show on the Page. See `local-business-profiles`,
+   page-trust.md.
 3. Dry run of the launch plan. Read every payload.
 4. Create everything paused. Read every object back.
 5. Live Lead check: one fake sign-up fires the browser and server Lead with one

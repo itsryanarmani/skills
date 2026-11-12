@@ -207,7 +207,9 @@ Follow `ad-landing-tracking`. Test-specific rules:
    does not ship it.
 2. A form submit stores the UTMs. Test it once with a fake lead.
 3. Run the Page polish (`fb-page-polish`) before the first ad. People tap the
-   Page name before they click. See `local-business-profiles`, page-trust.md.
+   Page name before they click. Hide the two auto-posts. Post three starter
+   posts as the Page, then count them on the Page to prove they went up. See
+   `local-business-profiles`, page-trust.md, sections 6 to 8.
 4. The owner approves the spend in words, for this test.
 5. Activate with the approval flag. Do not edit the ad set mid-flight: each
    significant edit restarts learning.

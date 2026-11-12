@@ -84,6 +84,19 @@ plan file. Generate everything else from it.
 - Use titles as audience suggestions with the platform's automatic audience on,
   or widen the region. Put the persona in the ad's first words so the copy
   filters the people the targeting cannot.
+- A max age of 65 means 65 and older on Meta. Use 64 to stop at 64. With the
+  platform's automatic audience on, age is only a hint it may expand past. In
+  one live test set to 25-65 with it on, 79% of the spend reached people 65 and
+  over, outside the audience the plan named. To hold an age limit, turn the
+  automatic audience off and set the max to 64, then read the ad set back to
+  confirm, because some platform expansion options can stay on. The trade-off:
+  job-title hints then act as a hard filter, so drop them or check the delivery
+  estimate first, and let the copy do the filtering.
+- An Instagram placement needs an Instagram identity on the Page. With the
+  automatic audience on the platform quietly skips Instagram, so a test can run
+  for days with no Instagram delivery and no error. Turn the automatic audience
+  off and every ad errors ("Page Backed Instagram profile is being created")
+  and spend stops. Use Facebook only, or connect an account first.
 - Detailed-targeting exclusions are gone on new Meta campaigns. Location, age,
   language and custom-audience exclusions remain.
 - Do not upload a customer or prospect list as a seed without the owner's
@@ -194,6 +207,19 @@ Rules for acting on it:
 - With under about 15 clicks per ad, differences in click-through and cost per
   click are noise. Do not call a winner on them.
 - Check the first hour: impressions above zero, no ad rejected, spend moving.
+- Read delivery by age and by placement in the first hours, not only by ad.
+  Compare it with the plan. If most of the spend reached people outside the
+  audience the plan named, click-through from that group says little about the
+  audience you meant to reach, so fix the audience before you judge a creative.
+  Where you can, judge on qualified leads, not clicks. `meta-ad-test --report`
+  prints the share of impressions in age bands wholly outside the live range,
+  a lower bound, and warns above 20%.
+- After any targeting change, count only whole days after it. That report reads
+  whole days (`--since DATE`), so the day of the change mixes old and new
+  delivery. Use an hourly breakdown if you need to cut the day.
+- After an edit, read each ad's status and its issue text, not just whether the
+  call succeeded. A successful edit can leave every ad erroring and spend at
+  zero.
 
 ## 11. Experiment log and the optimise loop
 

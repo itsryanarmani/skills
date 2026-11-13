@@ -29,6 +29,8 @@ For candid, phone-photo style statics (12 prompt templates, overlay and CTA rule
 
 Rule of thumb: **if the creative is text-, UI-, or logo-heavy, it's Part A** (a model garbles it). If it's a photoreal scene or a stylized character, it's Part B.
 
+For candid lo-fi phone-photo stills and short UGC videos that should read as real camera-roll footage, use `ad-lofi-ugc` — it adds the camera-and-era-first prompt order, the ffmpeg degrade pass, one consistent synthetic character, and the muted-first sound + QA gates. This library still owns the text-exact formats either way.
+
 ---
 
 # PART A — HTML-mockup ad formats ("iOS Ads" family)
@@ -252,4 +254,4 @@ Skeletons for a text→image / image-edit model. Fill the `[placeholders]`, then
 - **Fabricated social proof.** A fake testimonial in an iMessage/ChatGPT reveal, invented likes/reviews, impersonating a real person or platform. Real data only (`ad-creative-templates` §6).
 - **Shipping without QA.** Part A: eyeball the chrome at 1:1. Part B: run the vision-QA loop (`ad-creative-generation` §5).
 
-Pairs with: `ad-creative-templates` (the HTML→screenshot pipeline that renders every Part-A format, + the truthfulness rule), `ad-creative-generation` (image-model endpoints, reference-image rules, and the vision-QA loop for every Part-B render), `ad-experiments` (which format/angle to test and how to judge the result), `high-fidelity-ui-image-gen` (the gen-vs-screenshot fidelity tradeoff), `app-screenshots` (capturing real product UI to drop into a mockup).
+Pairs with: `ad-creative-templates` (the HTML→screenshot pipeline that renders every Part-A format, + the truthfulness rule), `ad-creative-generation` (image-model endpoints, reference-image rules, and the vision-QA loop for every Part-B render), `ad-lofi-ugc` (lo-fi UGC stills/video: camera-first prompts, degrade, character chaining, sound, QA), `ad-experiments` (which format/angle to test and how to judge the result), `high-fidelity-ui-image-gen` (the gen-vs-screenshot fidelity tradeoff), `app-screenshots` (capturing real product UI to drop into a mockup).

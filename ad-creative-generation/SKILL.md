@@ -38,7 +38,7 @@ Anchor believability with **photography language**, and structure every prompt t
 **Subject → Setting → Light/Look → Camera → Technical.** (The "SLCT"-style skeleton from open ad-prompt guides — fill each slot, don't free-associate.)
 
 - **Product-in-context (lifestyle):** the product in a real environment, in use. "A [product] on a sunlit kitchen counter, morning light from a window at left, shallow depth of field, 50mm, eye-level medium close-up." Real environment > floating-on-white when the goal is *desirability*.
-- **UGC / founder ad:** unpolished, phone-shot realism. "Handheld phone photo, slightly imperfect framing, natural indoor light, honest and unposed. Real skin texture, everyday detail. No studio polish, no heavy retouching, no glamorization." The tells of an *ad* (perfect studio light, glossy retouch) are exactly what kills UGC performance — forbid them.
+- **UGC / founder ad:** unpolished, phone-shot realism. "Handheld phone photo, slightly imperfect framing, natural indoor light, honest and unposed. Real skin texture, everyday detail. No studio polish, no heavy retouching, no glamorization." The tells of an *ad* (perfect studio light, glossy retouch) are exactly what kills UGC performance — forbid them. For the camera-and-era-first prompt order plus the ffmpeg degrade that makes a generation read as a real 2000s camera-roll photo, see `ad-lofi-ugc`.
 - **Testimonial / social-proof scene:** a believable person in a real setting — but **do not render the quote, stars, or name as image text** (it will garble; §4). Generate the *scene*, overlay the words in a template.
 - **Photoreal realism dials:** name the lens (50mm), the light ("soft coastal daylight"), the framing (eye-level), and ask for real texture explicitly ("visible pores, weathered materials, worn everyday detail"). Set `quality="high"` when realism matters.
 
@@ -125,4 +125,4 @@ Passing a base64 image inline as a shell arg (e.g. `curl -d "$(...)"`) blows up 
 - **Looping forever on a text-heavy render.** After ~3 fails, it's a template job — switch.
 - **Losing the recipe.** No stored prompt/refs = a winner you can't reproduce and a loser you can't diagnose.
 
-Pairs with: `ad-creative-templates` (text/UI/logo-heavy styles), `ad-experiments` (which creative to test and how to read the result), `high-fidelity-ui-image-gen` (the same gen-vs-screenshot tradeoff for UI).
+Pairs with: `ad-creative-templates` (text/UI/logo-heavy styles), `ad-lofi-ugc` (lo-fi UGC stills + video: camera-first prompts, ffmpeg degrade, character chaining, muted-first sound, QA gates), `ad-experiments` (which creative to test and how to read the result), `high-fidelity-ui-image-gen` (the same gen-vs-screenshot tradeoff for UI).

@@ -130,6 +130,14 @@ Facebook makes two posts by itself: "updated their profile picture" and
 - The final "Post" button is not ready right after "Next". Wait, then retry
   the click until the dialog closes.
 - A failed click publishes nothing and shows no error.
+- After "Post", some Pages get an offer dialog over the composer, such as
+  "add a Call Now button" with "Add button" and "Not now". Wait about 4 s,
+  click a button with the exact text "Not now", "Skip", "Maybe later" or
+  "No thanks", wait again, then check that the composer closed. Always
+  decline; never accept the offer. Why: until it is answered the post stays
+  on "Posting", a new "Post" click does nothing, and the post never
+  publishes. 5 of 54 posts failed this way. Check: the post shows on the
+  Page exactly once.
 - Check: after the run, count each post on the Page. Match the full first
   line, not a short prefix. Why: a short prefix matched the Page name and
   counted a post that did not exist.

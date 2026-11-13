@@ -21,10 +21,10 @@ Open a library of viral short-form videos (for example the free DarkUGC library 
 darkugc.com, which also offers an MCP server at darkugc.com/mcp) and sort by views. Look for the structure, not the topic. Two structures
 carried over to a B2B service:
 
-| Structure seen | Why it works | Use it for |
+| Structure seen | Intended effect (not measured here) | Use it for |
 |---|---|---|
-| Niche call-out in the first second ("All <buyers>, ATTENTION") then a quick demo | The right viewer self-selects at once and everyone else scrolls | Story video, section 2 |
-| A trap or twist: the obvious answer is wrong | The viewer stays for the payoff | A later style; needs a writer |
+| Niche call-out in the first second ("All <buyers>, ATTENTION") then a quick demo | The right viewer should self-select at once and others scroll on | Story video, section 2 |
+| A trap or twist: the obvious answer is wrong | The viewer should stay for the payoff | A later style; needs a writer |
 
 Copy the structure. Never copy the clip, the face, the words or the music. The
 library is inspiration, not footage to reuse.
@@ -48,11 +48,10 @@ or paper angled away. Prompt pattern for the photo (image model):
 
 ```
 A <age> <person>, <ethnicity>, <hair and clothes with one worn detail>, <doing the
-work, eyes on the task>. Dressing: <three small believable objects>. Light:
+work>. Eyes stay on the task, no direct eye contact with the camera. Dressing: <three small believable objects>. Light:
 <window light plus one warm lamp, slightly mixed>. Shot on a full-frame camera,
 35mm at f/2.8, slightly below eye level, candid documentary look, unretouched
-skin with pores. NOT WANTED: eyes stay on the task, no direct eye contact with the camera, no text, no lettering,
-no logo, no badge, no plastic skin, no studio polish.
+skin with pores. NOT WANTED: no text, no lettering, no logo, no badge, no plastic skin, no studio polish.
 ```
 
 ### Step 2: the motion prompt (image-to-video)
@@ -124,8 +123,9 @@ direct eye contact with the camera, no handshake, no patient, no brand.
 Settings that worked: model `bytedance/seedance-v1.5-pro/text-to-video-fast` on
 WaveSpeed, `aspect_ratio` `9:16`, `duration` 5, `resolution` 720p. Cost: about
 USD 0.35 per shot, so about USD 1.05 for the video (read from the gateway balance
-before and after, Nov 2026; it excludes retries and captions). Prices change: check the
-model page before a batch.
+before and after, Nov 2026; it excludes retries and captions). Prices change, and a gateway can retire or
+silently swap a model: check the model page and its availability before a batch, and
+confirm the model id in the job result.
 
 ### Captions and end card
 

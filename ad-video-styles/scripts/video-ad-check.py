@@ -58,7 +58,7 @@ def main():
     ap.add_argument("video"); ap.add_argument("--manifest", required=True); ap.add_argument("--transcript")
     ap.add_argument("--max-shot", type=float, default=3.0); ap.add_argument("--max-labels", type=int, default=2); ap.add_argument("--max-arrows", type=int, default=1)
     ap.add_argument("--sync-tol", type=float, default=0.25); ap.add_argument("--transcript-tol", type=float, default=0.35)
-    ap.add_argument("--hook-motion", type=float, default=15.0)
+    ap.add_argument("--hook-motion", type=float, default=15.0); ap.add_argument("--max-gap", type=float, default=0.45); ap.add_argument("--sfx", help="audio file of the non-voice sounds alone (effects and music), to check them inside spoken lines too")
     a = ap.parse_args()
 
     try:
@@ -87,6 +87,11 @@ def main():
     diffs = [sum(abs(x - y) for x, y in zip(f1, f2)) / max(len(f1), 1) for f1, f2 in zip(frames, frames[1:]) if f1 and f2]
     mot = sum(diffs) / len(diffs) if diffs else 0.0
     rec("hook-motion", mot >= a.hook_motion, f"mean frame change in the first 2 s is {mot:.1f} (needs at least {a.hook_motion:g}; measured 21 on a sped-up fall, 13 on the slow cut, under 6 on calm talking shots)")
+    fzr = run(["ffmpeg", "-hide_banner", "-i", a.video, "-vf", "freezedetect=n=0.003:d=0.25", "-an", "-f", "null", "-"]); fz = fzr.stderr
+    starts = [float(x) for x in re.findall(r"freeze_start:\s*([\d.]+)", fz)]; lens_f = [float(x) for x in re.findall(r"freeze_duration:\s*([\d.]+)", fz)]
+    lens_f += [dur - st for st in starts[len(lens_f):]]   # a freeze that lasts to the end of the file prints no duration
+    frozen = [f"{st:.2f}s for {ln:.2f}s" for st, ln in zip(starts, lens_f)]
+    rec("no-freeze", not frozen and fzr.returncode == 0, ("no frozen picture of 0.25 s or more" if fzr.returncode == 0 else "the freeze analysis failed to run, so nothing was checked") if not frozen else "the picture freezes at " + ", ".join(frozen) + " (a clip was sped up or cut past its own length)")
     rec("hook-cut", shots[0]["end"] - shots[0]["start"] <= 2.5, f"first shot runs {shots[0]['end'] - shots[0]['start']:.1f}s (needs 2.5s or less)")
 
     # voice: present, loud enough, and starting where the manifest says, measured in the RENDERED audio
@@ -113,6 +118,28 @@ def main():
             prev_end = v["end"]
             if hit is None or abs(hit - v["start"]) > a.sync_tol + 0.05: late.append(f"{v['text'][:24]!r}: heard at {('%.2f' % hit) if hit is not None else 'never'}s, manifest says {v['start']:.2f}s")
         rec("voice-onset", not late, f"the voice starts within {a.sync_tol + 0.05:.2f}s of the manifest in all {len(voice)} lines (found in the rendered audio)" if not late else "; ".join(late))
+        ordered = sorted(voice, key=lambda x: x["start"])
+        gaps_found = [f"{p_['end']:.2f}s to {n_['start']:.2f}s ({n_['start'] - p_['end']:.2f}s)" for p_, n_ in zip(ordered, ordered[1:]) if n_["start"] - p_["end"] > a.max_gap]
+        for v in ordered:                                   # silence inside a line, measured in the rendered audio
+            run_s = None
+            for t, db in track:
+                if v["start"] + 0.1 <= t <= v["end"] - 0.1:
+                    if db < thr: run_s = t if run_s is None else run_s
+                    else:
+                        if run_s is not None and t - run_s > 0.5: gaps_found.append(f"inside {v['text'][:20]!r} at {run_s:.2f}s ({t - run_s:.2f}s)")
+                        run_s = None
+            if run_s is not None and (v["end"] - 0.1) - run_s > 0.5: gaps_found.append(f"inside {v['text'][:20]!r} at {run_s:.2f}s ({(v['end'] - 0.1) - run_s:.2f}s to the end of the line)")
+        rec("dead-air", not gaps_found, f"no gap between voice lines over {a.max_gap}s and no silence over 0.5 s inside a line" if not gaps_found else "dead air: " + "; ".join(gaps_found))
+        voice_med = sorted(levels)[len(levels) // 2]
+        loud_fx = sorted({round(t, 1) for t, db in track if t >= 1.6 and db >= voice_med - 12 and not any(v["start"] - 0.03 <= t <= v["end"] + 0.03 for v in voice)})
+        where = "outside the voice lines"
+        if a.sfx:
+            sfx_track = rms_track(a.sfx)
+            loud_fx = sorted(set(loud_fx) | {round(t, 1) for t, db in sfx_track if t >= 1.6 and db >= voice_med - 12})
+            where = "anywhere, including inside spoken lines (effects track measured separately)"
+        else:
+            print("NOTE sfx-level: effects inside spoken lines are not measurable from the mixed audio. Pass --sfx with the effects track alone to check them.")
+        rec("sfx-level", not loud_fx, f"after the first 1.6 s, no non-voice sound comes within 12 dB of the voice, measured {where}" if not loud_fx else "non-voice sound within 12 dB of the voice at " + ", ".join(f"{t:.1f}s" for t in loud_fx[:6]))
         vd = run(["ffmpeg", "-hide_banner", "-i", a.video, "-vn", "-af", "volumedetect", "-f", "null", "-"]).stderr
         mx = re.search(r"max_volume:\s*(-?[\d.]+)", vd); mn = re.search(r"mean_volume:\s*(-?[\d.]+)", vd)
         mxv, mnv = float(mx.group(1)) if mx else 0.0, float(mn.group(1)) if mn else -99.0

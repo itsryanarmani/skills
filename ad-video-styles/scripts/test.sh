@@ -10,7 +10,7 @@ PASS=0; FAILN=0
 # make_video <out> <seconds> <size> <audio: voice|none|clipped|silent> <motion: yes|no>
 make_video() {
   local out=$1 dur=$2 size=$3 audio=$4 motion=$5 src
-  if [ "$motion" = yes ]; then src="color=c=gray:s=108x192:r=24:d=${dur},noise=alls=80:allf=t,scale=${size/x/:}"; else src="color=c=gray:s=${size}:r=24:d=${dur}"; fi
+  if [ "$motion" = freeze ]; then src="color=c=gray:s=108x192:r=24:d=2,noise=alls=80:allf=t,tpad=stop_mode=clone:stop_duration=4,scale=${size/x/:}"; elif [ "$motion" = yes ]; then src="color=c=gray:s=108x192:r=24:d=${dur},noise=alls=80:allf=t,scale=${size/x/:}"; else src="color=c=gray:s=${size}:r=24:d=${dur}"; fi
   case $audio in
     none)    ffmpeg -y -loglevel error -f lavfi -i "$src" -pix_fmt yuv420p "$out" ;;
     silent)  ffmpeg -y -loglevel error -f lavfi -i "$src" -f lavfi -i "anoisesrc=d=$dur:c=brown:a=0.003" -shortest -pix_fmt yuv420p "$out" ;;
@@ -21,12 +21,20 @@ make_video() {
         -map 0:v -map "[m]" -t "$dur" -pix_fmt yuv420p "$out" ;;
     late)    ffmpeg -y -loglevel error -f lavfi -i "$src" -f lavfi -i "anoisesrc=d=$dur:c=brown:a=0.004" \
         -f lavfi -i "sine=f=220:d=1.2" -f lavfi -i "sine=f=260:d=1.2" -f lavfi -i "sine=f=300:d=1.2" \
-        -filter_complex "[2:a]volume=0.5,adelay=1200|1200[a];[3:a]volume=0.5,adelay=3000|3000[b];[4:a]volume=0.5,adelay=4800|4800[c];[1:a][a][b][c]amix=inputs=4:normalize=0[m]" \
+        -filter_complex "[2:a]volume=0.5,adelay=1200|1200[a];[3:a]volume=0.5,adelay=2500|2500[b];[4:a]volume=0.5,adelay=3800|3800[c];[1:a][a][b][c]amix=inputs=4:normalize=0[m]" \
         -map 0:v -map "[m]" -t "$dur" -pix_fmt yuv420p "$out" ;;
-    voice)   # three voice bursts at 0.6-1.8, 2.4-3.6, 4.2-5.4 over a quiet bed
+    dead)    ffmpeg -y -loglevel error -f lavfi -i "$src" -f lavfi -i "anoisesrc=d=$dur:c=brown:a=0.004" \
+        -f lavfi -i "sine=f=220:d=1.2" -f lavfi -i "sine=f=260:d=1.2" -f lavfi -i "sine=f=300:d=1.0" \
+        -filter_complex "[2:a]volume=0.5,adelay=600|600[a];[3:a]volume=0.5,adelay=3600|3600[b];[4:a]volume=0.5,adelay=5000|5000[c];[1:a][a][b][c]amix=inputs=4:normalize=0[m]" \
+        -map 0:v -map "[m]" -t "$dur" -pix_fmt yuv420p "$out" ;;
+    sfx)     ffmpeg -y -loglevel error -f lavfi -i "$src" -f lavfi -i "anoisesrc=d=$dur:c=brown:a=0.004" \
+        -f lavfi -i "sine=f=220:d=1.2" -f lavfi -i "sine=f=260:d=1.2" -f lavfi -i "sine=f=300:d=1.2" -f lavfi -i "anoisesrc=d=0.4:c=white:a=0.6" \
+        -filter_complex "[2:a]volume=0.5,adelay=600|600[a];[3:a]volume=0.5,adelay=1900|1900[b];[4:a]volume=0.5,adelay=3200|3200[c];[5:a]adelay=4700|4700[w];[1:a][a][b][c][w]amix=inputs=5:normalize=0[m]" \
+        -map 0:v -map "[m]" -t "$dur" -pix_fmt yuv420p "$out" ;;
+    voice)   # three voice bursts at 0.6-1.8, 1.9-3.1, 3.2-4.4 over a quiet bed
       ffmpeg -y -loglevel error -f lavfi -i "$src" -f lavfi -i "anoisesrc=d=$dur:c=brown:a=0.004" \
         -f lavfi -i "sine=f=220:d=1.2" -f lavfi -i "sine=f=260:d=1.2" -f lavfi -i "sine=f=300:d=1.2" \
-        -filter_complex "[2:a]volume=0.5,adelay=600|600[a];[3:a]volume=0.5,adelay=2400|2400[b];[4:a]volume=0.5,adelay=4200|4200[c];[1:a][a][b][c]amix=inputs=4:normalize=0[m]" \
+        -filter_complex "[2:a]volume=0.5,adelay=600|600[a];[3:a]volume=0.5,adelay=1900|1900[b];[4:a]volume=0.5,adelay=3200|3200[c];[1:a][a][b][c]amix=inputs=4:normalize=0[m]" \
         -map 0:v -map "[m]" -t "$dur" -pix_fmt yuv420p "$out" ;;
   esac
 }
@@ -39,8 +47,8 @@ out, v = sys.argv[1:]
 m = {
  "duration": 6.0, "size": [1080, 1920],
  "shots": [{"start": 0, "end": 1.8}, {"start": 1.8, "end": 3.6}, {"start": 3.6, "end": 6.0}],
- "voice": [{"start": 0.6, "end": 1.8, "text": "Dave went down hard"}, {"start": 2.4, "end": 3.6, "text": "That was March"}, {"start": 4.2, "end": 5.4, "text": "Still off work"}],
- "captions": [{"start": 0.6, "end": 1.8, "text": "Dave went down hard"}, {"start": 2.4, "end": 3.6, "text": "That was March"}, {"start": 4.2, "end": 5.6, "text": "Still off work"}],
+ "voice": [{"start": 0.6, "end": 1.8, "text": "Dave went down hard"}, {"start": 1.9, "end": 3.1, "text": "That was March"}, {"start": 3.2, "end": 4.4, "text": "Still off work"}],
+ "captions": [{"start": 0.6, "end": 1.8, "text": "Dave went down hard"}, {"start": 1.9, "end": 3.1, "text": "That was March"}, {"start": 3.2, "end": 4.6, "text": "Still off work"}],
  "labels": [{"text": "Dave", "start": 0.7, "end": 2.0}], "arrows": [], "allow": ["2 weeks"]
 }
 if v == "early": m["captions"] = [{**c, "start": c["start"] - 1.0, "end": c["end"] - 1.0} for c in m["captions"]]
@@ -58,6 +66,12 @@ if v == "cont":
     m["voice"] = [{"start": 0.0, "end": 2.0, "text": "Dave went down"}, {"start": 2.0, "end": 4.0, "text": "That was March"}, {"start": 4.0, "end": 6.0, "text": "Still off work"}]
     m["captions"] = [dict(c) for c in m["voice"]]
 if v == "chunked": m["captions"][0:1] = [{"start": 0.6, "end": 0.9, "text": "Dave"}, {"start": 0.9, "end": 1.8, "text": "went down hard"}]
+if v == "deadgap":
+    m["voice"] = [{"start": 0.6, "end": 1.8, "text": "Dave went down hard"}, {"start": 3.6, "end": 4.8, "text": "That was March"}, {"start": 5.0, "end": 6.0, "text": "Still off work"}]
+    m["captions"] = [dict(c) for c in m["voice"]]
+if v == "tail":
+    m["voice"] = [{"start": 0.6, "end": 3.4, "text": "Dave went down hard"}, {"start": 3.6, "end": 4.8, "text": "That was March"}, {"start": 5.0, "end": 6.0, "text": "Still off work"}]
+    m["captions"] = [dict(c) for c in m["voice"]]
 if v == "wordy": m["captions"][0]["text"] = "Dave went down so very hard today"
 json.dump(m, open(out, "w"))
 E
@@ -80,7 +94,7 @@ python3 - "$1" "$2" <<'E'
 import json, sys
 out, shift = sys.argv[1], float(sys.argv[2])
 w = []
-for t0, words in [(0.6, "Dave went down hard"), (2.4, "That was March"), (4.2, "Still off work")]:
+for t0, words in [(0.6, "Dave went down hard"), (1.9, "That was March"), (3.2, "Still off work")]:
     for i, x in enumerate(words.split()): w.append({"text": x, "start": round(t0 + 0.3 * i + shift, 2), "end": round(t0 + 0.3 * i + 0.28 + shift, 2)})
 json.dump(w, open(out, "w"))
 E
@@ -160,6 +174,36 @@ E
 make_manifest "$T/chunk.json" chunked
 expect "chunked captions pass with the real transcript" pass - $CHECK "$T/good.mp4" --manifest "$T/chunk.json" --transcript "$T/good-tr.json"
 expect "a spoken word the captions skip between chunks fails transcript" fail sync-transcript $CHECK "$T/good.mp4" --manifest "$T/chunk.json" --transcript "$T/extra-tr.json"
+make_video "$T/frozen.mp4" 6 1080x1920 voice freeze
+expect "a frozen last 4 s fails no-freeze" fail no-freeze $CHECK "$T/frozen.mp4" --manifest "$T/good.json" --transcript "$T/good-tr.json"
+make_video "$T/dead.mp4" 6 1080x1920 dead yes
+make_manifest "$T/dead.json" deadgap
+python3 - "$T/dead-tr.json" <<'E'
+import json, sys
+w = []
+for t0, words in [(0.6, "Dave went down hard"), (3.6, "That was March"), (5.0, "Still off work")]:
+    for i, x in enumerate(words.split()): w.append({"text": x, "start": round(t0 + 0.3 * i, 2), "end": round(t0 + 0.3 * i + 0.28, 2)})
+json.dump(w, open(sys.argv[1], "w"))
+E
+expect "a 1.8 s gap between voice lines fails dead-air" fail dead-air $CHECK "$T/dead.mp4" --manifest "$T/dead.json" --transcript "$T/dead-tr.json"
+make_video "$T/sfx.mp4" 6 1080x1920 sfx yes
+expect "a loud effect after the hook fails sfx-level" fail sfx-level $CHECK "$T/sfx.mp4" --manifest "$T/good.json" --transcript "$T/good-tr.json"
+# voice take prosody: a flat tone and a long pause must fail, a gliding tone must pass
+PROSODY="python3 prosody.py --min-range 6 --max-pause 0.5"
+ffmpeg -y -loglevel error -f lavfi -i "sine=f=220:d=1.6" "$T/flat.wav"
+ffmpeg -y -loglevel error -f lavfi -i "aevalsrc='0.5*sin(2*PI*(150*t+60*t*t))':d=1.6:s=16000" "$T/glide.wav"
+ffmpeg -y -loglevel error -f lavfi -i "aevalsrc='0.5*sin(2*PI*(150*t+60*t*t))':d=0.8:s=16000" -f lavfi -i "anullsrc=r=16000:cl=mono" -f lavfi -i "aevalsrc='0.5*sin(2*PI*(150*t+60*t*t))':d=0.8:s=16000" -filter_complex "[1:a]atrim=0:0.9[s];[0:a][s][2:a]concat=n=3:v=0:a=1" "$T/pause.wav"
+expect "a flat monotone take fails the pitch range" fail pitch-range $PROSODY "$T/flat.wav"
+expect "a take with a 0.9 s pause fails" fail pause $PROSODY "$T/pause.wav"
+ffmpeg -y -loglevel error -f lavfi -i "anoisesrc=d=0.8:c=white:a=0.05" -f lavfi -i "aevalsrc='0.5*sin(2*PI*(150*t+60*t*t))':d=1.6:s=16000" -filter_complex "[0:a]aresample=16000[n];[1:a]aresample=16000[g];[n][g]concat=n=2:v=0:a=1" "$T/lead.wav"
+expect "a take with a 0.8 s breath before the first word fails lead" fail lead $PROSODY "$T/lead.wav"
+expect "a take that glides in pitch passes" pass - $PROSODY "$T/glide.wav"
+make_manifest "$T/tail.json" tail
+expect "a long silent tail inside a line fails dead-air" fail dead-air $CHECK "$T/dead.mp4" --manifest "$T/tail.json" --transcript "$T/dead-tr.json"
+ffmpeg -y -loglevel error -f lavfi -i "anoisesrc=d=0.4:c=white:a=0.6" -af "adelay=2000|2000,apad=whole_dur=6" "$T/sfx-loud.wav"
+ffmpeg -y -loglevel error -f lavfi -i "anoisesrc=d=0.4:c=white:a=0.004" -af "adelay=2000|2000,apad=whole_dur=6" "$T/sfx-quiet.wav"
+expect "a loud effects track inside a spoken line fails sfx-level" fail sfx-level $CHECK "$T/good.mp4" --manifest "$T/good.json" --transcript "$T/good-tr.json" --sfx "$T/sfx-loud.wav"
+expect "a quiet effects track passes" pass - $CHECK "$T/good.mp4" --manifest "$T/good.json" --transcript "$T/good-tr.json" --sfx "$T/sfx-quiet.wav"
 expect "unreadable manifest fails loudly"       fail manifest     $CHECK "$T/good.mp4" --manifest "$T/does-not-exist.json"
 
 echo "$PASS passed, $FAILN failed"

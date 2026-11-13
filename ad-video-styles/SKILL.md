@@ -199,6 +199,13 @@ His doctor says he can't work. / The file says he can. / So I sent one form. /
 <service name>. <confirmed claim>.
 ```
 
+### Every cut must make sense
+
+A cut needs a reason a viewer can follow: the action continues, the place changes with a clear cause, or the narrator
+says what we are looking at. A running woman cut to a close-up of her face while the voice said "That was March" read as stuck
+and confused. Cutting to her kneeling beside the man on the floor (the moment itself) worked. Step through every cut and ask
+what the viewer thinks happened between the two frames.
+
 ### Two characters that stay the same
 
 1. Make one reference portrait per character with the image model. Give each a fixed look: age, hair,
@@ -212,13 +219,26 @@ His doctor says he can't work. / The file says he can. / So I sent one form. /
 Without references the same "person" changed in every shot and viewers could not tell who the last
 actor was.
 
-### Voice: human, per line, not sped up
+### Voice: human, per line, picked by measurement, not sped up
 
-Use an expressive model with emotion tags (for example `elevenlabs/eleven-v3` through a model gateway that
-bills by character; a line of about 40 characters cost well under one cent). Generate each line as its own file so each lands on its cut.
-Tags that helped: `[sighs]`, `[relieved]`. Trim silence at the start and end of each line only, with
-this filter: `silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse`. Do not speed the voice up: speed up the picture, not the voice. A system
-voice (macOS `say`) sounded robotic and was dropped.
+You cannot hear the take, so measure it. A system voice (macOS `say`) was robotic, and even a good model
+read the hook line flat: its pitch range was 3.7 semitones. Lively takes of the same line measured 7 to 15.
+
+1. Use an expressive model with emotion tags (for example `elevenlabs/eleven-v3` through a model gateway that bills by
+   character; a line of about 40 characters cost well under one cent). Give every line its own specific tag
+   (`[shaken, quiet]`, `[tired]`, `[flat, bitter]`, `[relieved, softly]`). Generate each line as its own file so it lands on its cut.
+2. Do not use breath or sound tags such as `[exhales]` or `[sighs]` at the start of a line. They came back as a 0.7 s
+   breath that delayed the first word, and once as the spoken word "huh".
+3. Generate 3 takes per line, clean each (below), and measure it with `scripts/prosody.py`. Keep the take with the widest pitch
+   range that passes: range 6 semitones or more, no pause over 0.5 s, no unvoiced lead-in over 0.35 s. `scripts/pick-voice.py`
+   does the loop and caches takes by line, voice and model, so a changed line never reuses old audio. Its lead-in trim only
+   cuts an unvoiced start over 0.35 s, so a hard "s" or "f" keeps its start.
+4. Clean each take: cut silence at both ends, squeeze any silence inside the line to 0.07 s, and cut a lead-in breath.
+   Squeezing is what removes the dead air between a line's sentences:
+   `silenceremove=start_periods=1:start_threshold=-40dB:start_silence=0.03,silenceremove=stop_periods=-1:stop_duration=0.18:stop_threshold=-40dB:stop_silence=0.07,areverse,silenceremove=start_periods=1:start_threshold=-40dB:start_silence=0.03,areverse`
+5. Place the lines 0.04 s apart. Gaps of 0.15 s plus pauses inside lines read as dead air.
+6. Do not speed the voice up: speed up the picture, not the voice.
+7. An audio-listening model scored every take 7 to 9 of 10 and could not tell them apart. Do not use it as the judge.
 
 ### Cuts and captions come from the voice, never from the picture
 
@@ -251,6 +271,9 @@ What to know:
   an empty hallway.
 - `check` flagged three labels as "occluded" that were clearly visible in the render. Treat that flag as a
   hint: confirm on rendered frames before you change anything.
+- No whooshes on cuts. They sat too loud next to the voice. Keep one crash and thud on the hook and a very quiet room tone (volume 0.25). The checker fails any non-voice sound within 12 dB of the voice after the first 1.6 s.
+- No dark bar behind the captions: white text with a black outline reads fine, and the bar looked heavy.
+- Never let a clip run past its own length. A hook clip sped up 2.5x froze for its last 0.3 s. Check `start + duration x rate` against the clip length in the build, and fail the build if it does not fit.
 - Sound effects need no stock library: pink noise through a lowpass for a crash, a 55 Hz sine for a thud,
   a short highpassed noise burst for each cut. Use licensed music from the ad platform at upload.
 
@@ -291,6 +314,7 @@ manifest the build wrote and the transcript of the CLEAN voice track:
 
 ```bash
 python3 scripts/video-ad-check.py out.mp4 --manifest manifest.json --transcript voice.transcript.json
+python3 scripts/prosody.py t1.wav t2.wav    # for the voice takes: pitch range, pauses and lead-in, fails a flat or gappy take (needs numpy)
 bash scripts/test.sh    # the checker's own failure cases (needs ffmpeg)
 ```
 
@@ -302,9 +326,12 @@ and text. The transcript is required for any video with a voice. The checker mea
 |---|---|
 | `size`, `duration`, `audio-present` | the size differs from the manifest, the length differs by over 0.3 s, or there is no audio (unless `muted`) |
 | `cut-pace`, `hook-cut` | a shot runs over 3 s or under 0.8 s, the average is over 2.5 s, or the first shot is over 2.5 s |
+| `no-freeze` | the picture freezes for 0.25 s or more (a clip was sped up or cut past its own length), or the analysis fails to run |
 | `hook-motion` | the first 2 s barely move (mean frame change under 15; a sped-up fall measured 21, the slow cut 13) |
 | `voice-present` | no voice lines and not `muted`, or the voice is not at least 6 dB above the gaps (and above -45 dB) in its window |
 | `voice-onset` | the voice in the rendered audio starts more than 0.30 s from the manifest (level threshold is 12 dB under the median voice level, never below -50 dB, so speech with no gaps works) |
+| `dead-air` | a gap between voice lines is over 0.45 s, or the rendered audio is silent for over 0.5 s inside a line, including a silent tail |
+| `sfx-level` | after the first 1.6 s, a non-voice sound comes within 12 dB of the voice outside the spoken lines; pass `--sfx effects.wav` (the effects track alone) to measure inside them too, because the mix cannot show it |
 | `audio-level` | the peak is above -1 dB or the mean is below -35 dB |
 | `caption-length`, `sync-manifest` | a caption has over 6 words, starts more than 0.25 s from its voice line, or ends more than 0.15 s before the line ends |
 | `mute-coverage` | the captions for a spoken line do not spell it word for word, or are on screen for under 85% of it (overlaps are not double counted) |

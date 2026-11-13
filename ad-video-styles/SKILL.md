@@ -1,6 +1,6 @@
 ---
 name: ad-video-styles
-description: "Use when you need a short paid-social VIDEO ad for a service and want a previously used structure with exact prompts: a photo-motion feed video (4:5, one still animated, static headline panel under it) or a call-out story video (9:16, about 15 s, three generated shots, burned captions, end card). Covers how to pick a style from a viral-video library, the detailed shot and caption prompts, the ffmpeg build, costs, and the failures that cost money the first time (animated text, base64 bodies, captions over hands, faces that look at the camera)."
+description: "Use when you need a short paid-social VIDEO ad for a service and want a previously used structure with exact prompts: a photo-motion feed video (4:5, one still animated, static headline panel under it), a call-out story video (9:16, about 15 s, three generated shots, burned captions, end card), or a lo-fi story with two recurring characters, an action hook, per-line voice and a Hyperframes post edit. Covers how to pick a style from a viral-video library, the detailed shot and caption prompts, the ffmpeg build, costs, and the failures that cost money the first time (animated text, base64 bodies, captions over hands, faces that look at the camera)."
 ---
 
 # ad-video-styles
@@ -156,15 +156,97 @@ ffmpeg -y -f concat -safe 0 -i list.txt -c copy -movflags +faststart story.mp4
 ffprobe -v error -show_entries stream=width,height,r_frame_rate:format=duration -of default=nw=1 story.mp4
 ```
 
-## 3. Rules for the people in the footage
+## 3. Style C: lo-fi story with two recurring characters (9:16, about 15 s)
+
+Use it when you want a story, not a moving still. It is organic and handheld on purpose: no logo, no
+designed layout, ordinary generated people caught mid-moment, one plain caption per shot. The owner rejected polished
+text-on-card ads in an earlier round and chose this direction; no performance result is claimed here.
+
+### Structure: shock, then a turn, then one clear answer
+
+| Time | Beat | Rule |
+|---|---|---|
+| 0 to 3 s | A real accident or shock, in action (a slip and a crash, a laugh, a cry) | The first 2 s must show it. Speed the clip up 2 to 2.5x so the whole event fits. |
+| 3 to 9 s | The turn: time passes and two sources disagree | One sentence per cut. Name who is who with a sketch label. |
+| 9 to 13 s | The one-step action (a form, a call) and relief | Same two people. |
+| 13 to 16 s | The one claim the owner confirmed, then the address | Hold the last line at least 2 s. |
+
+Use 8 to 10 cuts. Each shot runs 1.2 to 2.1 s. Zoom-punch on every cut.
+
+### Script: plain, short, spoken
+
+Write like a person talking to a friend, in short active sentences (ASD-STE100 style), then strip
+announcer phrasing. Six lines of 1 to 3 seconds each beat one long paragraph:
+
+```
+Dave fell. Hard. / That was March. / He is still off work. /
+Doctor says no. File says yes. / I sent one form. One clear answer. /
+<service name>. <confirmed claim>.
+```
+
+### Two characters that stay the same
+
+1. Make one reference portrait per character with the image model. Give each a fixed look: age, hair,
+   one loud garment (an orange vest, a teal blouse), a plain lanyard with a blank card.
+2. Make every scene with an image-edit model (for example `bytedance/seedream-v5.5/edit` on WaveSpeed,
+   about USD 0.03) and pass the reference portrait(s) as `images`. Prompt: "Person 1 is the person in
+   reference image 1: keep their exact face, hair, age and clothes", then the scene. Scenes with both
+   characters pass both references in order.
+3. Prompt the hook still as the peak of the action ("both feet in the air, boxes toppling"), then animate it.
+
+Without references the same "person" changed in every shot and viewers could not tell who the last
+actor was.
+
+### Voice: human, per line, not sped up
+
+Use an expressive model with emotion tags (for example `elevenlabs/eleven-v3` through a model gateway that
+bills by character; a line of about 40 characters cost well under one cent). Generate each line as its own file so each lands on its cut.
+Tags that helped: `[sighs]`, `[relieved]`. Trim silence at the start and end of each line only, with
+this filter: `silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse`. Do not speed the voice up: speed up the picture, not the voice. A system
+voice (macOS `say`) sounded robotic and was dropped.
+
+### Post edit with Hyperframes (HTML to MP4)
+
+Hyperframes renders a composition written in HTML with `data-*` timing and one paused GSAP timeline.
+Run `npx hyperframes lint`, then `npx hyperframes check`, then
+`npx hyperframes render --quality high --output out.mp4` (about 40 to 50 s for 16 s of 1080x1920 on an
+Apple-silicon laptop).
+What to know:
+
+- Put each `<video>` directly under the root. A `<video>` inside a wrapper that has its own `data-start` is an
+  error (`video_nested_in_timed_element`); an untimed wrapper is allowed. Put the zoom on the video element itself.
+- Retime with `data-playback-rate` on the clip (2.5 for the hook). Audio is separate `<audio>` clips.
+- Captions, labels and arrows are separate top-level timed elements. Give them explicit `z-index`.
+- A `local()` font fell back to a serif in the renderer. Ship an open hand-drawn font file (for example
+  Permanent Marker, OFL) in `assets/` and load it with `@font-face`.
+- Draw arrows as inline SVG (a curved path plus a two-stroke head, a black edge under a yellow stroke) and
+  pop them in with a scale tween. Aim each one: check it on a frame, because a guessed arrow pointed at
+  an empty hallway.
+- `check` flagged three labels as "occluded" that were clearly visible in the render. Treat that flag as a
+  hint: confirm on rendered frames before you change anything.
+- Sound effects need no stock library: pink noise through a lowpass for a crash, a 55 Hz sine for a thud,
+  a short highpassed noise burst for each cut. Use licensed music from the ad platform at upload.
+
+### QA that caught real problems
+
+| Check | What it caught |
+|---|---|
+| First and last frame of every clip | A phantom camera grew in a hand. Fix: re-run with "hands stay resting in her lap, nothing in her hands". |
+| One frame per cut in the render | An arrow aimed at empty floor; a label font that fell back to a serif. |
+| Mute test | Every beat needs a caption so the story reads without sound. |
+| Cost meter | Image-to-video clips (`wan-2.2/i2v-480p-ultra-fast`, 5 s, 480p) cost USD 0.05 to 0.09 each, measured from the balance in Nov 2026. Log every call and set a hard cap in the script. |
+
+Label it as a dramatization with AI-generated people and voice. Never present it as a testimonial.
+
+## 4. Rules for the people in the footage
 
 - They are generated, unnamed people at work. They are illustrations, not staff
-  or clients. Never put a name, title, credential or "our doctors" next to a face.
+  or clients. Never put a real person's name, a credential or "our doctors" next to a face. In a labelled dramatization, a fictional first name and a role tag ("me. HR.") for a character is fine.
 - Nobody looks at the camera, nobody speaks a claim, no patient is shown.
 - No logo or brand on any device, garment or wall. Ask for plain devices.
 - Check the platform's rule on labelling AI-made people. Label if it applies.
 
-## 4. Failures that cost time or money
+## 5. Failures that cost time or money
 
 | Failure | What happened | Fix |
 |---|---|---|
@@ -175,7 +257,7 @@ ffprobe -v error -show_entries stream=width,height,r_frame_rate:format=duration 
 | A fake "screen" in the footage | The model drew a browser with unreadable text | Angle screens away or crop them; the ask is "no lettering" |
 | Rebuild wipes work | A script re-ran every paid call | Skip a shot when its raw file already exists |
 
-## 5. Before it goes live
+## 6. Before it goes live
 
 1. Watch each finished video start to end at full size, and step through every cut. One
    frame per shot misses short distortions, stray text and captions that cover the hands.

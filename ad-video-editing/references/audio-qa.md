@@ -5,7 +5,7 @@ Measured audio checks for a rendered ad, run by the `ad-audio-qa` tool in
 It calls [earshot](https://github.com/Leonxlnx/earshot) (MIT, CPU-only, local)
 as an external dependency — no earshot code or models live in this repo.
 Every rule prints PASS, FAIL, NOT CHECKED or OWNER CHECK with a measured
-value. Run it after `references/qa.md` step 8, before you ship.
+value. Run it after `SKILL.md` step 8, before you ship.
 
 ## Setup (one time)
 
@@ -41,11 +41,11 @@ list gives caption segments directly, word timings are chunked to 3 words.
 
 | Rule | Pass condition |
 | --- | --- |
-| R6 dead audio | Coarse guard: FAIL on any stretch >= 1.5 s below -60 LUFS momentary; not digital silence. The ffmpeg 0.3 s / -35 dB detector in `owner-feedback.md` is the gate. |
+| R6 dead audio | Coarse guard: FAIL on any stretch >= 1.5 s below -60 LUFS momentary; not digital silence. The ffmpeg `silencedetect` (-35 dB, 0.25 s) crossed with `freezedetect` (0.3 s) in `owner-feedback.md` is the gate. |
 | loudness | Integrated -16 to -12 LUFS (target -14); true peak <= -1 dBTP. |
-| R14 sound and cuts | Needs `--sfx-stem`. FAIL "Sound is required" when the stem has no onsets; else FAIL when < 80% of picture cuts (ffmpeg scene > 0.3) have an sfx onset within 80 ms. A voice onset never counts. |
-| sfx onset 80 ms | Same stem and cut list as R14; reports the within-80 ms share. |
-| sfx vs voice | Needs both stems. Sfx median active-frame level >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. |
+| R14 sound and cuts | Needs `--sfx-stem`. FAIL "Sound is required" when the stem has no onsets; else FAIL when < 80% of the sfx onsets land within 80 ms of a picture cut (ffmpeg scene > 0.3). A cut with no sfx is fine (`pacing.md`: sfx only on events); an sfx that floats between cuts is a miss. A voice onset never counts. |
+| sfx onset 80 ms | Same stem and cut list as R14; reports the share of onsets within 80 ms of a cut. |
+| sfx vs voice | Needs both stems. Sfx median active-frame level >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. Those pacing.md figures came from the old mixed-track measurement, so treat them as unverified. |
 | R7 speech pace | True WPS <= 3.4 with `--transcript`; NOT CHECKED without it. Hand target stays 2 to 3 words per second. |
 | R8 voice consistency | Per-character F0 spread <= 1.6x across line wavs. Proxy only; NOT CHECKED when no line measures. |
 | R10 caption sync | Tool alarm: median offset <= 300 ms and >= 70% within 300 ms of speech onsets. Hand target stays 0.15 s. |
@@ -88,14 +88,16 @@ Generator — a 10 s stereo clip: a quiet harmonic bed plus 5 ms bursts at
 11025 Hz, amplitude 1.27, every 2 s:
 
 ```bash
+#!/bin/bash   # zsh reads "$B:s=..." as a history modifier and runs forever: use bash
 B="0.063*sin(2*PI*110*t)+0.038*sin(2*PI*220*t)+0.025*sin(2*PI*330*t)+0.019*sin(2*PI*440*t)"
-ffmpeg -f lavfi -i "aevalsrc=$B|$B:s=48000:d=10" \
+ffmpeg -f lavfi -i "aevalsrc=${B}|${B}:s=48000:d=10" \
   -f lavfi -i "aevalsrc=1.27*sin(2*PI*11025*t)|1.27*sin(2*PI*11025*t):s=48000:d=0.005" \
   -filter_complex "[1:a]asplit=5[b0][b1][b2][b3][b4];\
 [b0]adelay=0|0[x0];[b1]adelay=2000|2000[x1];[b2]adelay=4000|4000[x2];\
 [b3]adelay=6000|6000[x3];[b4]adelay=8000|8000[x4];\
 [x0][x1][x2][x3][x4]amix=inputs=5:normalize=0,apad=whole_dur=10[s];\
 [0:a][s]amix=inputs=2:normalize=0[m]" -map "[m]" -c:a pcm_f32le defect.wav
+cp defect.wav mix.wav   # the master steps above read mix.wav
 ```
 
 Measured before: I = -19.1 LUFS, true peak +2.9 dBTP (the two real defects:
@@ -123,13 +125,20 @@ re-measure the master; never trust pass-1 `output_i`.
 
 ## What earshot found that our QA missed
 
-On four real finals, earshot caught what the old checks passed:
+On four finals from our research workspace (the three `videos6` finals and the sitcom final; the workspace is local and not committed, so run the tool on your own finals to reproduce), earshot and ffmpeg caught what the old checks passed:
+
+| Final | Integrated | True peak | Clipped samples |
+| --- | --- | --- | --- |
+| `sA_meltdown_v3` | -12.1 LUFS | +2.7 dBTP | 160 |
+| `sB_door_v3` | -12.3 LUFS | +0.3 dBTP | 8 |
+| `sC_window_v3` | -12.4 LUFS | +0.1 dBTP | 4 |
+| `sitcom_v3` | -19.8 LUFS | -0.9 dBTP | 0 |
+
 
 - True-peak violations and clipping on all three videos6 finals (up to
   +2.7 dBTP, 160 clipped samples). The true-peak check existed in `qa.md`
   but was not run.
 - One sitcom final 5.8 LU quiet (-19.8 vs -14 target).
-- No continuous music bed in any of the four.
 
 Two earlier claims are withdrawn: the sfx-vs-voice margins and the sitcom
 sound-to-cut sync numbers came from earshot's mixed-track events, which

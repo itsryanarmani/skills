@@ -15,6 +15,10 @@ Pairs with `ad-research-to-creative` (what to say), `ad-video-scripts` (longer
 scripts), `ad-creative-templates` (static versions of the same ads) and
 `ad-test-launch` (where the finished video goes).
 
+**Hard rule: do not show a finished video to anyone until `scripts/video-ad-check.py` exits 0.** Section 6 says
+how. Looking at a few frames is not a check: a video once went out with its captions a full second ahead of
+the voice because nobody measured it.
+
 ## 0. Pick the style before you write anything
 
 Before you open any library of viral short-form videos, read its terms and robots.txt. As read by the
@@ -184,11 +188,14 @@ Use 8 to 10 cuts. Each shot runs 1.2 to 2.1 s. Zoom-punch on every cut.
 ### Script: plain, short, spoken
 
 Write like a person talking to a friend, in short active sentences (ASD-STE100 style), then strip
-announcer phrasing. Six lines of 1 to 3 seconds each beat one long paragraph:
+announcer phrasing. Lines of 1 to 3 seconds each beat one long paragraph. Make it personal and give it one
+thread: one narrator who is in the story, a clock that moves ("That was March." "It's July."), and a
+cross-cut that ties the scenes together (the narrator is on the phone, the other character is on the
+phone). A list of unrelated scenes reads as disconnected, even when each looks good.
 
 ```
-Dave fell. Hard. / That was March. / He is still off work. /
-Doctor says no. File says yes. / I sent one form. One clear answer. /
+I watched Dave go down. / I ran to him. That was March. / It's July. Still on the phone. /
+His doctor says he can't work. / The file says he can. / So I sent one form. /
 <service name>. <confirmed claim>.
 ```
 
@@ -213,6 +220,18 @@ Tags that helped: `[sighs]`, `[relieved]`. Trim silence at the start and end of 
 this filter: `silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse`. Do not speed the voice up: speed up the picture, not the voice. A system
 voice (macOS `say`) sounded robotic and was dropped.
 
+### Cuts and captions come from the voice, never from the picture
+
+Build the timeline backwards from the audio so sync holds by construction:
+
+1. Generate each line, trim edge silence, and place every line on one clean voice track at a known start time.
+2. Run speech-to-text on that clean track for word times (`npx hyperframes transcribe voice.wav --json`).
+   It often reports the first word at 0.0 s after leading silence: anchor each line's first word to its placed start.
+3. Check that the spoken words equal the script words. Stop if they differ.
+4. Cut on phrase starts (a cut about 0.05 s before the first word of a phrase). Captions are the spoken words in
+   chunks of 2 to 3 words, each from its first word to the next chunk. Never caption a whole line early.
+5. Write a manifest for the checker as you build (section 6).
+
 ### Post edit with Hyperframes (HTML to MP4)
 
 Hyperframes renders a composition written in HTML with `data-*` timing and one paused GSAP timeline.
@@ -227,8 +246,8 @@ What to know:
 - Captions, labels and arrows are separate top-level timed elements. Give them explicit `z-index`.
 - A `local()` font fell back to a serif in the renderer. Ship an open hand-drawn font file (for example
   Permanent Marker, OFL) in `assets/` and load it with `@font-face`.
-- Draw arrows as inline SVG (a curved path plus a two-stroke head, a black edge under a yellow stroke) and
-  pop them in with a scale tween. Aim each one: check it on a frame, because a guessed arrow pointed at
+- Keep overlays sparse. Sketch arrows on every cut read as too much: use no arrows, and at most two small
+  marker labels that say who is who the first time each person appears. If you must draw one arrow, aim it: a guessed one pointed at
   an empty hallway.
 - `check` flagged three labels as "occluded" that were clearly visible in the render. Treat that flag as a
   hint: confirm on rendered frames before you change anything.
@@ -265,7 +284,44 @@ Label it as a dramatization with AI-generated people and voice. Never present it
 | A fake "screen" in the footage | The model drew a browser with unreadable text | Angle screens away or crop them; the ask is "no lettering" |
 | Rebuild wipes work | A script re-ran every paid call | Skip a shot when its raw file already exists |
 
-## 6. Before it goes live
+## 6. Checks before you hand over a video
+
+`scripts/video-ad-check.py` fails the video unless every check passes. Run it on the final render with the
+manifest the build wrote and the transcript of the CLEAN voice track:
+
+```bash
+python3 scripts/video-ad-check.py out.mp4 --manifest manifest.json --transcript voice.transcript.json
+bash scripts/test.sh    # the checker's own failure cases (needs ffmpeg)
+```
+
+The manifest holds `duration`, `size`, `allow` (confirmed claims such as `"2 weeks"`), `muted` (true only for a
+video with no voice) and lists of `shots`, `voice` lines, `captions`, `labels` and `arrows`, each with `start`, `end`
+and text. The transcript is required for any video with a voice. The checker measures:
+
+| Check | Fails when |
+|---|---|
+| `size`, `duration`, `audio-present` | the size differs from the manifest, the length differs by over 0.3 s, or there is no audio (unless `muted`) |
+| `cut-pace`, `hook-cut` | a shot runs over 3 s or under 0.8 s, the average is over 2.5 s, or the first shot is over 2.5 s |
+| `hook-motion` | the first 2 s barely move (mean frame change under 15; a sped-up fall measured 21, the slow cut 13) |
+| `voice-present` | no voice lines and not `muted`, or the voice is not at least 6 dB above the gaps (and above -45 dB) in its window |
+| `voice-onset` | the voice in the rendered audio starts more than 0.30 s from the manifest (level threshold is 12 dB under the median voice level, never below -50 dB, so speech with no gaps works) |
+| `audio-level` | the peak is above -1 dB or the mean is below -35 dB |
+| `caption-length`, `sync-manifest` | a caption has over 6 words, starts more than 0.25 s from its voice line, or ends more than 0.15 s before the line ends |
+| `mute-coverage` | the captions for a spoken line do not spell it word for word, or are on screen for under 85% of it (overlaps are not double counted) |
+| `sync-transcript` | no transcript; the spoken words differ from the script; the captions skip a spoken word, leave the end of the speech uncaptioned, or say something else; or a caption is more than 0.35 s from its words (captions that share no word with the voice, such as an address end card, are skipped) |
+| `overlay-density`, `label-hold` | more than 2 labels or 1 arrow, or a label is on screen under 1 s |
+| `claims` | after removing each phrase in `allow`, a caption still has a digit, percent sign, dollar sign, or the word guarantee or risk-free |
+
+Rules for whoever runs it:
+
+- A FAIL means fix the build and render again. Do not edit the manifest to match a wrong video, and do not lower a
+  threshold to pass.
+- The transcript is not optional: no transcript is a FAIL, not a skip.
+- The checker cannot see everything. After it passes, still step through the cuts and look for an object that
+  appears or vanishes, an arrow or label aimed at the wrong thing, and scenes that do not follow each other.
+- Hand over only the file that passed, and say which checks ran.
+
+## 7. Before it goes live
 
 1. Watch each finished video start to end at full size, and step through every cut. One
    frame per shot misses short distortions, stray text and captions that cover the hands.

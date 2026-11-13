@@ -117,6 +117,7 @@ and model ids change.
   last-frame chaining.
 - `references/sound.md` — voiceover, ambient bed, ffmpeg SFX, muted-first
   design.
+- `references/owner-feedback.md` — 18 numbered owner rules (R1 to R18) and the cost ratchet. The reviewer checks each one.
 - `references/qa.md` — continuity check, mute test, orientation check, policy
   lint, spend meter.
 - `references/providers.md` — cheapest working models and prices, dated and

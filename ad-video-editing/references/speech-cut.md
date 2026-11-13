@@ -1,10 +1,10 @@
 # Speech-driven cuts: dead air and mistakes
 
 Word-gap silence removal and review-gated mistake cuts, adapted from
-herk-edit-kit (MIT + a custom use-permission note; see `sources.md`).
-Both scripts take any `{words:[{text,start,end}]}` transcript — local
-whisper output works. Verified 2026-11-12 in a local eval run; the
-vendor clones and eval outputs were local-only and are not in this repo.
+herk-edit-kit (MIT + use-permission note; see `sources.md`). Both
+scripts take any `{words:[{text,start,end}]}` transcript — local
+whisper output works. Verified 2026-11-12 in a local eval run (vendor
+clones and eval outputs were local-only, not in this repo).
 
 ## 1. Make the word JSON from local whisper
 
@@ -16,8 +16,7 @@ whisper work/audio.wav --model small --output_format json \
 
 whisper's JSON has keys `text`, `segments`, `language` — **no
 `duration` key**. Words nest under `segments[].words[]` with key
-`word`. Flatten it to the shape the cut tools want (`text`, `start`,
-`end`) and nothing else:
+`word`; flatten to `text`/`start`/`end` and nothing else:
 
 ```python
 import json
@@ -28,15 +27,11 @@ json.dump({"words": words}, open("work/words.json", "w"))
 ```
 
 Do not emit `audio_duration_secs`: `cut-silences.mjs` falls back to
-`ffprobe` on `--video` for the source duration, which is the true
-container length. An earlier draft of this doc wrote
-`src["duration"]` — that raises `KeyError` on real whisper output
-(reproduced 2026-11-12: `KeyError: 'duration'`).
+`ffprobe` on `--video` for the true container duration; `src["duration"]`
+raises `KeyError` on real whisper output (reproduced 2026-11-12).
 
-Model choice: the first eval used `--model tiny` (fast, rough on names
-and fast cuts). This fix-round run used `small` on the meltdown clip
-and `tiny` on the sitcom clip; both are cached locally. Use `small` or
-better for real ads.
+Model choice: `tiny` is fast but rough on names and fast cuts (first
+eval); `small` ran on the meltdown clip in the fix round. Use `small`+ for real ads.
 
 ## 2. Cut silences
 
@@ -45,22 +40,19 @@ node cut-silences.mjs work/words.json \
   --video input.mp4 --out-dir work/out --apply
 ```
 
-Options (verified against the script): `--gap 0.55` (min pause to
-trim), `--head-pad 0.22`, `--tail-pad 0.34`, `--output`, `--out-dir`,
-`--apply` (renders via ffmpeg `libx264 crf 18`, `aac 192k`, faststart).
-There is no keep-range flag — the tail is controlled only by
-`--tail-pad`.
+Options (verified): `--gap 0.55` min pause to trim, `--head-pad 0.22`,
+`--tail-pad 0.34`, `--output`, `--out-dir`, `--apply` (ffmpeg
+`libx264 crf 18`, `aac 192k`, faststart). No keep-range flag — the tail is set only by `--tail-pad`.
 
 Outputs land in `--out-dir` (default: alongside the transcript):
 `<stem>.silence-edl.json` (keep/delete ranges + reasons),
 `<stem>.silence-transcript.json` (**words re-timed to the edited
 timeline**), `<stem>.silence-decisions.md`, and the cut mp4.
 
-This is word-gap driven, not loudness driven. It keeps deliberate breaths
-in TTS narration that a loudness-only tool (auto-editor) would eat.
-Copy the script into our tooling; do not depend on the vendor repo.
-When copying, keep its MIT notice (`Copyright (c) 2026 Nate Herk`) and
-the `licenses/PIPELINE-USE-PERMISSION.txt` notice with the file.
+This is word-gap driven, not loudness driven — it keeps deliberate
+breaths in TTS narration that auto-editor would eat. Copy the script
+into our tooling; when copying, keep its MIT notice (`Copyright (c)
+2026 Nate Herk`) and the `licenses/PIPELINE-USE-PERMISSION.txt` notice.
 
 ### Measured results (re-run 2026-11-12, fixed converter)
 
@@ -73,40 +65,34 @@ whisper `tiny` unless noted.
 | sA_meltdown_v2.mp4 | 10.21 s | 8.70 s | -14.8 % | 1 range (tail) |
 | sA_meltdown_v2.mp4, `--model small` | 10.21 s | 8.567 s | -16.1 % | 1 range (tail) |
 
-The earlier draft of this table showed 20.62 s / 9.34 s "before" —
-those were the last word end + 1.0 s written by the eval's converter,
-not the clip length. The real before-lengths are above.
+The earlier draft showed 20.62 s / 9.34 s "before" — last word end +
+1.0 s from the converter, not the clip length.
 
 ### The CTA tail trap (found in this re-run)
 
-On `sA_meltdown_v2.mp4` the only delete was the tail trim
-8.68–10.21 s. The CTA sound sits at ~10.0 s (`last_sound_s` in the
-local videos5 sync QA, a 2026-11-12 artifact not in this repo), inside
-that deleted range — the cut dropped the last
-~1.5 s and with it the call-to-action audio. `pacing.md` rule 7 says
-the CTA must be held ~2 s; a transcript-only tool cannot see a
-non-speech sting, so:
+On `sA_meltdown_v2.mp4` the only delete was the tail trim 8.68–10.21 s.
+The CTA sound sits at ~10.0 s (`last_sound_s` in the local videos5 sync
+QA, a 2026-11-12 artifact not in this repo), inside that range — the cut
+dropped the last ~1.5 s and the call-to-action audio. `pacing.md`'s
+end-tail rule says the CTA must be held ~2 s; a transcript-only tool
+cannot see a non-speech sting:
 
-- **Rule:** the last keep range must extend to the end of the CTA/last
-  sound, not just past the last word. Before `--apply`, measure where
-  the last non-speech sound ends (the sync-QA `last_sound_s` check in
-  `qa.md`, or `silencedetect` on the stem) and compare it to the EDL's
-  last `keep_ranges` end.
+- **Rule:** the last keep range must reach the end of the CTA/last
+  sound, not just past the last word. Before `--apply`, find where the
+  last non-speech sound ends (`last_sound_s` in `qa.md`, or
+  `silencedetect`) and compare it to the EDL's last `keep_ranges` end.
 - **Check:** after rendering, `last_sound_s` on the output must still
-  cover the CTA. If the tail trim removed it, the edit fails.
+  cover the CTA; if the trim removed it, the edit fails.
 - **Protection:** raise `--tail-pad` so `last_word_end + tail_pad`
-  reaches past the CTA end (there is no explicit keep flag).
-  Verified: `--tail-pad 2.0` on the meltdown clip produced 0 delete
-  ranges and kept all 10.21 s. Alternatively cut the CTA region by
-  hand afterwards, or accept the trim only when the CTA is speech the
-  transcript actually saw.
+  reaches past the CTA end (no keep flag exists). Verified: `--tail-pad
+  2.0` kept all 10.21 s with 0 deletes. Or cut the CTA region by hand,
+  or accept the trim only when the CTA is speech the transcript saw.
 
 ### Synthetic re-run
 
 A 12 s testsrc2+sine clip with a hand-written 9-word JSON containing
-three ~2 s gaps went to 4.44 s (-63 %), 4 delete ranges, rendered mp4
-verified by ffprobe — **a run made while writing this skill**, not an
-independent eval.
+three ~2 s gaps went to 4.44 s (-63 %), 4 delete ranges, ffprobe-verified
+mp4 — **a run made while writing this skill**, not an independent eval.
 
 ## 3. Cut mistakes (review-gated)
 
@@ -122,26 +108,23 @@ node apply-cuts.mjs work/out/<stem>.silence-transcript.json \
   --out-dir work/out-mistakes --apply
 ```
 
-`apply-cuts.mjs` usage is `<transcript.json> --cuts <approved.json>
-[--video ...] [--output ...] [--out-dir ...] [--apply]`. The earlier
-draft omitted `--cuts`, which fails with "no --cuts file given", and
-showed no `--apply`, which renders nothing. Both fixed and exercised
-2026-11-12: one hand-approved 0.6 s false-start cut on the silenced
-meltdown clip rendered 8.68 s → 8.08 s.
+`apply-cuts.mjs` usage: `<transcript.json> --cuts <approved.json>
+[--video ...] [--output ...] [--out-dir ...] [--apply]` — omitting
+`--cuts` fails with "no --cuts file given"; without `--apply` nothing
+renders. Exercised 2026-11-12: one hand-approved 0.6 s false-start cut
+on the silenced clip rendered 8.68 s → 8.08 s.
 
-- Feed step 2 the **re-timed** transcript. Never mix original and edited
+- Feed step 2 the **re-timed** transcript; never mix original and edited
   timestamps.
 - The finder is mechanical: stutters, repeated words, false starts,
-  retakes. It emits candidates with context and a reason. On our clean
-  TTS-narrated clips it found 0 candidates; **stutter/retake detection
-  was read but not exercised on real retakes** — validate it on a
-  talking-head take before trusting it.
-- A person or review step approves each cut. Intentional repetition is
-  not a mistake. `apply-cuts` renders only approved ranges (an empty
-  `cuts` array is valid and renders the input unchanged).
-- For TTS-narrated ads there are usually no spoken mistakes; the silence
-  cut alone is the common case. The mistake scan earns its keep on real
-  talking-head takes.
+  retakes. On clean TTS clips it found 0 candidates; **stutter/retake
+  detection was read but not exercised on real retakes** — validate on
+  a talking-head take first.
+- A person or review step approves each cut; intentional repetition is
+  not a mistake. `apply-cuts` renders only approved ranges (empty `cuts`
+  renders input unchanged).
+- TTS-narrated ads usually have no spoken mistakes — the silence cut
+  alone is the common case.
 
 ## Traps
 
@@ -150,6 +133,5 @@ meltdown clip rendered 8.68 s → 8.08 s.
 - `--apply` renders into `--out-dir` (default: alongside the inputs),
   not next to the video unless `--out-dir` points there.
 - Dead-air detection without a transcript exists (ffmpeg
-  `silencedetect`, verified in the eval) but found nothing on our
-  produced clips — their audio beds are continuous. Speech-gap cutting
-  needs the transcript.
+  `silencedetect`, verified in the eval) but found nothing on our clips
+  — their audio beds are continuous. Speech-gap cutting needs the transcript.

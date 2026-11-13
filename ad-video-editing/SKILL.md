@@ -5,10 +5,9 @@ description: "Fast-cut editing for short ad videos (TikTok, Reels, Shorts; about
 
 # ad-video-editing
 
-A repeatable post-production workflow for short vertical ads: generated
-clips, voiceover lines and SFX cut into a fast, loud, captioned ad that
-passes QA. For the footage itself see `ad-lofi-ugc` (lo-fi UGC look) or
-`ad-video-styles` (polished generated styles). Verified November 2026.
+A repeatable post-production workflow for short vertical ads — generated clips,
+voiceover lines and SFX into a fast, loud, captioned ad that passes QA. For
+footage see `ad-lofi-ugc` or `ad-video-styles`. Verified November 2026.
 
 ## Workflow
 
@@ -38,30 +37,20 @@ passes QA. For the footage itself see `ad-lofi-ugc` (lo-fi UGC look) or
 
 ## Non-negotiable rules
 
-- **The timeline comes from measured voice lines, not fixed shot lengths.**
-  Fixed-length shots are what left dead gaps in the first fast-cut attempt.
-- **Never mix timestamp domains.** After a silence cut, downstream steps
-  (mistake scan, captions, SFX placement) use the re-timed transcript only.
-- **Review before applying.** Mistake cuts are proposals until approved.
-  Intentional repetition is not a mistake.
-- **Keep the CTA.** The last keep range must reach the end of the
-  call-to-action sound, not just the last word — a tail trim can drop a
-  non-speech sting. See `references/speech-cut.md`.
-- **Do not copy code from OpenMontage.** It is AGPL-3.0. Ideas only; write
-  our own implementation. See `references/sources.md`.
-- **Keep `packages/openfilm/library/LICENSE.md` with any OpenFilm
-  asset.** The library is CC0; the emoji stickers are MIT.
+- **The timeline comes from measured voice lines, not fixed shot lengths**
+  — fixed shots left dead gaps in the first fast-cut attempt.
+- **Never mix timestamp domains.** After a silence cut, all downstream steps use the re-timed transcript only.
+- **Review before applying.** Mistake cuts are proposals until approved; intentional repetition is not a mistake.
+- **Keep the CTA.** Last keep range must reach the end of the CTA sound, not just the last word — a tail trim can drop a non-speech sting.
+- **Do not copy code from OpenMontage** — AGPL-3.0, ideas only; write our own. See `references/sources.md`.
+- **Keep `packages/openfilm/library/LICENSE.md` with any OpenFilm asset** — library CC0, emoji stickers MIT.
 - **Pin the OpenFilm version.** Do not run `npx openfilm@latest`.
-- **Listen once before shipping.** The numbers in `qa.md` do not prove an
-  effect fits the picture.
+- **Listen once before shipping** — the numbers in `qa.md` do not prove an effect fits the picture.
 
 ## References
 
-- `references/speech-cut.md` — silence and mistake cuts: commands,
-  measured results, transcript conversion.
-- `references/pacing.md` — the measured pacing rules and their evidence.
-- `references/library.md` — the OpenFilm CC0 library: contents, search,
-  take, license, pinning.
+- `references/speech-cut.md` — silence/mistake cuts: commands, results, transcript conversion.
+- `references/pacing.md` — measured pacing rules and their evidence.
+- `references/library.md` — OpenFilm CC0 library: contents, search, take, license, pinning.
 - `references/qa.md` — post-render checks on the encoded file.
-- `references/sources.md` — repo audit: stars, push dates, licenses,
-  what to adopt and what not. Verified 2026-11-12.
+- `references/sources.md` — repo audit: stars, licenses, adopt vs not. Verified 2026-11-12.

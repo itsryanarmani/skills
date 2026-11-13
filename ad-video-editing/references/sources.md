@@ -1,10 +1,9 @@
 # Source repos: what to adopt, what not
 
-Audit of the repos behind this skill's methods. Stars and push dates via
-`gh api` on 2026-11-12; licenses read from shallow clones kept outside
-this repo (read-only, untrusted — their install scripts were never run).
-The eval that exercised them was a local run on 2026-11-12; its report
-and outputs are not in this repo.
+Audit of the repos behind this skill's methods. Stars and push dates
+via `gh api` on 2026-11-12; licenses from shallow clones kept outside
+this repo (read-only, untrusted — install scripts never ran). The eval
+was a local 2026-11-12 run; its report and outputs are not in this repo.
 
 | Repo | Stars | Last push | License | Adopt | Do not adopt |
 |---|---|---|---|---|---|
@@ -17,14 +16,8 @@ and outputs are not in this repo.
 
 ## License text (quoted)
 
-**openfilm `library/LICENSE.md`:**
-
-> "Everything in OpenFilm's library can be used in any film, commercial or
-> not, changed and shared, with no need to credit anyone. … These are
-> dedicated to the public domain under CC0 1.0."
-
-Emoji stickers: "MIT License … Copyright (c) Microsoft Corporation." —
-notice must be kept with them.
+**openfilm `library/LICENSE.md`:** CC0 quote in `library.md`. Emoji stickers:
+"MIT License … Copyright (c) Microsoft Corporation." — keep the notice with them.
 
 **herk-edit-kit `LICENSE`:** standard MIT text ("Permission is hereby
 granted, free of charge, to any person obtaining a copy … to use, copy,
@@ -40,25 +33,21 @@ are not licensed for reuse".
 > videos. Retain this notice when redistributing the kit or substantial
 > portions of its source materials."
 
-When copying a herk script (e.g. `cut-silences.mjs`,
-`find-cut-candidates.mjs`, `apply-cuts.mjs`) into our tooling, keep the
-MIT copyright notice (`Copyright (c) 2026 Nate Herk`) and this
-use-permission notice with the copied file.
+When copying a herk script (`cut-silences.mjs`, `find-cut-candidates.mjs`,
+`apply-cuts.mjs`), keep the MIT notice (`Copyright (c) 2026 Nate Herk`)
+and this use-permission notice with the file.
 
 **OpenMontage `LICENSE`:** "GNU AFFERO GENERAL PUBLIC LICENSE Version 3,
 19 November 2007". AGPL-3.0 means: do not copy code into our MIT repos;
 clean-room reimplementation of ideas is fine.
 
-**auto-editor:** Unlicense (public domain). **ghost-editor, hyperframes:**
-MIT / Apache-2.0 respectively (GitHub SPDX).
+**auto-editor:** Unlicense (public domain). **ghost-editor:** MIT. **hyperframes:** Apache-2.0 (GitHub SPDX).
 
 ## Caveats
 
 - OpenMontage's 80k stars on a months-old repo look anomalous; treat the
   count with suspicion. Its value here is design patterns, not code.
-- Vendor clones live outside this repo. When adopting a script (e.g.
-  cut-silences.mjs), copy the file into our tooling and record its
-  source + license here — do not link to a path that will not exist for
-  the next agent.
-- Whisper `tiny` transcripts are rough; the eval used `tiny`, this
-  skill's commands show `small`. Use `small`+ for names.
+- Vendor clones live outside this repo. When adopting a script, copy it
+  into our tooling and record its source + license here — do not link a
+  path that will not exist for the next agent.
+- Whisper `tiny` is rough on names and fast cuts; eval used `tiny`, commands use `small`.

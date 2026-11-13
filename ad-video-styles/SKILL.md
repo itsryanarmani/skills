@@ -17,17 +17,25 @@ scripts), `ad-creative-templates` (static versions of the same ads) and
 
 ## 0. Pick the style before you write anything
 
-Open a library of viral short-form videos (for example the free DarkUGC library at
-darkugc.com, which also offers an MCP server at darkugc.com/mcp) and sort by views. Look for the structure, not the topic. Two structures
-carried over to a B2B service:
+Before you open any library of viral short-form videos, read its terms and robots.txt. As read by the
+owner in Nov 2026, the DarkUGC terms forbid scraping and any automated access, including bots, scripts,
+headless browsers and AI agents, and its robots.txt disallows `/api/`. The exception for agents is the MCP
+server the site names, used with an account the owner signs in to. So: an agent uses that MCP server and
+nothing else on that site. Do not fetch its pages or API with a tool, do not fake a User-Agent or Referer to
+pass a block, and do not save or quote its counts. If a request is blocked, stop. A person can still browse
+the site by hand.
+
+Other sources you can use as a starting point, each under its own license or terms: open-source hook and
+prompt repositories (for example `rediumvex/viral-hooks-skill` and `Reviral-ai/awesome-ai-ugc-ad-prompts`)
+and the Meta Ad Library API. Look for the structure, not the topic. Two structures carried over to a B2B service:
 
 | Structure seen | Intended effect (not measured here) | Use it for |
 |---|---|---|
 | Niche call-out in the first second ("All <buyers>, ATTENTION") then a quick demo | The right viewer should self-select at once and others scroll on | Story video, section 2 |
 | A trap or twist: the obvious answer is wrong | The viewer should stay for the payoff | A later style; needs a writer |
 
-Copy the structure. Never copy the clip, the face, the words or the music. The
-library is inspiration, not footage to reuse.
+Copy the structure. Never copy the clip, the face, the words or the music. A library is
+inspiration, not footage to reuse.
 
 State one claim per video, and only claims the owner has confirmed. A video
 that says "in 2 weeks" must match what the service delivers.

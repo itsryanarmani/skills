@@ -12,7 +12,7 @@ When the owner gives new feedback, add a rule here in the same PR that fixes it.
 | R4 | The same person must show different poses and angles. | Same face, outfit and hair across all shots. At least 3 poses. | Marble lady needed jump cuts. |
 | R5 | Show problem, agitation, then solution. Make the agitation hurt and be funny. | Mark the three beats on the timeline. Agitation has at least 3 quick cuts, one prop each. | "Highlight problem and solution agitation." |
 | R6 | No dead gaps. No silent still over 0.3 s. Tail after the last sound under 0.3 s. | `freezedetect=n=-60dB:d=0.3` crossed with `silencedetect=n=-35dB:d=0.25`. A range in both is a dead gap. | Round 4 had dead gaps. |
-| R7 | Speed up the picture, not the voice. Normal speech pace. | Words per second from whisper: 2 to 3. Average shot length: 1.2 to 1.5 s for a fast punch edit, 1.5 to 2.2 s for a lo-fi story. No shot over 2.5 s. | "Sound speed too much, pace better." |
+| R7 | Speed up the picture, not the voice. Normal speech pace. | Words per second from whisper: 2 to 3. Average shot length: 1.5 to 2.2 s for a lo-fi story (the gate in `qa.md`), 1.2 to 1.5 s only for a fast punch edit. No shot over 2.5 s. | "Sound speed too much, pace better." |
 | R8 | Voice, face and ethnicity must match. | A person listens to each voice with the face. Log the voice id per character. | "Ethnicity of source does not match." |
 | R9 | A story the viewer can follow. It is personal and coherent, in the first person, as a dramatization. It makes no factual claim. | Read the captions alone. They tell one story in the first person. | Meltdown: "random words". |
 | R10 | Captions have spaces. At most 3 words. Time them to the audio. | Measure the pixel gap: at least 14 px of clear gap between words at 1080 px. Compare caption start with the whisper word start (under 0.15 s). | Caption spacing and sync. |
@@ -21,7 +21,7 @@ When the owner gives new feedback, add a rule here in the same PR that fixes it.
 | R13 | Back-and-forth dialogue is wanted. Keep it and add more. | Count speaker changes. At least 4 in a sitcom. | "Love the dialogue." |
 | R14 | Sound is required. The ad also works muted. | Play with sound off. The story and the offer still read. Ship both files. | Round 3 had no sound. |
 | R15 | Hold the object identity. A phone stays a phone. | Compare held objects in frames across the clip. | Phone turned into a notepad. |
-| R16 | Lo-fi organic look. No logo. No text except captions and the dramatization tag. | Look at the frames. No logo, no studio polish. | Polished images were rejected. |
+| R16 | Lo-fi organic look. No logo. No text except captions, the dramatization tag and one end card with the offer. | Look at the frames. No logo, no studio polish. | Polished images were rejected. |
 | R17 | Housing safety. "dramatization" label. No invented numbers. No real people. No children. | Run the policy lint on all text and captions. | Housing special ad category. |
 | R18 | Cost goes down each time. Report cost per video by stage. | Compare with the last video of the same format. Explain any rise. | Goal: cut cost 50 to 75 percent. |
 

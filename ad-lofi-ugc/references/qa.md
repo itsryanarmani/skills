@@ -5,6 +5,8 @@ orientation, and the policy lint. Plus the spend meter that runs during
 generation. Each gate exists because a real failure slipped past a weaker
 check.
 
+Before you ship, also test every rule in `owner-feedback.md` (R1 to R18).
+
 ## 1. Object-continuity check (video)
 
 Generative video invents and swaps objects. The real failure: a character

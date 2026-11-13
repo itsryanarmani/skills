@@ -40,7 +40,7 @@ Every video ships in two files:
    # Inputs: 0 = video, 1 = voice, 2 = bed, 3 = SFX stem.
    ffmpeg -i video.mp4 -i voice.wav -i bed.wav -i sfx.wav -filter_complex \
      "[1:a][2:a][3:a]amix=inputs=3:weights='1 0.15 0.15':normalize=0,alimiter[a]" \
-     -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 128k -shortest out.mp4
+     -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 192k -shortest out.mp4
    ```
 
    (Tested on ffmpeg 9.0.2 with synthetic stems. `normalize=0` needs ffmpeg 4.4 or newer. Adjust inputs to your actual stems; the point is VO + quiet bed + sparse

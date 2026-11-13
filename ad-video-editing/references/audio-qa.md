@@ -30,8 +30,15 @@ ad-audio-qa FINAL.mp4 --out qa-audio.json \
   --transcript work/transcript.json
 ```
 
-`--sfx-stem` is a wav of the sfx and laugh track alone; `--voice-stem` a wav
-of the voice alone. A mixed track cannot separate them, so R14, the sfx onset
+`--sfx-stem` is a wav of the sfx alone; `--voice-stem` a wav of the voice
+alone. Leave the laugh track out of `--sfx-stem`: laughs do not land on cuts
+and lower R14. A sound on a beat that is not a cut (an in-shot impact, a
+riser before a twist) also counts as off-cut: pass the beat times with
+`--cuts T1,T2,...` (seconds), which replaces scene detection. Stems are
+assumed to start at t=0. `--require-stems` exits 3 when every sfx rule is
+NOT CHECKED. Exit codes: 0 no FAIL, 1 any FAIL, 2 usage error, 3
+`--require-stems`. R14 is NOT CHECKED when no cuts are found. Full tool
+behaviour: `ad-audio-qa.md` in itsryanarmani/scripts (PR #865). A mixed track cannot separate them, so R14, the sfx onset
 check and `sfx_vs_voice` print NOT CHECKED without the stems. `--lines` +
 `--voice-map` enable the R8 consistency check. `--transcript` (word timings
 from local whisper) enables true WPS (R7) and caption sync (R10); a `groups`
@@ -41,13 +48,13 @@ list gives caption segments directly, word timings are chunked to 3 words.
 
 | Rule | Pass condition |
 | --- | --- |
-| R6 dead audio | Coarse guard: FAIL on any stretch >= 1.5 s below -60 LUFS momentary; not digital silence. The ffmpeg `silencedetect` (-35 dB, 0.25 s) crossed with `freezedetect` (0.3 s) in `owner-feedback.md` is the gate. |
+| R6 dead audio | Coarse guard: FAIL on any stretch >= 1.5 s below -60 LUFS momentary; not digital silence. The ffmpeg `silencedetect` (-35 dB, 0.25 s) crossed with `freezedetect` (0.3 s) in `ad-lofi-ugc/references/owner-feedback.md` is the gate. |
 | loudness | Integrated -16 to -12 LUFS (target -14); true peak <= -1 dBTP. |
-| R14 sound and cuts | Needs `--sfx-stem`. FAIL "Sound is required" when the stem has no onsets; else FAIL when < 80% of the sfx onsets land within 80 ms of a picture cut (ffmpeg scene > 0.3). A cut with no sfx is fine (`pacing.md`: sfx only on events); an sfx that floats between cuts is a miss. A voice onset never counts. |
-| sfx onset 80 ms | Same stem and cut list as R14; reports the share of onsets within 80 ms of a cut. |
-| sfx vs voice | Needs both stems. Sfx median active-frame level >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. Those pacing.md figures came from the old mixed-track measurement, so treat them as unverified. |
+| R14 sound and cuts | Needs `--sfx-stem`. A cue is every sound within 0.25 s of its first sound; it counts as on a cut when the start, attack (first frame within 10 dB of its max) or peak of any of its sounds is within 80 ms. FAIL "Sound is required" when the stem has no onsets; else FAIL when < 80% of the sfx onsets land within 80 ms of a picture cut (ffmpeg scene > 0.3). A cut with no sfx is fine (`pacing.md`: sfx only on events); an sfx that floats between cuts is a miss. A voice onset never counts. |
+| sfx onset 80 ms | Same stem, cuts and 80% gate as R14. |
+| sfx vs voice | Needs both stems. Median per-event sfx level (events merged under 0.3 s, louder channel) >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. Those pacing.md figures came from the old mixed-track measurement, so treat them as unverified. |
 | R7 speech pace | True WPS <= 3.4 with `--transcript`; NOT CHECKED without it. Hand target stays 2 to 3 words per second. |
-| R8 voice consistency | Per-character F0 spread: <= 1.25 PASS, above 1.25 OWNER CHECK ("weak proxy, listen"). Never FAIL: a calibration found neither pitch spread nor a speaker embedding separated the one voice the owner rejected from eleven the owner accepted. NOT CHECKED when no character has 2 or more usable lines. |
+| R8 voice consistency | Per-character F0 spread: <= 1.25 PASS, above 1.25 OWNER CHECK ("weak proxy, listen"). Never FAIL: on our own videos a calibration (1 rejected voice against 11 accepted, a small sample) found neither pitch spread nor a speaker embedding separated them. NOT CHECKED when no character has 2 or more usable lines. |
 | R10 caption sync | Tool alarm: median offset <= 300 ms and >= 70% within 300 ms of speech onsets. Hand target stays 0.15 s. |
 | R8 voice-face fit, R11 mouth-voice, owner judgment | OWNER CHECK — always a person. |
 
@@ -120,7 +127,7 @@ container timing).
 Honest limit: `loudnorm` can switch to dynamic mode — pass 1 prints
 `normalization_type`, and on this clip it predicted -17.8 LUFS, not -14.
 Dynamic gain rides the gated loudness and can overshoot on steady material
-with LRA 0 (reported: -13.1 in, -18.4 out on a pure-tone bed). Always
+with LRA 0 (seen once in review on a steady tone bed: -13.1 in, -18.4 out; not reproduced here). Always
 re-measure the master; never trust pass-1 `output_i`.
 
 ## What earshot found that our QA missed
@@ -156,8 +163,9 @@ not valid measurements. Both rules now require separated stems.
 ## Owner-check rule
 
 R8 voice stays an OWNER CHECK, both fit and consistency. The F0 spread
-measures neither reliably: it flagged voices the owner accepted, and a
-speaker embedding rated the rejected voice as the most consistent. Keep
+measures neither reliably: on our own videos (small sample) it flagged voices the owner
+accepted, and a speaker embedding rated the rejected voice as the most
+consistent. Keep
 `R8_voice_consistency` as a prompt to listen; send fit, consistency,
 acting, music taste and mix feel to the owner with the video. Same for R11
 mouth-voice — wire the FaceLandmarker artifacts before trusting any

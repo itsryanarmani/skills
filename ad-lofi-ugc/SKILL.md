@@ -24,6 +24,8 @@ Pairs with:
 - `ad-video-styles` — a different family: polished generated footage with
   static overlay type. Use this skill when the goal is "looks amateur on
   purpose".
+- `ad-video-editing` — the fast-cut post stage: dead-air removal, pacing,
+  SFX on cuts, captions and render QA for the finished video.
 - `ad-experiments` — how to size budget and read results once ads ship.
 
 ## The pipeline, in order

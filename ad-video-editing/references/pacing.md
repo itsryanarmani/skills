@@ -22,7 +22,9 @@ this repo) and the herk-edit-kit editing playbook. Verified 2026-11-12.
    measured SFX -1.4 to -3.6 dB under the voice (`sfx_vs_vo_db` in the
    sync QA); `ad-lofi-ugc/references/sound.md` starts bed and SFX ~16 dB
    under voice. Treat -1.4 to -3.6 dB as the floor for a loud fast-cut
-   ad, ~16 dB as the safer lo-fi default; trust your ears.
+   ad, ~16 dB as the safer lo-fi default; trust your ears. The -1.4 to
+   -3.6 dB figures came from a mixed-track measurement that
+   `audio-qa.md` withdraws: measure sfx level from separate stems.
 6. **End tail under 0.3 s.** Last sound to last frame < 0.3 s; first
    sound within 0.3 s of frame one. Hold the final claim or CTA ~2 s so
    it reads — and make sure the edit keeps it: a transcript-only cut can

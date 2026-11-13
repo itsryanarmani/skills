@@ -33,7 +33,10 @@ footage see `ad-lofi-ugc` or `ad-video-styles`. Verified November 2026.
    `filter_complex` for flat cuts, HyperFrames for composed ads.
 8. **Run post-render QA.** Determinism double-draw, flash/freeze/black
    scan, loudness to -14 LUFS, silence and tail checks, caption timing,
-   mouth-sync spot check. See `references/qa.md`.
+   mouth-sync spot check. See `references/qa.md`. Then run the measured
+   audio rules (`ad-audio-qa` via earshot): dead air, loudness and true
+   peak, cut/sound sync, SFX level, speech pace, voice consistency,
+   caption sync. See `references/audio-qa.md`.
 
 ## Non-negotiable rules
 
@@ -53,4 +56,5 @@ footage see `ad-lofi-ugc` or `ad-video-styles`. Verified November 2026.
 - `references/pacing.md` — measured pacing rules and their evidence.
 - `references/library.md` — OpenFilm CC0 library: contents, search, take, license, pinning.
 - `references/qa.md` — post-render checks on the encoded file.
+- `references/audio-qa.md` — measured audio rules via `ad-audio-qa`/earshot, final-master loudnorm proof, owner-check boundary.
 - `references/sources.md` — repo audit: stars, licenses, adopt vs not. Verified 2026-11-12.

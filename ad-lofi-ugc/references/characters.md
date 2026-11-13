@@ -29,9 +29,12 @@ wireless earbud in her right ear, holding a yellow legal pad and a black
 pen.
 ```
 
-The character is synthetic. No real person, no real name needed, and the ad
-must not claim a real testimonial. If the platform requires it, label the
-person as AI-generated.
+The character is synthetic. No real person, no real name needed.
+The character is never a past customer. The voiceover never describes a
+result the person got. A first-person selfie or voiceover from a synthetic
+"customer" is an implied testimonial, and the FTC fake-reviews rule and Meta
+policy treat it that way. Frame comedy skits as dramatizations. Label any
+person who could pass as real as AI-generated, every time.
 
 ## 2. Generate an anchor contact sheet first
 

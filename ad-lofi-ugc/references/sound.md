@@ -29,19 +29,21 @@ Every video ships in two files:
    `aevalsrc`/`anoisesrc` or a tiny generated tone; there is no ffmpeg SFX
    library, so keep cues simple (filtered noise bursts work for whoosh and
    thud).
-4. **Mix levels** — voice loudest, bed and SFX well under it (the brief used
-   about -18 dB for bed+SFX under VO as a starting point; trust your ears).
+4. **Mix levels** — voice loudest, bed and SFX well under it. The weights
+   `1 0.15 0.15` below put bed and SFX about 16 dB under the voice. Treat
+   them as a starting point and trust your ears.
    No copyrighted music. AI-disclosed voices follow the same rules as faces:
    never clone a real person's voice without consent.
 5. **Encode** — AAC audio in the final MP4:
 
    ```bash
-   ffmpeg -i video.mp4 -i voice.wav -i bed.wav -filter_complex \
-     "[1:a][2:a][3:a]amix=inputs=3:weights=1 0.3 0.3,alimiter[a]" \
+   # Inputs: 0 = video, 1 = voice, 2 = bed, 3 = SFX stem.
+   ffmpeg -i video.mp4 -i voice.wav -i bed.wav -i sfx.wav -filter_complex \
+     "[1:a][2:a][3:a]amix=inputs=3:weights='1 0.15 0.15':normalize=0,alimiter[a]" \
      -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 128k -shortest out.mp4
    ```
 
-   (Adjust inputs to your actual stems; the point is VO + quiet bed + sparse
+   (Tested on ffmpeg 9.0.2 with synthetic stems. `normalize=0` needs ffmpeg 4.4 or newer. Adjust inputs to your actual stems; the point is VO + quiet bed + sparse
    SFX, limited, encoded AAC.)
 
 ## What goes wrong

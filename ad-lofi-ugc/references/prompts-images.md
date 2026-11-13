@@ -3,6 +3,17 @@
 The prompt rule that worked, then the exact prompts, then the ffmpeg recipes
 that make a clean generation look like a 2000s camera-roll photo.
 
+## Policy first
+
+- Housing ads (listings, foreclosures, rentals) run in the Housing Special Ad
+  Category on Meta. Use no audience exclusions. US Fair Housing Act ad rules
+  apply too.
+- Do not copy the race, age or gender of the example people. Choose the
+  people on purpose and vary them across a batch. Do not pair one group with
+  distress scenes such as notices on doors or locked doors.
+- A fake security-camera still can look like real footage. Do not present it
+  as a real event.
+
 ## The prompt order rule
 
 Write every image prompt in this order:
@@ -29,14 +40,14 @@ Negatives-last fences off the failure modes.
 ## Exact prompts that worked
 
 These are verbatim from a 12-ad batch that shipped (model
-`bytedance/seedream-v5.5`, 1.5k resolution, 9:16 then cropped). Swap the
+`bytedance/seedream-v5.5` (as of 2026-11-12), 1.5k resolution, 9:16 then cropped). Swap the
 subject for your niche; keep the structure.
 
 **Stooped figure + mail (2004 point-and-shoot):**
 
 ```
 Photo taken on a 2004 point-and-shoot digital camera, direct flash, 640x480
-look. Ordinary unglamorous white woman about 48, messy bun, no makeup, faded
+look. Ordinary unglamorous woman about 48 [vary the person on purpose], messy bun, no makeup, faded
 navy sweatshirt, slumped on a cracked ranch-house stoop holding blank
 envelopes. Weeds, blank paper taped to the door, subject centered. Motion
 blur, off-center, thumb at the edge, overexposed flash, blown highlights,
@@ -49,7 +60,7 @@ brands.
 
 ```
 2011 iPhone 4 front-camera selfie, slightly out of focus. Ordinary
-unglamorous Black man about 32, short hair, gray hoodie, laughing nervously
+unglamorous man about 32 [vary the person on purpose], short hair, gray hoodie, laughing nervously
 with his mouth half open, standing too close to a scuffed brown door on a
 vinyl-sided house. One correct five-finger hand holding the phone at the
 bottom, subject centered. Soft focus, off-center, overexposed LED flash,
@@ -76,7 +87,7 @@ brands.
 ```
 Screenshot of a doorbell/security camera still, fisheye, night vision.
 Grainy green monochrome porch from a camera above the door. Ordinary
-unglamorous Black woman about 35 in a dark jacket looking at a completely
+unglamorous woman about 35 [vary the person on purpose] in a dark jacket looking at a completely
 blank white sheet taped to the door, zero letters, zero signature. Fisheye
 warps the rails. No timestamp, no date, no camera brand. Subject centered.
 Off-center, blown porch-light, crushed shadows, heavy noise, compression,
@@ -100,7 +111,9 @@ The generation is only half the look. Every still gets crushed through
 ffmpeg so it reads as a real old photo. Order matters:
 
 1. Tiny rotation (1–3 degrees) so the horizon is crooked. Rotation exposes
-   black corners — the scale-up and crop steps below hide them.
+   black corners. Crop the centre 90% right after the rotate to remove them.
+   A 93% crop still leaves a dark corner at 3 degrees (measured). Scaling
+   up and cropping to the same size does NOT remove them.
 2. Scale down to ~720 px wide (the "old camera" resolution crush).
 3. Slight blur + grain.
 4. Desaturate, crush contrast a touch.
@@ -114,9 +127,13 @@ object stay in frame.
 
 ```python
 # Concept fields per still: rotate_deg (1-3), jpeg_q (40-60), n (variant int)
+# Example values: blur=0.8, noise=18, sat=0.8
+import math
+deg, blur, noise, sat = 2.0, 0.8, 18, 0.8
 angle = deg * math.pi / 180
 vf_9 = (
     f"rotate={angle}:c=black:ow=iw:oh=ih,"
+    f"crop=iw*0.90:ih*0.90,"                    # removes the black corners
     f"scale=720:-2,"
     f"gblur=sigma={blur},"                      # 0.7-1.0
     f"noise=alls={noise}:allf=t+u,"            # 14-26
@@ -129,7 +146,7 @@ vf_9 = (
 # ffmpeg -i out_9x16.png -vf "crop=1080:1350:0:<crop_y>" -frames:v 1 out_4x5.png
 ```
 
-JPEG quality 40–60 maps to ffmpeg `-q:v` roughly 8–15 (lower = better). Vary
+JPEG quality 40–60 maps to ffmpeg `-q:v` roughly 8–15 (lower = better). The mapping is approximate and unverified. Vary
 `rotate_deg`, `jpeg_q`, `noise` and `sat` slightly per ad so a 12-ad batch
 does not look like one photo duplicated.
 

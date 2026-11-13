@@ -24,7 +24,7 @@ Do not add a person. Do not add a phone. Do not cut. Do not zoom in.
 
 ## Motion prompts that shipped
 
-From a 5-clip batch (`wavespeed-ai/wan-2.2/i2v-480p-ultra-fast`, 5 s, 480p,
+From a 5-clip batch (`wavespeed-ai/wan-2.2/i2v-480p-ultra-fast` (as of 2026-11-12), 5 s, 480p,
 9:16 stills as first frame). All passed QA.
 
 **Person holding still, slow push-in:**

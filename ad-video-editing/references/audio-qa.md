@@ -1,7 +1,8 @@
 # Audio QA for finished ads
 
-Measured audio checks for a rendered ad, run by the `ad-audio-qa` tool. It
-calls [earshot](https://github.com/Leonxlnx/earshot) (MIT, CPU-only, local)
+Measured audio checks for a rendered ad, run by the `ad-audio-qa` tool in
+[itsryanarmani/scripts](https://github.com/itsryanarmani/scripts/pull/860).
+It calls [earshot](https://github.com/Leonxlnx/earshot) (MIT, CPU-only, local)
 as an external dependency — no earshot code or models live in this repo.
 Every rule prints PASS, FAIL, NOT CHECKED or OWNER CHECK with a measured
 value. Run it after `references/qa.md` step 8, before you ship.
@@ -17,82 +18,123 @@ export AD_AUDIO_QA_EARSHOT=/path/to/earshot   # checkout, venv, or python
 ```
 
 Never run `earshot llm`: it uploads audio. `ad-audio-qa` has no code path to
-it. Missing earshot exits 2 with a one-line error.
+it, and earshot never uploads audio on its own — the first run only downloads
+models from Hugging Face. Missing earshot exits 2 with a one-line error.
 
 ## Run
 
 ```bash
 ad-audio-qa FINAL.mp4 --out qa-audio.json \
+  --sfx-stem sfx.wav --voice-stem voice.wav \
   --lines "audio/l_*.wav" --voice-map maps/voicemap.json \
   --transcript work/transcript.json
 ```
 
-`--lines` + `--voice-map` enable the R8 consistency check. `--transcript`
-(word timings from local whisper) enables true WPS (R7) and caption sync
-(R10); a `groups` list gives caption segments directly.
+`--sfx-stem` is a wav of the sfx and laugh track alone; `--voice-stem` a wav
+of the voice alone. A mixed track cannot separate them, so R14, the sfx onset
+check and `sfx_vs_voice` print NOT CHECKED without the stems. `--lines` +
+`--voice-map` enable the R8 consistency check. `--transcript` (word timings
+from local whisper) enables true WPS (R7) and caption sync (R10); a `groups`
+list gives caption segments directly, word timings are chunked to 3 words.
 
 ## Rules and thresholds
 
 | Rule | Pass condition |
 | --- | --- |
-| R6 dead audio | No stretch >= 1.5 s below -60 LUFS momentary; not digital silence. |
+| R6 dead audio | Coarse guard: FAIL on any stretch >= 1.5 s below -60 LUFS momentary; not digital silence. The ffmpeg 0.3 s / -35 dB detector in `owner-feedback.md` is the gate. |
 | loudness | Integrated -16 to -12 LUFS (target -14); true peak <= -1 dBTP. |
-| R14 sound and cuts | >= 80% of picture cuts answered by a sound event within 100 ms. |
-| sfx onset 80 ms | >= 80% of answered cuts have sound onset within 80 ms. |
-| sfx vs voice | Loudest SFX peak >= 6 dB under median voice peak. |
-| R7 speech pace | True WPS <= 3.4 with `--transcript`; else a labelled onset proxy. |
-| R8 voice consistency | Per-character F0 spread <= 1.6x across line wavs. Proxy only. |
-| R10 caption sync | Median offset <= 300 ms and >= 70% within 300 ms of speech onsets. |
+| R14 sound and cuts | Needs `--sfx-stem`. FAIL "Sound is required" when the stem has no onsets; else FAIL when < 80% of picture cuts (ffmpeg scene > 0.3) have an sfx onset within 80 ms. A voice onset never counts. |
+| sfx onset 80 ms | Same stem and cut list as R14; reports the within-80 ms share. |
+| sfx vs voice | Needs both stems. Sfx median active-frame level >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. |
+| R7 speech pace | True WPS <= 3.4 with `--transcript`; NOT CHECKED without it. Hand target stays 2 to 3 words per second. |
+| R8 voice consistency | Per-character F0 spread <= 1.6x across line wavs. Proxy only; NOT CHECKED when no line measures. |
+| R10 caption sync | Tool alarm: median offset <= 300 ms and >= 70% within 300 ms of speech onsets. Hand target stays 0.15 s. |
 | R8 voice-face fit, R11 mouth-voice, owner judgment | OWNER CHECK — always a person. |
 
 ## Final master step
 
-Normalize the final mix to -14 LUFS with two-pass `loudnorm`, then limit the
-true peak. Run pass 1 to measure, pass 2 with the measured values:
+Normalize the final mix to -14 LUFS with two-pass `loudnorm`, then remux into
+the mp4 and measure THAT file — AAC encoding moves the true peak. Keep the
+bitrate at 192k: 128k AAC raised the true peak from -1.5 to -0.6 dBTP in the
+run below, 192k kept -1.4.
 
 ```bash
+# pass 1: measure
 ffmpeg -i mix.wav -af "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json" \
-  -f null -
-# copy input_i, input_tp, input_lra, input_thresh, target_offset
+  -f null - 2> p1.log
+sed -n '/^{/,/^}/p' p1.log > p1.json
 
-ffmpeg -i mix.wav -af "loudnorm=I=-14:TP=-1.5:LRA=11:\
-measured_I=-19.88:measured_TP=2.72:measured_LRA=0.00:\
-measured_thresh=-33.90:offset=12.95:linear=true,\
-alimiter=limit=0.841:attack=5:release=50:level=false" \
-  -ar 48000 master.wav
+# pass 2: parse the pass-1 values into the filter, then limit
+AF=$(python3 -c 'import json; m=json.load(open("p1.json")); \
+print("loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=%s:measured_TP=%s:" \
+"measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true" % \
+(m["input_i"],m["input_tp"],m["input_lra"],m["input_thresh"], \
+m["target_offset"]))')
+ffmpeg -i mix.wav -af "$AF,alimiter=limit=0.841:attack=5:release=50:\
+level=false" -ar 48000 master.wav
+
+# remux: video stream copied, audio re-encoded
+ffmpeg -i FINAL.mp4 -i master.wav -map 0:v -map 1:a -c:v copy \
+  -c:a aac -b:a 192k FINAL-master.mp4
+ffmpeg -i FINAL-master.mp4 -af ebur128=peak=true -f null -
 ```
 
-`alimiter=limit=0.841` is the -1.5 dBTP ceiling. Verify with
-`ffmpeg -i master.wav -af ebur128=peak=true -f null -`.
+`alimiter` is a sample-peak limiter, not a true-peak limiter — it cannot see
+inter-sample peaks, so the ebur128 check on the final mp4 is the gate.
 
 ### Proof on synthetic defect audio
 
-Source: 10 s, 5 ms tone bursts at +2.7 dBTP over a quiet bed —
-I = -19.9 LUFS, true peak +2.7 dBTP (the two real defects: clipped finals
-and a quiet mix). Measured with `ebur128=peak=true`:
+Generator — a 10 s stereo clip: a quiet harmonic bed plus 5 ms bursts at
+11025 Hz, amplitude 1.27, every 2 s:
 
-| | Before | After loudnorm + limiter |
-| --- | --- | --- |
-| Integrated | -19.9 LUFS | -19.2 LUFS |
-| True peak | +2.7 dBTP | -1.5 dBTP |
-| LRA | 0.0 LU | 2.3 LU |
+```bash
+B="0.063*sin(2*PI*110*t)+0.038*sin(2*PI*220*t)+0.025*sin(2*PI*330*t)+0.019*sin(2*PI*440*t)"
+ffmpeg -f lavfi -i "aevalsrc=$B|$B:s=48000:d=10" \
+  -f lavfi -i "aevalsrc=1.27*sin(2*PI*11025*t)|1.27*sin(2*PI*11025*t):s=48000:d=0.005" \
+  -filter_complex "[1:a]asplit=5[b0][b1][b2][b3][b4];\
+[b0]adelay=0|0[x0];[b1]adelay=2000|2000[x1];[b2]adelay=4000|4000[x2];\
+[b3]adelay=6000|6000[x3];[b4]adelay=8000|8000[x4];\
+[x0][x1][x2][x3][x4]amix=inputs=5:normalize=0,apad=whole_dur=10[s];\
+[0:a][s]amix=inputs=2:normalize=0[m]" -map "[m]" -c:a pcm_f32le defect.wav
+```
 
-Honest limit: on extreme-crest material (true peak 22 dB over integrated)
-the TP ceiling binds first — loudnorm cannot reach -14 LUFS without
-exceeding -1.5 dBTP, so the result stays quiet. That is the correct
-failure direction: never trade a clipped master for a loud one. For
-program material with normal crest the same commands land at -14 LUFS.
+Measured before: I = -19.1 LUFS, true peak +2.9 dBTP (the two real defects:
+a quiet mix and clipped peaks).
+
+Pass 1 JSON (`input_i`, `input_tp`, `input_lra`, `input_thresh`,
+`target_offset` — the pass-2 command above parses exactly these):
+
+```json
+{ "input_i": "-19.27", "input_tp": "2.86", "input_lra": "1.90",
+  "input_thresh": "-29.27", "target_offset": "3.79",
+  "normalization_type": "dynamic" }
+```
+
+After pass 2 + remux at 192k, measured on the final mp4: I = -14.4 LUFS,
+true peak -1.4 dBTP, zero samples at or above 0 dBFS, and the video stream
+md5 is identical before and after (`-map 0:v -c:v copy` touches only
+container timing).
+
+Honest limit: `loudnorm` can switch to dynamic mode — pass 1 prints
+`normalization_type`, and on this clip it predicted -17.8 LUFS, not -14.
+Dynamic gain rides the gated loudness and can overshoot on steady material
+with LRA 0 (reported: -13.1 in, -18.4 out on a pure-tone bed). Always
+re-measure the master; never trust pass-1 `output_i`.
 
 ## What earshot found that our QA missed
 
 On four real finals, earshot caught what the old checks passed:
 
 - True-peak violations and clipping on all three videos6 finals (up to
-  +2.7 dBTP, 160 clipped samples). Our QA never measured true peak.
+  +2.7 dBTP, 160 clipped samples). The true-peak check existed in `qa.md`
+  but was not run.
 - One sitcom final 5.8 LU quiet (-19.8 vs -14 target).
-- SFX-to-voice margins far under 6 dB on every final (-0.5 to -6.2 dB).
-- Sitcom sound-to-cut sync broken: only 5/15 onsets within 80 ms of a cut.
 - No continuous music bed in any of the four.
+
+Two earlier claims are withdrawn: the sfx-vs-voice margins and the sitcom
+sound-to-cut sync numbers came from earshot's mixed-track events, which
+count voice syllables as sound events and report the mix peak — they are
+not valid measurements. Both rules now require separated stems.
 
 ## What it cannot judge
 

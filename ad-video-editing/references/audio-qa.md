@@ -47,7 +47,7 @@ list gives caption segments directly, word timings are chunked to 3 words.
 | sfx onset 80 ms | Same stem and cut list as R14; reports the share of onsets within 80 ms of a cut. |
 | sfx vs voice | Needs both stems. Sfx median active-frame level >= 6 dB under the voice stem level (dialogue formats). `pacing.md`'s -1.4 to -3.6 dB range is for loud punch edits without dialogue. Those pacing.md figures came from the old mixed-track measurement, so treat them as unverified. |
 | R7 speech pace | True WPS <= 3.4 with `--transcript`; NOT CHECKED without it. Hand target stays 2 to 3 words per second. |
-| R8 voice consistency | Per-character F0 spread <= 1.6x across line wavs. Proxy only; NOT CHECKED when no line measures. |
+| R8 voice consistency | Per-character F0 spread: <= 1.25 PASS, above 1.25 OWNER CHECK ("weak proxy, listen"). Never FAIL: a calibration found neither pitch spread nor a speaker embedding separated the one voice the owner rejected from eleven the owner accepted. NOT CHECKED when no character has 2 or more usable lines. |
 | R10 caption sync | Tool alarm: median offset <= 300 ms and >= 70% within 300 ms of speech onsets. Hand target stays 0.15 s. |
 | R8 voice-face fit, R11 mouth-voice, owner judgment | OWNER CHECK — always a person. |
 
@@ -155,9 +155,10 @@ not valid measurements. Both rules now require separated stems.
 
 ## Owner-check rule
 
-R8 voice-to-face fit stays an OWNER CHECK. The F0 spread measures
-*consistency*, not correctness: one voice can be consistent and still wrong
-for the face. Automate consistency (`R8_voice_consistency`); send fit,
+R8 voice stays an OWNER CHECK, both fit and consistency. The F0 spread
+measures neither reliably: it flagged voices the owner accepted, and a
+speaker embedding rated the rejected voice as the most consistent. Keep
+`R8_voice_consistency` as a prompt to listen; send fit, consistency,
 acting, music taste and mix feel to the owner with the video. Same for R11
 mouth-voice — wire the FaceLandmarker artifacts before trusting any
 automated verdict.

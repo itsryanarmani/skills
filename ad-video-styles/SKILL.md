@@ -170,7 +170,7 @@ ffprobe -v error -show_entries stream=width,height,r_frame_rate:format=duration 
 |---|---|---|
 | Animating the finished ad | Lettering warped and melted | Animate the photo only; add the panel after |
 | Sending the image inline | `curl -d "$body"` died: argument too long | Write the JSON to a file and use `-d @file` |
-| Captions over the hands | The caption hid the action in shot 3 | Move the block up or shorten the line; check one frame per shot |
+| Captions over the hands | The caption hid the action in shot 3 | Move the block up or shorten the line; watch the whole video |
 | Small wallet on the model gateway | A second gateway had USD 0.86 left, too little for the top model | Read the balance before each batch; use the cheaper model for tests |
 | A fake "screen" in the footage | The model drew a browser with unreadable text | Angle screens away or crop them; the ask is "no lettering" |
 | Rebuild wipes work | A script re-ran every paid call | Skip a shot when its raw file already exists |

@@ -29,8 +29,8 @@ Pairs with:
 ## The pipeline, in order
 
 1. **Find the format.** Mine a free viral-format library for structures that
-   already work. `darkugc.com` is the free one we used; query method in
-   `references/qa.md` and below.
+   already work. A person can browse `darkugc.com` by hand; see the
+   format research section below for the rules.
 2. **Write the character bible** if a person recurs. One paragraph, pasted
    verbatim into every prompt. See `references/characters.md`.
 3. **Generate stills** with the camera-and-era-first prompt rule. See
@@ -70,33 +70,25 @@ Pairs with:
 - **Strip PII before anything ships.** No real names, account ids, keys,
   wallet balances or private domains in prompts, logs or this repo.
 
-## Format research: darkugc.com
+## Format research: viral-format libraries
 
 `darkugc.com` is a free public library of viral short-form ad videos with view
-counts. It is the cheapest format research available.
+counts. Its terms ban scraping, bulk download and any automated access to the
+site or its API, including bots, scripts, headless browsers and "AI agents".
+Follow them.
 
-- Human use: open `https://darkugc.com/`, sort by Views, filter by category
-  and format family. Brand pages exist per advertiser.
-- Agent use: the site serves a public JSON list endpoint that its own browser
-  UI calls:
-
-  ```
-  GET https://darkugc.com/api/library/list?<params>
-  ```
-
-  Send a normal browser `User-Agent` and `Referer: https://darkugc.com/`. With
-  a bare or scripted UA it returns `{"error":"Automated access is not
-  allowed"}`.
-
-  Useful params (verified 2026-11-12): `view=cards`, `brand=<name>`,
-  `brandCategory=<slug>`, `brandSubcategory=<slug>`, `formatFamily=<name>`,
-  `q=<text>`, `sort=views&direction=desc`, `limit`, `offset`,
-  `facetsOnly=1` (returns the full filter vocabulary with counts).
-
-- `https://darkugc.com/mcp` exists but returned `401 invalid_token` without a
-  free account sign-in. The list endpoint above is the no-auth route.
-- `https://darkugc.com/llms.txt` is the site map for agents; it states the AI
-  policy. Read it before automating.
+- Human use: a person opens `https://darkugc.com/`, sorts by Views, and filters
+  by category and format family. Brand pages exist per advertiser. The person
+  notes the story structure by hand.
+- Agent use: only through the route the site names for agents, its MCP server
+  at `https://darkugc.com/mcp`, with a free account the owner signs in to.
+  `https://darkugc.com/llms.txt` states the AI policy. Read it first.
+- Never send a fake `User-Agent` or `Referer` to get past a block. A block is
+  a no. Do not call `/api/` paths directly, and do not save bulk copies of
+  its data. The site's `robots.txt` disallows `/api/`.
+- When the MCP route is not set up, use other sources: the open-source prompt
+  and hook repos in `references/providers.md`, and the ad libraries run by the
+  platforms (for example the Meta Ad Library API).
 
 Copy the structure, never the footage, the face, the words or the music. A
 library is inspiration, not source material.

@@ -44,13 +44,13 @@ Every entry cost time or money. Check this list before a batch.
 | Expected US TikTok coverage | The TikTok Ad Library serves EU/EEA only | Do not plan around US TikTok data from it |
 | Google Transparency has no RSA copy | Returns format + dates + preview, not headline text | Use a paid SERP tool for the actual copy |
 | Organic SERP read as "zero ads" | Scrapers silently omit the `ads` array | An organic-only response is not evidence of no competition |
-| Ad-library HTML fetches | Pages timed out / automation rejected | Prefer the structured JSON endpoints; send a browser UA and Referer |
+| Ad-library HTML fetches | Pages timed out / automation rejected | Use the official API or export the platform offers (for example the Meta Ad Library API). Never fake a browser User-Agent to get past a block. |
 | Wrong balance endpoint | `GET /v1/balance` and `/v1/whoami` on Monid return 404 | Balance is `/v1/wallet/balance`; `whoami` does not exist |
 | Tiny test budget, no signal | A few dollars over 7 days produced ~56 impressions; no creative could be judged | Size budget so each ad clears a few hundred impressions before reading results |
 | Invalid insights field | Meta rejected `ctr_all`; the whole query failed | Validate field names before requesting; pull ad-level breakdowns, not campaign aggregates |
 | Dead gaps in a video | Fixed 2.8 s shots were laid over a voice track that was never measured. The sound ended and the scene did not change | Build the timeline from the measured length of each voice line. Fail any stretch where picture is static and audio is silent for over 0.3 s. |
 | Video too slow | Clips ran at normal speed with 3-4 s per shot | Speed clips 1.3-1.6x, cut every 0.8-2 s, finish at 10-14 s. |
-| Sounds do not match the scene | Effects and bed were not tied to events in the picture | Put a whoosh on each cut, a boom on the biggest beat, a record-scratch on the twist. Match the bed mood to the scene. |
+| Sounds do not match the scene | Effects and bed were not tied to events in the picture | Put a whoosh on only the cuts that reveal something (one landing whoosh beats five), a boom on the biggest beat, a record-scratch on the twist. Match the bed mood to the scene. |
 | Words run together in captions | Word-by-word captions were joined without a space ("Prettyhouse.") | Render each word with its trailing space. Look at caption frames before shipping. |
 | Black rectangle on a prop | A held paper showed a black box in two shots | View frames every 0.25 s and cut away before the artifact, or crop it out. |
 | Sitcom did not work | Wide shots made eyes tiny and bad; one set rotated and zoomed; the characters did not speak; no laughter | Use mediums and close-ups for speech, build real camera angles from the same set, drive lips with an audio-driven talking model, add a licensed laugh track. |

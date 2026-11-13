@@ -55,7 +55,7 @@ Do not treat as firm:
 - Keep the API key in the environment or a secrets file; never in prompts,
   logs, commits or this repo.
 
-## Editing tools and sound sources (verified 2026-11-13 with `gh api`; stars and dates change)
+## Editing tools and sound sources (verified 2026-11-12 with `gh api`; stars and dates change)
 
 | Tool | License | Use |
 | --- | --- | --- |

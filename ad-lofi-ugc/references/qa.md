@@ -65,7 +65,7 @@ Run before upload, on every variant:
   a visible "dramatization" tag.
 - No guaranteed outcomes: no "guaranteed profit", "zero risk".
 - Disclose what must be disclosed: virtual staging labeled as such, AI
-  synthetic people labeled where the platform requires, ad nature clear in
+  synthetic people labeled every time, ad nature clear in
   UGC formats.
 - Check claims against the product's fact list. A caption that says
   "inspection window" contradicts a fact list that says homes often cannot

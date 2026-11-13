@@ -20,13 +20,14 @@ passes QA. For the footage itself see `ad-lofi-ugc` (lo-fi UGC look) or
    usually the only speech cut needed.
 3. **Scan for mistakes (review-gated).** Find stutters, retakes and false
    starts. Show each candidate to a person or review step. Apply only the
-   approved cuts, always on the re-timed transcript. Same reference.
+   approved cuts with `apply-cuts.mjs --cuts`, always on the re-timed
+   transcript. Same reference.
 4. **Set the pace.** Put the hook in the first second, cut every 0.8-2 s,
    keep voice at normal speed and speed up the picture instead, land one
    whoosh, end with under 0.3 s of tail. See `references/pacing.md`.
 5. **Place sound on events.** Search the OpenFilm CC0 library for a whoosh,
-   impact or transition per cut. SFX sit under the voice. See
-   `references/library.md`.
+   impact or transition — on events and reveals only, never one per cut.
+   SFX sit under the voice. See `references/library.md`.
 6. **Time the captions.** Word-by-word captions come from the whisper word
    timestamps on the final timeline, not estimates.
 7. **Render.** Deterministic timeline, one paused clock. ffmpeg
@@ -43,10 +44,13 @@ passes QA. For the footage itself see `ad-lofi-ugc` (lo-fi UGC look) or
   (mistake scan, captions, SFX placement) use the re-timed transcript only.
 - **Review before applying.** Mistake cuts are proposals until approved.
   Intentional repetition is not a mistake.
+- **Keep the CTA.** The last keep range must reach the end of the
+  call-to-action sound, not just the last word — a tail trim can drop a
+  non-speech sting. See `references/speech-cut.md`.
 - **Do not copy code from OpenMontage.** It is AGPL-3.0. Ideas only; write
   our own implementation. See `references/sources.md`.
-- **Keep `library/LICENSE.md` with any OpenFilm asset.** The library is
-  CC0; the emoji stickers are MIT.
+- **Keep `packages/openfilm/library/LICENSE.md` with any OpenFilm
+  asset.** The library is CC0; the emoji stickers are MIT.
 - **Pin the OpenFilm version.** Do not run `npx openfilm@latest`.
 - **Listen once before shipping.** The numbers in `qa.md` do not prove an
   effect fits the picture.

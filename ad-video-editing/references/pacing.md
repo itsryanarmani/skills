@@ -1,15 +1,17 @@
 # Pacing rules for fast-cut ads
 
 Measured rules for 10-30 s vertical ads, from our own edit runs
-(videos4 → videos5 re-edit, Nov 2026) and the herk-edit-kit editing
-playbook. Verified 2026-11-12.
+(videos4 → videos5 re-edit, Nov 2026 — a local run, evidence not in
+this repo) and the herk-edit-kit editing playbook. Verified 2026-11-12.
 
 ## The rules
 
 1. **Hook in the first second.** The first frame must already show the
    peak of the action or the claim. No establishing shot, no logo.
-2. **Cut every 0.8-2 s.** Average shot length 1.2-1.5 s for the fast
-   look. Our passing videos5 cuts averaged 1.17-1.30 s.
+2. **Cut every 0.8-2 s.** Average shot length depends on the format:
+   1.2-1.5 s for a fast punch edit, 1.5-2.2 s for a lo-fi UGC story
+   (the lo-fi gate lives in `ad-lofi-ugc/references/qa.md`). Our
+   passing videos5 cuts averaged 1.17-1.30 s.
 3. **Voice at normal pace.** Do not speed up speech. `atempo` stays at
    or under ~1.15; beyond that it sounds rushed.
 4. **Speed up the picture, not the speech.** `setpts` 1.4-1.5x on the
@@ -18,13 +20,21 @@ playbook. Verified 2026-11-12.
 5. **SFX only on events.** A whoosh on every cut is the ceiling, not the
    floor. Impacts and stings land on the payoff beat, the twist, the CTA.
    Nothing plays over silence.
-6. **One whoosh that lands beats five that blur.** Alternate whoosh
-   direction (up/down) so cuts do not sound identical; keep each under
-   the voice (about -3 to -6 dB under, measured -1.4 to -3.6 dB in our
-   mix check).
+6. **One whoosh that lands beats five that blur.** SFX go on events
+   and reveals only — a cut that shows something new, the payoff beat,
+   the twist, the CTA — never one per cut. Alternate whoosh direction
+   (up/down) so cuts do not sound identical. Level: our videos5 mix
+   measured SFX -1.4 to -3.6 dB under the voice (`sfx_vs_vo_db` in the
+   sync QA); `ad-lofi-ugc/references/sound.md` starts bed and SFX
+   ~16 dB under voice. Both are starting points — treat the measured
+   -1.4 to -3.6 dB as the floor for a loud fast-cut ad and the ~16 dB
+   figure as the safer lo-fi default; trust your ears.
 7. **End tail under 0.3 s.** The last sound and the last frame sit less
    than 0.3 s apart; the first sound starts within 0.3 s of frame one.
-   Hold the final claim or CTA at least ~2 s so it reads.
+   Hold the final claim or CTA at least ~2 s so it reads — and make
+   sure the edit actually keeps it: a transcript-only silence cut can
+   tail-trim past the last word and drop a non-speech CTA sting. See
+   the CTA tail trap in `speech-cut.md`.
 8. **Build the timeline from measured voice lines.** Generate or trim
    each VO line, measure its real duration, then set each shot length to
    that line plus a ~0.14 s tail. Never pick shot lengths first and fit

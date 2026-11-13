@@ -1,13 +1,15 @@
 ---
 name: ad-video-styles
-description: "Use when you need a short paid-social VIDEO ad for a service and want a proven structure with exact prompts: a photo-motion feed video (4:5, one still animated, static headline panel under it) or a call-out story video (9:16, about 15 s, three generated shots, burned captions, end card). Covers how to pick a style from a viral-video library, the detailed shot and caption prompts, the ffmpeg build, costs, and the failures that cost money the first time (animated text, base64 bodies, captions over hands, faces that look at the camera)."
+description: "Use when you need a short paid-social VIDEO ad for a service and want a previously used structure with exact prompts: a photo-motion feed video (4:5, one still animated, static headline panel under it) or a call-out story video (9:16, about 15 s, three generated shots, burned captions, end card). Covers how to pick a style from a viral-video library, the detailed shot and caption prompts, the ffmpeg build, costs, and the failures that cost money the first time (animated text, base64 bodies, captions over hands, faces that look at the camera)."
 ---
 
 # ad-video-styles
 
-Two video ad styles with prompts you can paste. Both ran in a small paid-social
-test for a B2B service. Both are built from generated footage and a static
-overlay, so the type is always sharp and the cost stays near one dollar a video.
+Two video ad styles with prompts you can paste. Both were used in a small paid-social
+test for a B2B service. No results are claimed here: the test had not read out when this
+was written. Both are built from generated footage and a static overlay, so the type
+comes from a browser render, not from the video model, and the cost stayed near one
+dollar a video.
 
 Pairs with `ad-research-to-creative` (what to say), `ad-video-scripts` (longer
 scripts), `ad-creative-templates` (static versions of the same ads) and
@@ -15,8 +17,8 @@ scripts), `ad-creative-templates` (static versions of the same ads) and
 
 ## 0. Pick the style before you write anything
 
-Open a library of viral short-form videos (DarkUGC is a free one, with an MCP
-server) and sort by views. Look for the structure, not the topic. Two structures
+Open a library of viral short-form videos (for example the free DarkUGC library at
+darkugc.com, which also offers an MCP server at darkugc.com/mcp) and sort by views. Look for the structure, not the topic. Two structures
 carried over to a B2B service:
 
 | Structure seen | Why it works | Use it for |
@@ -49,7 +51,7 @@ A <age> <person>, <ethnicity>, <hair and clothes with one worn detail>, <doing t
 work, eyes on the task>. Dressing: <three small believable objects>. Light:
 <window light plus one warm lamp, slightly mixed>. Shot on a full-frame camera,
 35mm at f/2.8, slightly below eye level, candid documentary look, unretouched
-skin with pores. NOT WANTED: nobody looks at the camera, no text, no lettering,
+skin with pores. NOT WANTED: eyes stay on the task, no direct eye contact with the camera, no text, no lettering,
 no logo, no badge, no plastic skin, no studio polish.
 ```
 
@@ -62,8 +64,10 @@ slow gentle push-in. Nobody looks at the camera. No text.
 ```
 
 Settings that worked: model `bytedance/seedance-v1-pro-fast/image-to-video` on
-WaveSpeed, `duration` 5, `resolution` 480p. The clip returns at 480x608 (4:5).
-Cost: about USD 0.085 per clip.
+WaveSpeed, `duration` 5, `resolution` 480p, with a 4:5 input photo. One observed output was 480x608, which is
+close to 4:5: run `ffprobe` on the clip and adjust the crop before you stack.
+Cost: about USD 0.085 per clip, read from the gateway balance in Nov 2026. It excludes
+retries and the still photo.
 
 ### Step 3: stack the panel
 
@@ -113,33 +117,43 @@ Shot 3: Close view of a person at a desk finishing an online form on a laptop wi
 the screen angled away from the camera, then leaning back and exhaling with
 relief, soft daylight, handheld documentary camera.
 
-Add to every shot: No text, no lettering, no logos, nobody looks at the camera,
-no handshake, no patient, no brand.
+Add to every shot: No text, no lettering, no logos, eyes stay on the task and no
+direct eye contact with the camera, no handshake, no patient, no brand.
 ```
 
 Settings that worked: model `bytedance/seedance-v1.5-pro/text-to-video-fast` on
 WaveSpeed, `aspect_ratio` `9:16`, `duration` 5, `resolution` 720p. Cost: about
-USD 0.35 per shot, so about USD 1.05 for the video (measured from the balance
-before and after).
+USD 0.35 per shot, so about USD 1.05 for the video (read from the gateway balance
+before and after, Nov 2026; it excludes retries and captions). Prices change: check the
+model page before a batch.
 
 ### Captions and end card
 
-Render each caption as a transparent 1080x1920 PNG with a headless browser. Do not
-use ffmpeg `drawtext`: fonts and kerning are poor. Layout that worked: a filled
+Render each caption as a transparent 1080x1920 PNG with a headless browser. We prefer this
+to ffmpeg `drawtext` because it gives web fonts, balanced line breaks and a text shadow
+in one place. Layout that worked: a filled
 pill tag (44 px, white on the brand colour) above a 112 px serif line (white, soft
 dark shadow), left aligned, 60 px side margin, top of the block at y 1180 so it
-sits in the lower third. The end card is a solid background with the same type.
+sits in the lower third. The end card is a solid background with the same type. Render it at exactly 1080x1920.
 
 ### Assemble
 
+Every segment must share size (1080x1920), frame rate (24), pixel format (yuv420p) and
+codec, or the stream-copy join breaks.
+
 ```bash
-# 4 s of each shot with its caption
-ffmpeg -y -i sN-raw.mp4 -i capN.png -filter_complex \
- "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=24,trim=duration=4,setpts=PTS-STARTPTS[v];[v][1:v]overlay=0:0,format=yuv420p[o]" \
- -map "[o]" -t 4 -c:v libx264 -crf 20 segN.mp4
-# 3 s end card, then join
+# 4 s of each shot with its caption: s1-raw.mp4 + cap1.png, s2-raw.mp4 + cap2.png, ...
+for i in 1 2 3; do
+  ffmpeg -y -i "s$i-raw.mp4" -i "cap$i.png" -filter_complex \
+   "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=24,trim=duration=4,setpts=PTS-STARTPTS[v];[v][1:v]overlay=0:0,format=yuv420p[o]" \
+   -map "[o]" -t 4 -c:v libx264 -crf 20 "seg$i.mp4"
+done
+# 3 s end card (a 1080x1920 PNG)
 ffmpeg -y -loop 1 -t 3 -i endcard.png -vf "fps=24,format=yuv420p" -c:v libx264 -crf 20 seg4.mp4
+# join
+printf "file 'seg1.mp4'\nfile 'seg2.mp4'\nfile 'seg3.mp4'\nfile 'seg4.mp4'\n" > list.txt
 ffmpeg -y -f concat -safe 0 -i list.txt -c copy -movflags +faststart story.mp4
+ffprobe -v error -show_entries stream=width,height,r_frame_rate:format=duration -of default=nw=1 story.mp4
 ```
 
 ## 3. Rules for the people in the footage
@@ -163,7 +177,9 @@ ffmpeg -y -f concat -safe 0 -i list.txt -c copy -movflags +faststart story.mp4
 
 ## 5. Before it goes live
 
-1. Look at one frame per shot at full size.
+1. Watch each finished video start to end at full size, and step through every cut. One
+   frame per shot misses short distortions, stray text and captions that cover the hands.
+   Check size, length and caption placement.
 2. Confirm every claim in the caption with the owner and keep the proof.
 3. Add UTMs and the ad id to the link, as in `ad-test-launch`.
 4. Add the video as a new ad in a new test; never edit a live ad.

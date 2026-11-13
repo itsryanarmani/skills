@@ -24,6 +24,14 @@ When the owner gives new feedback, add a rule here in the same PR that fixes it.
 | R16 | Lo-fi organic look. No logo. No text except captions, the dramatization tag and one end card with the offer. | Look at the frames. No logo, no studio polish. | Polished images were rejected. |
 | R17 | Housing safety. "dramatization" label. No invented numbers. No real people. No children. | Run the policy lint on all text and captions. | Housing special ad category. |
 | R18 | Cost goes down each time. Report cost per video by stage. | Compare with the last video of the same format. Explain any rise. | Goal: cut cost 50 to 75 percent. |
+| R19 | Do not show an event the video model cannot render. Show damage another way. | Render one clip first. Look at 3 frames of the event. No duplicate objects (two doors), no melting. If it fails, change the beat (cracking wall, falling plaster). | "No crash, two doors, AI artifact." |
+| R20 | The first frame shows the main character's face with the emotion. | Frame 0.0 s: a face, eyes and mouth readable, emotion matches the hook. | "Shocked face in the first frame." |
+| R21 | Keep screen direction. Each person stays on the same side of the frame in every shot. | List left/right per shot for each person. No swap, including cutaways. | Street interview: host moved from right to left. |
+| R22 | A conversation looks like one: eyelines, head turns, hand gestures, a push-in on the punchline. | Per talking shot: where does the person look? Gestures present? Note the push-in. | "Talk as if to someone, more hand movement, zoom in on the guy." |
+| R23 | Captions never look jumbled. | OCR (macOS Vision) of sampled caption frames against the expected words. Character error rate 0.10 or less. | "Some letters get jumbled." |
+| R24 | Show the tool of the format. A street interview shows the microphone in the host's hand. | Frame check: mic visible in every host shot. | Interview had no visible mic. |
+| R25 | A horror-comic variant needs a scare beat: something moves behind a door, a sting, a reaction. Then it resolves as a joke. | Mark the beat on the timeline. It has a sound cue and a reaction shot. | "Feel a little bit scared." |
+| R26 | A personal story has a clear hook: the loss, the place, the trust that broke, the surprise, the fix. | Caption read: one sentence per beat, in that order. | "I spent all my savings on this house ... a slick agent gave me a lien ... someone lives there." |
 
 ## Cost ratchet (R18)
 

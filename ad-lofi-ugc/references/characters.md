@@ -29,6 +29,9 @@ wireless earbud in her right ear, holding a yellow legal pad and a black
 pen.
 ```
 
+One recurring character fixes one demographic. In a housing campaign, vary the
+character across ad sets. See the policy note in `prompts-images.md`.
+
 The character is synthetic. No real person, no real name needed.
 The character is never a past customer. The voiceover never describes a
 result the person got. A first-person selfie or voiceover from a synthetic

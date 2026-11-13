@@ -6,13 +6,16 @@ that make a clean generation look like a 2000s camera-roll photo.
 ## Policy first
 
 - Housing ads (listings, foreclosures, rentals) run in the Housing Special Ad
-  Category on Meta. Use no audience exclusions. US Fair Housing Act ad rules
-  apply too.
+  Category on Meta. Use no audience exclusions, and none of the targeting
+  limits the category sets (age, gender, ZIP code). US Fair Housing Act ad
+  rules apply too.
 - Do not copy the race, age or gender of the example people. Choose the
   people on purpose and vary them across a batch. Do not pair one group with
   distress scenes such as notices on doors or locked doors.
 - A fake security-camera still can look like real footage. Do not present it
   as a real event.
+- Do not write copy that promises a mansion or a deal. A fancy house in a
+  drive-by shot is mood, not an offer.
 
 ## The prompt order rule
 
@@ -112,14 +115,14 @@ ffmpeg so it reads as a real old photo. Order matters:
 
 1. Tiny rotation (1–3 degrees) so the horizon is crooked. Rotation exposes
    black corners. Crop the centre 90% right after the rotate to remove them.
-   A 93% crop still leaves a dark corner at 3 degrees (measured). Scaling
-   up and cropping to the same size does NOT remove them.
+   A 93% crop still leaves a dark corner at 3 degrees (measured). A scale-up
+   of under 10% does not remove them either.
 2. Scale down to ~720 px wide (the "old camera" resolution crush).
 3. Slight blur + grain.
 4. Desaturate, crush contrast a touch.
-5. JPEG re-encode at quality 40–60, then decode back to PNG so the
+5. Scale back up to 1080×1920 (or your target).
+6. JPEG re-encode at quality 40–60, then decode back to PNG so the
    compression artifacts are baked into the pixels.
-6. Scale back up to 1080×1920 (or your target) and crop.
 
 The 4:5 feed crop is a tighter crop of the same crushed 9:16 still, not a
 second generation. Keep a per-concept `crop_y` offset so faces and the key

@@ -100,8 +100,9 @@ Each of these caused a real failure:
 - **Big emotional performances** — crying, dancing, fast gestures break
   character consistency and anatomy. Small tells (a nervous laugh, a deadpan
   stare) survive; big ones do not.
-- **Prompting the degrade** — do not ask the video model for "grainy" or
-  "VHS". The still's era does that; the degrade does it again for free.
+- **Prompting the degrade** — avoid asking the video model for "grainy" or
+  "VHS". The still's era does that; the degrade does it again for free. Some
+  prompts below still say "grainy" and worked, but the era is the main source.
 
 ## Shot chaining
 

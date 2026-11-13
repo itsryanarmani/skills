@@ -29,13 +29,17 @@ seed, unseeded noise).
 ## 2. Flash, freeze and black scan
 
 ```bash
-ffmpeg -i out.mp4 -vf "freezedetect=n=-60dB:d=2,blackdetect=d=0.1:pix_th=0.10" -an -f null -
-ffmpeg -i out.mp4 -vf "select='gt(scene,0.4)',metadata=print" -an -f null - 2>&1 | grep pts_time
+ffmpeg -i out.mp4 -vf "freezedetect=n=-60dB:d=1,blackdetect=d=0.1:pix_th=0.10" -an -f null -
+ffmpeg -i out.mp4 -vf "select='gt(scene,0.3)',metadata=print" -an -f null - 2>&1 | grep pts_time
 ```
 
 - **Black frames:** any `blackdetect` hit inside the ad fails.
-- **Frozen frames:** a still ≥ ~1 s inside a fast-cut ad is suspicious
-  (end cards excepted); ≥ 6 s always fails.
+- **Frozen frames:** `freezedetect` needs `d=1`, not `d=2` — the sync
+  gate flags stills around ~1 s, and `d=2` cannot see them. Verified
+  2026-11-12 on a synthetic clip (2 s moving + 1.5 s still + 2 s
+  moving): `d=1` reported freeze_start 2, duration 1.5, end 3.5;
+  `d=2` reported nothing. A still ≥ ~1 s inside a fast-cut ad is
+  suspicious (end cards excepted); ≥ 6 s always fails.
 - **White flashes / strobe:** extract at 10 fps; flag frames whose mean
   luma jumps > ~150 between neighbors without a scene cut, plus near-white
   frames. A transition flash is intentional; a strobe is not.

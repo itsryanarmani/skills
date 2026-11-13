@@ -1,9 +1,10 @@
 # Source repos: what to adopt, what not
 
 Audit of the repos behind this skill's methods. Stars and push dates via
-`gh api` on 2026-11-12; licenses read from the cloned trees under
-`editing/vendor2/` (read-only, untrusted — never run their install
-scripts). Full eval: `editing/eval3/REPORT.md`.
+`gh api` on 2026-11-12; licenses read from shallow clones kept outside
+this repo (read-only, untrusted — their install scripts were never run).
+The eval that exercised them was a local run on 2026-11-12; its report
+and outputs are not in this repo.
 
 | Repo | Stars | Last push | License | Adopt | Do not adopt |
 |---|---|---|---|---|---|
@@ -12,7 +13,7 @@ scripts). Full eval: `editing/eval3/REPORT.md`.
 | OpenMontageInc/OpenMontage | 80,081 | 2026-11-09 | AGPL-3.0 | Ideas only: per-tool cost/duration metadata, subtitle cue grouping, clip-factory shape | Any code — AGPL contaminates our MIT repos. No copying, ever |
 | kurbaitaev/ghost-editor | 453 | 2026-10-30 | MIT | CC0 meme-SFX pack concept (already covered by OpenFilm library) | — |
 | WyattBlue/auto-editor | 5,867 | 2026-11-13 | Unlicense | Loudness-only silence pass as a fallback when no transcript exists | Primary speech editing — word-gap cuts beat loudness cuts for TTS ads |
-| heygen-com/hyperframes | 83,542 | 2026-11-13 | Apache-2.0 | The render target for composed ads (see `hyperframes` skill) | — |
+| heygen-com/hyperframes | 83,542 | 2026-11-13 | Apache-2.0 | The render target for composed ads (the `hyperframes` skill is installed locally on the machine, not in this repo) | — |
 
 ## License text (quoted)
 
@@ -39,6 +40,11 @@ are not licensed for reuse".
 > videos. Retain this notice when redistributing the kit or substantial
 > portions of its source materials."
 
+When copying a herk script (e.g. `cut-silences.mjs`,
+`find-cut-candidates.mjs`, `apply-cuts.mjs`) into our tooling, keep the
+MIT copyright notice (`Copyright (c) 2026 Nate Herk`) and this
+use-permission notice with the copied file.
+
 **OpenMontage `LICENSE`:** "GNU AFFERO GENERAL PUBLIC LICENSE Version 3,
 19 November 2007". AGPL-3.0 means: do not copy code into our MIT repos;
 clean-room reimplementation of ideas is fine.
@@ -54,4 +60,5 @@ MIT / Apache-2.0 respectively (GitHub SPDX).
   cut-silences.mjs), copy the file into our tooling and record its
   source + license here — do not link to a path that will not exist for
   the next agent.
-- Whisper `tiny` transcripts are rough; use `small`+ for names.
+- Whisper `tiny` transcripts are rough; the eval used `tiny`, this
+  skill's commands show `small`. Use `small`+ for names.

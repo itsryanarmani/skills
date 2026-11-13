@@ -1,20 +1,29 @@
 # OpenFilm CC0 library
 
-OpenFilm (MIT code) ships a free media library under `library/` in its
-repo: sound effects, music, transitions, camera motions, effects,
-filters, text looks, stickers and templates. Verified on disk and via
-its CLI on 2026-11-12.
+OpenFilm (MIT code) ships a free media library under
+`packages/openfilm/library/` in its repo: sound effects, music,
+transitions, camera motions, effects, filters, text looks, stickers and
+templates. Verified on disk and via its CLI on 2026-11-12. Paths below
+are relative to `packages/openfilm/` unless shown otherwise.
 
 ## What it contains (verified counts)
 
-| Kind | On disk | Notes |
-|---|---|---|
-| Bundled SFX | 21 `.m4a` in `library/sounds/` | whoosh, boom, hit, riser, ding, pop, click… local files, copy directly |
-| SFX + music catalogs | ~6,600 entries | metadata in `search.json`; files download on `--take` |
-| Transitions | 61 dirs | dissolve, dip-black, glitch, ink, light-leak, whip-family… |
-| Motions | 64 dirs | `cut-whip-*`, `cut-zoom-through`, `in-whip`, `loop-ken-burns`… punch-in/whip vocabulary, each with `preview.mp4` |
-| Effects / filters | 71 / 66 | grain, vignette, light-leak, VHS; color grades |
-| Text / stickers | 148 looks + ~1,600 rows | titles, karaoke cue styling; 1,587 emoji (MIT) + arrows |
+Two different counts exist — do not mix them:
+
+- **On disk** = folders/files in `library/`.
+- **Catalog** = rows in `library/search.json` (8,744 rows total), which
+  also lists downloadable catalog entries that are not on disk.
+
+| Kind | On disk | Catalog rows | Notes |
+|---|---|---|---|
+| Bundled SFX | 21 `.m4a` in `library/sounds/` | 20 | whoosh, boom, hit, riser, ding, pop, click… local files, copy directly |
+| SFX + music catalogs | — | ~6,600 | metadata in `search.json`; files download on `--take` |
+| Transitions | 61 dirs | 61 | dissolve, dip-black, glitch, ink, light-leak, whip-family… |
+| Motions | 64 dirs | 64 | `cut-whip-*`, `cut-zoom-through`, `in-whip`, `loop-ken-burns`… punch-in/whip vocabulary, each with `preview.mp4` |
+| Effects | 71 dirs | 70 | grain, vignette, light-leak, VHS |
+| Filters | 1 dir (`layer`) + sample stills | 66 | color-grade looks; most ship as catalog entries, not folders |
+| Text looks | 78 folders | 148 `text/` rows | titles, karaoke cue styling; counts include motion/out rows, so they differ |
+| Stickers | 57 dirs | 1,643 | 1,587 emoji (MIT) + arrows |
 
 `library/search.json` holds 8,744 rows; each carries id, keywords and
 descriptions in several languages, so search works in any language.
@@ -75,8 +84,11 @@ export OPENFILM_NO_UPDATE_CHECK=1
 ## Placement rules for ads
 
 - Whoosh/transition on a cut lands **on** the cut frame or up to ~0.1 s
-  before it; an impact lands on the payoff word, not the cut.
-- Keep SFX under voice: about 0.35 linear gain is OpenFilm's own default;
-  our measured bed sat -1.4 to -3.6 dB under voice.
+  before it; an impact lands on the payoff word, not the cut. SFX go on
+  events and reveals only — see `pacing.md`.
+- Keep SFX under voice. OpenFilm's own default is ~0.35 linear gain;
+  our videos5 mix measured SFX -1.4 to -3.6 dB under the voice
+  (`sfx_vs_vo_db`), and `ad-lofi-ugc/references/sound.md` starts bed and
+  SFX ~16 dB under voice. All are starting points — measure on the mix.
 - One transition family per ad. Whip cuts plus glitch plus ink reads as
   noise.

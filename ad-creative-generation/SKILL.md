@@ -126,3 +126,6 @@ Passing a base64 image inline as a shell arg (e.g. `curl -d "$(...)"`) blows up 
 - **Losing the recipe.** No stored prompt/refs = a winner you can't reproduce and a loser you can't diagnose.
 
 Pairs with: `ad-creative-templates` (text/UI/logo-heavy styles), `ad-lofi-ugc` (lo-fi UGC stills + video: camera-first prompts, ffmpeg degrade, character chaining, muted-first sound, QA gates), `ad-experiments` (which creative to test and how to read the result), `high-fidelity-ui-image-gen` (the same gen-vs-screenshot tradeoff for UI).
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`ad-creative-templates/impulse-formats.md`](../ad-creative-templates/impulse-formats.md). That shared reference contains the ranked table, launch-first rotation rule, WaveSpeed CLI usage (key from `WAVESPEED_API_KEY` only), and the creative rules (blurry lo-fi 2000s phone-photo people; no header/footer/logo; never text-only; plain STE-100 copy; no invented testimonials). The template-vs-gen division is reinforced: text/UI/logo-heavy formats → `ad-creative-templates` HTML templates; photoreal scenes → this skill. Image-model mechanics cross-reference `impulse-formats.md` §3 for model picks and creative rules §4.

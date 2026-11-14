@@ -1,15 +1,20 @@
 ---
 name: self-hosted-runner-fleet
-description: "Run GitHub Actions on your own machine, and know when not to. Use when asked to cut Actions minutes or queue time, add a machine to a runner fleet, decide which jobs are safe to move off hosted runners, choose between self-hosted and a managed ephemeral runner, or debug a self-hosted runner whose jobs die, queue forever, or report offline while busy. Covers the Boat JIT pool for private Linux CI, pool costs, and retired desktop troubleshooting on Linux and Windows/WSL2."
+description: "Run GitHub Actions on your own machine, and know when not to. Use when asked to cut Actions minutes or queue time, add a machine to a runner fleet, decide which jobs are safe to move off hosted runners, choose between self-hosted and a managed ephemeral runner, or debug a self-hosted runner whose jobs die, queue forever, or report offline while busy. Covers running private CI on a spare owned machine (Linux and Windows/WSL2): tuning, freeing and keeping disk space, troubleshooting, and adding a local GPU model server. Also holds the history of the Boat JIT pool and its costs."
 ---
 
 # Self-hosted runner fleet
 
-Use the Boat JIT pool for private Linux CI. The desktop fleet below is retired.
-Read its sections only to maintain a host that needs special hardware or an OS.
+**Status, November 2026:** the Boat pool is no longer in use. A spare owned machine runs
+private Linux CI again, so the desktop-fleet sections below are current. Read "Run a spare
+machine: tune, maintain, add a local model" before you set one up or inherit one. The Boat
+section that follows is history. Use it for the lessons, not as the plan.
 Public repos stay on GitHub-hosted runners. A fork PR can run code on a runner.
 
 ## Boat JIT runner pool
+
+History: this pool is no longer in use (November 2026). Keep this section for what it
+taught about cost and labels.
 
 Use `runs-on: boat` for build, lint, typecheck, test, E2E, deploy and API waits.
 Use `runs-on: boat-8` only for a heavy production build. Keep macOS and Windows
@@ -64,10 +69,12 @@ and queue time, not job time. N default Boxes cost N × $0.036 per hour.
 Size the pool from peak job demand, queue delay and idle cost. Check memory
 limits before a tier drop; a 12 GB Node heap cannot fit on an 8 GB Box.
 
-## Retired desktop procedure
+## Spare-machine procedure (current)
 
-The following sections describe the old persistent desktop fleet. They do not
-set job placement for the Boat pool. Use the label and broker procedure above.
+The following sections describe the persistent spare-machine fleet. They are
+current as of November 2026. The Boat pool above is history, so its labels and
+broker procedure do not apply to a spare machine. Use the label you registered on the
+machine's runners, such as `<host>-ci`, in `runs-on`.
 
 Keep host specifics (address, SSH key, account names, service paths) in a private host
 overlay, not in this skill and not in a public repo.
@@ -313,7 +320,8 @@ your host — file it upstream with that evidence instead of rebuilding your mac
 
 This skill came out of a real fleet — fifteen private repositories, one Windows desktop,
 runners in WSL2 — that was **retired within days** for managed ephemeral runners
-(Ubicloud). Not because the idea was wrong, but because of what a single owned machine
+(Ubicloud). An owned machine is in use again as of November 2026, so read this section as
+the cost of owning one, not as a ban. Not because the idea was wrong, but because of what a single owned machine
 actually costs once it is load-bearing.
 
 **What it delivered.** Per job, the box beat the hosted runner: no queue wait, warm caches,
@@ -341,6 +349,92 @@ ephemeral runners carry the fleet, the owned host takes work that needs it. Then
 check that **exits nonzero** when the host is unreachable or a runner is offline is not
 optional — a second tier hides the first tier's outages completely, which is exactly how a
 fleet stays broken for a day.
+
+## Run a spare machine: tune, maintain, add a local model
+
+Scripts for all of this live in the `scripts` repo, folder `scripts/self-hosted-runner-fleet/`
+(`runner-host-maint.sh`, `wsl-compact.ps1`). The README there has the commands.
+
+**Look before you change.** Read RAM, CPU load, GPU, power plan, the virtual-disk size, free
+space and the running jobs first. A CI host is mostly idle. Real numbers from one host:
+128 GB RAM with 96 GB free, 35% CPU, a GPU at 0%. Write down what you change and keep a
+backup of any config file you edit.
+
+**Tune, in this order of safety.**
+
+| Change | Effect | Note |
+| --- | --- | --- |
+| `autoMemoryReclaim=gradual` in `.wslconfig` `[experimental]` | WSL returns idle cache to Windows | needs `wsl --shutdown` |
+| `/tmp` as a 24 GB tmpfs | faster installs and builds | uses RAM only while files exist |
+| Stop `SysMain` and Windows Search | less background load | reversible |
+| `powercfg /h off` | deletes `hiberfil.sys`, 51 GB on a 128 GB host | a CI host does not hibernate |
+| **Never** `sparseVhd` or `--set-sparse` | would shrink the disk | recent WSL calls it unsafe: it can corrupt the disk |
+
+**Free space, and keep it free.**
+
+- The big consumers are job checkouts in each runner's `_work`, package caches, and
+  folders of runners that no longer exist. One fleet of 44 runners held 221 GB.
+- Delete `_work` contents only for a runner that is active and has no job. Keep `_tool` and
+  `_actions`. Stop that runner's service for the moment of the cleanup, check that the stop
+  worked, then start it only if it was running before. Skip package caches while any job
+  runs, and never prune Docker on a shared host unless you ask for it.
+- Count a folder as a runner only if it holds `.runner` or `config.sh`. Refuse to delete
+  "dead" runners when the service list is empty: a broken `systemctl` makes every runner
+  look dead.
+- The WSL virtual disk does not shrink. Compact it with `diskpart` (`attach vdisk readonly`,
+  `compact vdisk`) after `wsl --shutdown`. Wait for an idle fleet first. Detach the disk
+  and restart WSL in a `finally` block, in a separate `diskpart` run. In script mode
+  `diskpart` stops at the first error, so a failed `compact` skips a `detach` on the next
+  line and leaves the disk attached. WSL cannot boot then. Treat an unreadable job count as
+  busy, not as idle.
+- Run both as scheduled jobs: a daily systemd timer inside WSL for the cleanup, and a
+  weekly Windows task, highest privileges, for the compaction. A fleet that is busy all
+  day often has a quiet hour before dawn.
+- A runner folder with no service is a dead registration. Typical causes: a deleted or
+  archived repository, and a **renamed GitHub account**, which invalidates every old
+  registration. Check each one, then remove it. Re-register live repositories under the new
+  name.
+- A size scan of a large OS drive over SSH can take more than ten minutes. Scan only the
+  folders you suspect. A profile's `Local Settings` and `Application Data` are junctions,
+  so a naive scan counts them twice.
+
+**Never restart on a guess.** `wsl --shutdown` and `systemctl stop` kill running jobs.
+Check `pgrep -fc 'Runner\.Worker'` first and wait for `0`. On a busy fleet it is rarely 0,
+and it can change between your check and your command. Tell the owner what you skipped.
+
+**Add a local model server for the GPU.** CI jobs cannot use the GPU, but it can serve a
+small model for cheap, bulk work.
+
+1. Rank models with `llmfit` (github.com/AlexsJones/llmfit). Install the pinned release
+   binary and check its checksum. Do not pipe an install script to a shell. On older Ubuntu
+   use the `musl` build; the `gnu` build needs a newer glibc.
+2. Do not take the top score on trust. The top of the list is often an unvetted community
+   fine-tune. Choose a model from a known maker.
+3. Match the VRAM. 8 GB holds a 9B model at 4-bit with a small context. A larger model
+   spills into RAM and gets slow.
+4. Serve it with Ollama from a release tarball. Check the digest that GitHub publishes for
+   that asset. Run it under systemd.
+5. Bind it to a private network address, never `0.0.0.0`. Ollama has no login.
+6. Measure with a long request after a warm-up. A cold, short call measured 3 tokens per
+   second; a 300-token run on the same model measured 27.
+7. Register it in an OpenAI-compatible proxy under an alias and test one call through the
+   proxy. The proxy may reject a call for a few seconds while it reloads its config. When the
+   host is off, only that model fails.
+8. Record the model, the address, how to update it, and the VRAM limit in the repo's host
+   notes, so an agent knows the model exists and what it can do.
+
+**Habits that saved time.**
+
+- Send scripts to a Windows host as base64. Quoting through SSH and PowerShell breaks.
+- Parse-check a script before it runs on the host: `bash -n` and `shellcheck`, and the
+  PowerShell parser (`[System.Management.Automation.Language.Parser]::ParseFile`).
+- Test a destructive script with a dry run first. Then run it while jobs are active and
+  confirm that it skips them.
+- zsh does not split an unquoted variable the way bash does. `set -- $list` passes the
+  whole string as one argument, so a shell loop over `"a 1"` pairs breaks quietly. Use
+  explicit arguments or a function.
+- A masked `sed` over a config file can still print a key in a list line. Print counts or
+  lengths, not lines, when a file holds secrets.
 
 ## Verify, then move on
 

@@ -116,6 +116,10 @@ Drive the owner's iPhone with [iphone-agent](iphone-agent/SKILL.md) through esp3
 
 `npx skills add itsryanarmani/skills/iphone-agent`
 
+Drive real iPhones from a Mac with [private-repo-32ef-ios](private-repo-32ef-ios/SKILL.md) through WebDriverAgent and Appium. It lists seven setup faults from a live install, the registration and task API, a detection risk table marked untested, and notes for more than one phone. The first TikTok run failed on a zoomed screen. The skill says so.
+
+`npx skills add pooriaarab/skills/private-repo-32ef-ios`
+
 ### Standalone
 
 | Skill | Description |

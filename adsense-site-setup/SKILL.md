@@ -89,41 +89,68 @@ Tell the owner that payment, tax, and phone decisions are theirs alone. Use
 
 ## Connect the site (ownership proof)
 
-1. On the Sites card, press **Let's go** to start ownership proof.
-2. **Observed:** in that session, **Let's go** did not respond to automated clicks
-   (role-based click and coordinate click). The page did not change. A person must
-   press the button, or you retry in a fresh browser session later.
-3. **Documented, verify:** AdSense then offers three proof options:
-   - (a) AdSense code snippet in `<head>` (loads ad-related script).
-   - (b) An `ads.txt` authorization line on the root domain.
-   - (c) A meta tag in `<head>` on the home page.
+1. On the onboarding **Sites** card, press **Let's go** to open the site detail
+   page.
+2. **Observed:** in one automated session, **Let's go** did not respond to a
+   role-based click or a coordinate click. In a fresh session, scrolling the
+   button into view and clicking with **force** worked on the first try. Try a
+   fresh session, scroll into view, then a forced click. If it still does nothing,
+   hand off to the person.
+3. **Observed:** the site detail page shows the site name, a status chip
+   **Requires review**, a **Delete site** button, and the line **Your site needs
+   review**.
+4. **Observed:** the **Verify site ownership** section has **Select verification
+   method** and three radio options in this order:
+   - **AdSense code snippet** (selected by default)
+   - **Ads.txt snippet**
+   - **Meta tag**
 
-**Prefer (c) and (b) together before approval. Avoid (a) until the site is
-approved**, because the snippet loads ad script and may conflict with your
-consent rule.
+**Prefer meta tag and ads.txt together before approval. Avoid the AdSense code
+snippet until the site is approved**, because it loads ad script and may conflict
+with your consent rule.
 
-Meta tag (home page `<head>`, no script load):
+5. **Observed:** **AdSense code snippet** shows a script tag to paste between the
+   `head` tags on each page, a **Copy** link, a checkbox **I've placed the
+   code**, and a **Verify** button:
+
+```html
+<script async
+  src="https://pagead2.googlesyndication.com
+/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000"
+  crossorigin="anonymous"></script>
+```
+
+6. **Observed:** **Meta tag** shows a meta element to paste between the `head` tags
+   on each page, **Copy**, checkbox **I've placed the HTML meta tag**, and
+   **Verify**:
 
 ```html
 <meta name="google-adsense-account" content="ca-pub-0000000000000000">
 ```
 
-`ads.txt` at the site root (`/ads.txt`), HTTP 200, `Content-Type: text/plain`,
-one line, no redirect to another domain:
+7. **Observed:** **Ads.txt snippet** shows the line below for the site root
+   `ads.txt` file (if a file already exists, paste the line into each file),
+   **Copy**, checkbox **I've published the ads.txt file**, and **Verify**:
 
 ```text
 google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
 ```
 
-The last field is **Documented, verify:** Google's published certification
-authority id for AdSense.
+8. **Observed:** below verification, a second collapsed step **Request review**
+   is the next step after verification completes.
+
+Deploy meta tag and `ads.txt` on production before you tick the checkboxes in the
+UI. Serve `/ads.txt` with HTTP 200, `Content-Type: text/plain`, and no redirect to
+another host.
 
 ## Check the site before you press Verify
 
-**Observed:** running the checker before **Verify** catches wrong content types and
-redirects that AdSense would reject.
+**Observed:** each verification method ends with a confirmation checkbox and its
+own **Verify** button. AdSense checks only after you tick the checkbox and press
+**Verify**.
 
-Run the public helper:
+Before you tick and press **Verify** in the UI, run the public helper against
+production:
 
 ```bash
 adsense-check <domain> <publisher-id>
@@ -131,17 +158,26 @@ adsense-check <domain> <publisher-id>
 
 The `adsense-check` script lives in the shared scripts repository (`scripts`
 tree). It reports pass or fail for `ads.txt` and the meta tag, including HTTP
-status codes.
+status codes. Fix failures first; wrong content type or a redirect is the usual
+cause.
 
-Fix any failure before you continue. Wrong content type or a redirect is the
-usual cause.
+**Observed:** on the sites list, a newly added site can show **Approval status**
+**Requires review** and **Ads.txt status** **Not found** before you publish
+`ads.txt`.
 
 ## Request review and wait
 
-1. In AdSense, press **Verify**, then **Request review**.
-2. **Documented, verify:** review can take from a few days to a few weeks.
-3. **Documented, verify:** expect statuses such as **Getting ready**, **Needs
-   attention**, **Ready**, and **Requires action**.
+1. **Observed:** after you complete ownership verification, open the collapsed
+   **Request review** step on the site detail page (it sits below **Verify site
+   ownership**).
+2. **Observed:** the sites table lists columns **Site URL**, **Approval status**,
+   **Status details**, **Ads.txt status**, **Last updated**, and **Action**. Filter
+   chips include **Ready**, **Getting ready**, **Requires review**, and **Needs
+   attention**.
+3. **Documented, verify:** what happens immediately after **Verify** succeeds,
+   the **Request review** form fields, how long review takes, and typical rejection
+   reasons were not captured in the 2026-11-14 session. Confirm in the live UI
+   before you quote timing or outcomes.
 4. Do not add ad slots while the site is under review.
 
 ## If the site is rejected
@@ -190,7 +226,7 @@ and from **Documented, verify** publisher help articles.
 
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
-| **Let's go** does nothing | Automated click ignored | Hand off to the person, or retry in a fresh session |
+| **Let's go** does nothing | Stale session or click before scroll | Fresh browse session, scroll into view, forced click; hand off if it still fails |
 | Verify cannot find the tag | Cached home page, tag only on inner pages, or wrong deploy environment | Purge cache, put proof on the canonical home URL, redeploy production |
 | `ads.txt` not found | 404, wrong path, or redirect | Serve `/ads.txt` on the apex with status 200 and no cross-domain redirect |
 | `ads.txt` wrong content type | Host serves HTML or JSON | Force `text/plain` for `/ads.txt` |

@@ -1,6 +1,6 @@
 ---
 name: adsense-site-setup
-description: "Create or reactivate a Google AdSense account and connect a live site for display ads — account chooser and reactivation, payments and tax gates, add-site and ownership proof (meta tag and ads.txt preferred), pre-verify with adsense-check, review and rejection recovery, consent-gated slots after approval, and browse/handoff rules for the AdSense UI. Use when a site needs AdSense display income and the account is new, dormant, or missing the domain."
+description: "Create or reactivate Google AdSense, connect a live site with meta tag and ads.txt proof, run adsense-check (or a manual fetch) before Verify, and request review with consent-gated slots only after approval; use when the account is new, dormant, or missing the domain."
 ---
 
 # adsense-site-setup
@@ -12,7 +12,7 @@ a clear record of site status in private project notes.
 
 Facts below are **Observed** (from a signed-in session on 2026-11-14) or
 **Documented, verify** (from Google's published behavior; confirm in the live
-UI before you rely on them).
+UI before you rely on them). **Our rule** marks fleet policy, not a Google fact.
 
 ## When to use it, and when not
 
@@ -43,13 +43,13 @@ Confirm all of the following before you open AdSense:
   records the owner will use.
 - **Documented, verify:** if the site shows ads to visitors in the EEA, the UK,
   or Switzerland, Google may require a certified consent management platform.
-- **Our rule (not Google's):** never load an ad script before consent.
+- **Our rule:** never load an ad script before consent.
 
 ## Check whether an account already exists
 
-1. Open the AdSense start flow and choose **Get started**. Read the Google
-   account chooser. **Documented, verify:** several accounts can appear; pick the
-   one that should receive payments.
+1. **Documented, verify:** open the AdSense start flow, choose **Get started**, and
+   read the Google account chooser; several accounts can appear, so pick the one
+   that should receive payments.
 2. **Observed:** an old account can still exist but show as deactivated. The home
    page then says the account was deactivated because it is inactive, with a
    **Reactivate account** button.
@@ -74,14 +74,16 @@ Walk the owner through each screen. You do not type bank or tax identifiers.
 | Address PIN | A PIN card by post may be required after earnings pass a small threshold |
 | Threshold | Payment threshold is a fixed amount that varies by currency |
 
-Tell the owner that payment, tax, and phone decisions are theirs alone. Use
-`handoff()` before any tax form, bank detail, or SMS PIN entry.
+**Our rule:** payment, tax, and phone decisions are the owner's alone. Use
+`handoff()` (see **Driving the browser**) before any tax form, bank detail, or
+SMS PIN entry.
 
 ## Add the site
 
-1. On the onboarding **Sites** card or in **Sites**, choose **Add site**.
-2. Enter the bare domain (`example.com`) with no `https://` prefix. **Observed:**
-   the dialog has one **Website** field.
+1. **Documented, verify:** on the onboarding **Sites** card or in **Sites**, choose
+   **Add site**.
+2. **Observed:** the dialog has one **Website** field and **Save**. Enter the bare
+   domain (`example.com`) with no `https://` prefix.
 3. **Observed:** after save, the domain appears in a site selector at the top of
    the home page.
 4. **Documented, verify:** add the apex domain; check whether a subdomain needs
@@ -89,8 +91,8 @@ Tell the owner that payment, tax, and phone decisions are theirs alone. Use
 
 ## Connect the site (ownership proof)
 
-1. On the onboarding **Sites** card, press **Let's go** to open the site detail
-   page.
+1. **Documented, verify:** on the onboarding **Sites** card, press **Let's go** to
+   open the site detail page.
 2. **Observed:** in one automated session, **Let's go** did not respond to a
    role-based click or a coordinate click. In a fresh session, scrolling the
    button into view and clicking with **force** worked on the first try. Try a
@@ -105,19 +107,16 @@ Tell the owner that payment, tax, and phone decisions are theirs alone. Use
    - **Ads.txt snippet**
    - **Meta tag**
 
-**Prefer meta tag and ads.txt together before approval. Avoid the AdSense code
-snippet until the site is approved**, because it loads ad script and may conflict
-with your consent rule.
+**Our rule:** prefer meta tag and `ads.txt` together before approval. Avoid the
+AdSense code snippet until the site is approved, because it loads ad script and may
+conflict with your consent rule.
 
 5. **Observed:** **AdSense code snippet** shows a script tag to paste between the
    `head` tags on each page, a **Copy** link, a checkbox **I've placed the
    code**, and a **Verify** button:
 
 ```html
-<script async
-  src="https://pagead2.googlesyndication.com
-/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000"
-  crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" crossorigin="anonymous"></script>
 ```
 
 6. **Observed:** **Meta tag** shows a meta element to paste between the `head` tags
@@ -136,30 +135,31 @@ with your consent rule.
 google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
 ```
 
-8. **Observed:** below verification, a second collapsed step **Request review**
-   is the next step after verification completes.
+8. **Observed:** below verification, a collapsed **Request review** step appears on
+   the site detail page.
 
-Deploy meta tag and `ads.txt` on production before you tick the checkboxes in the
-UI. Serve `/ads.txt` with HTTP 200, `Content-Type: text/plain`, and no redirect to
-another host.
+**Our rule:** deploy meta tag and `ads.txt` on production before you tick the
+checkboxes in the UI. Serve `/ads.txt` with HTTP 200, `Content-Type: text/plain`,
+and no redirect to another host.
 
 ## Check the site before you press Verify
 
-**Observed:** each verification method ends with a confirmation checkbox and its
-own **Verify** button. AdSense checks only after you tick the checkbox and press
-**Verify**.
+**Observed:** each verification method shows a confirmation checkbox and a
+**Verify** button.
 
-Before you tick and press **Verify** in the UI, run the public helper against
-production:
+**Documented, verify:** Google runs the ownership check only after you tick the
+checkbox and press **Verify**.
+
+Before you tick and press **Verify** in the UI, run the companion `adsense-check`
+script from the scripts repository against production when it is published:
 
 ```bash
 adsense-check <domain> <publisher-id>
 ```
 
-The `adsense-check` script lives in the shared scripts repository (`scripts`
-tree). It reports pass or fail for `ads.txt` and the meta tag, including HTTP
-status codes. Fix failures first; wrong content type or a redirect is the usual
-cause.
+Until that script is published, check by hand: fetch `/ads.txt` and the home page
+and compare them to the formats above (status code, `text/plain` for `ads.txt`, meta
+tag in `<head>`).
 
 **Observed:** on the sites list, a newly added site can show **Approval status**
 **Requires review** and **Ads.txt status** **Not found** before you publish
@@ -167,49 +167,50 @@ cause.
 
 ## Request review and wait
 
-1. **Observed:** after you complete ownership verification, open the collapsed
-   **Request review** step on the site detail page (it sits below **Verify site
-   ownership**).
+1. **Documented, verify:** after ownership **Verify** succeeds, open the collapsed
+   **Request review** step on the site detail page and submit the review request.
 2. **Observed:** the sites table lists columns **Site URL**, **Approval status**,
    **Status details**, **Ads.txt status**, **Last updated**, and **Action**. Filter
    chips include **Ready**, **Getting ready**, **Requires review**, and **Needs
    attention**.
-3. **Documented, verify:** what happens immediately after **Verify** succeeds,
-   the **Request review** form fields, how long review takes, and typical rejection
+3. **Documented, verify:** what happens immediately after **Verify** succeeds, the
+   **Request review** form fields, how long review takes, and typical rejection
    reasons were not captured in the 2026-11-14 session. Confirm in the live UI
    before you quote timing or outcomes.
-4. Do not add ad slots while the site is under review.
+4. **Our rule:** do not add ad slots while the site is under review.
 
 ## If the site is rejected
 
-1. Read the reason on the **Sites** page.
-2. **Documented, verify:** common reasons include low value or thin content,
-   site down or unreachable, navigation problems, duplicate or scraped content,
-   policy violations, or site not ready.
-3. Fix the underlying cause, then request review again.
-4. Record the rejection reason in private project notes. Thin directory sites with
-   many near-empty pages are at higher risk; improve the strongest content section
-   first.
+1. **Documented, verify:** read the reason on the **Sites** page.
+2. **Documented, verify:** common reasons include low value or thin content, site
+   down or unreachable, navigation problems, duplicate or scraped content, policy
+   violations, or site not ready.
+3. **Documented, verify:** fix the underlying cause, then request review again.
+4. **Our rule:** record the rejection reason in private project notes. Thin
+   directory sites with many near-empty pages are at higher risk; improve the
+   strongest content section first.
 
 Approval timing and earnings are not guaranteed. Do not state an outcome as fact.
 
 ## After approval
 
-- Add ad slots only through a consent-gated component that renders nothing before
-  consent and reserves height to limit layout shift.
-- Do not show ads on private or signed-in-only pages.
+- **Our rule:** add ad slots only through a consent-gated component that renders
+  nothing before consent and reserves height to limit layout shift.
+- **Our rule:** do not show ads on private or signed-in-only pages.
 - **Documented, verify:** never click your own ads or ask others to; invalid
   traffic can lead to account closure.
-- Block scrapers and headless crawlers at the edge where you can, so invalid
-  traffic is less likely to count against the account.
+- **Our rule:** block scrapers and headless crawlers at the edge where you can, so
+  invalid traffic is less likely to count against the account.
 
 ## Driving the browser
 
-**Observed:** the AdSense UI trusts the person's existing Google session when you
-use signed-in Chrome through the `browse` tool.
+The `browse` tool drives the person's signed-in Chrome through a browser
+extension. `handoff()` pauses automation so the person can finish sign-in, 2FA, or
+payment steps. `snapshot()` returns an accessibility tree you read before the next
+action.
 
-Use the person's signed-in Chrome through the `browse` tool so existing Google
-sessions stay available.
+Use the person's signed-in Chrome through `browse` so existing Google sessions stay
+available.
 
 - Write one Playwright step at a time. After each step, read the page (`snapshot()`,
   the URL, a heading).
@@ -221,8 +222,7 @@ sessions stay available.
 
 ## Troubleshooting
 
-**Observed:** the rows below match failures from the 2026-11-14 AdSense setup run
-and from **Documented, verify** publisher help articles.
+The **Let's go** row is **Observed**; other rows are **Documented, verify**.
 
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
@@ -236,8 +236,8 @@ and from **Documented, verify** publisher help articles.
 
 ## What to record afterward
 
-**Observed:** a short private ledger prevents duplicate site submissions and speeds
-up re-review after a rejection.
+**Our rule:** keep a short private ledger of publisher id, dates, and status so you
+do not double-submit sites and you can retry review with context.
 
 In private project notes only (not in this repository), record:
 

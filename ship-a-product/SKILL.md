@@ -1,6 +1,6 @@
 ---
 name: ship-a-product
-description: "Orchestrator: sequence idea -> working code -> open-source-ready repo -> discoverable live site -> launch video -> published announcement, with optional Product Hunt launch. Points at the stage skills rather than duplicating them -- use this to decide which stage you're in and which skill to invoke next, not as a rigid must-do-all-in-order pipeline."
+description: "Orchestrator for shipping a product from idea through working code, paid billing and cancellation, a public repo, site discovery, and launch. Use it to choose the current stage and its skill. Includes optional Product Hunt launch. Enter where the project is ready."
 ---
 
 # ship-a-product
@@ -24,6 +24,21 @@ The stages, in order, each with its own dedicated skill. Not every project needs
 8. social-launch-post      video + copy -> a draft ready to publish across X/LinkedIn/Threads/Bluesky/Mastodon
 9. product-hunt-launch     significant release -> reviewed Product Hunt draft, assets, launch-day runbook, recap
 ```
+
+## Subscription cancellation before launch
+
+For every product that offers subscriptions, complete the
+[subscription cancellation flow](../saas-billing-stripe/references/subscription-cancellation.md)
+with stage 3b, before the announcement.
+
+Ship site-specific reasons, follow-up questions, value messages, and eligible
+alternatives. Make them editable through the site's admin API, CLI, and MCP tools.
+Apply this requirement to every subscription site in a multi-site product.
+Skip this gate for products that sell only one-time purchases.
+
+Verify the actual billing result, access date, and data policy.
+Keep confirmation reachable when the user skips feedback and retention offers.
+Attach browser evidence and a repeatable result report to the product PR.
 
 ## After stage 9: the launch is not the finish line
 

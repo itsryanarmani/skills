@@ -140,6 +140,12 @@ accept a customer ID from the browser. [Create a portal session](https://docs.st
 Configure allowed products, cancellation behavior, and proration in the Portal settings. Keep
 your webhook handler as the authority after an upgrade, downgrade, or cancellation.
 
+For a product-specific cancellation experience, follow the
+[subscription cancellation flow](references/subscription-cancellation.md).
+It defines the screens, site-specific reasons, editable admin settings, billing
+actions, and E2E evidence. Keep the existing cancellation path available while
+adding optional help and retention offers.
+
 ## 5. Configure dunning before launch
 
 Failed renewals cause involuntary churn. Smart Retries and recovery emails are Dashboard

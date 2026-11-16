@@ -18,6 +18,33 @@ admin. The creator gets account manager and billing admin access. Currency and
 Company Page cannot change later; a Company Page is required for full features.
 See [Create an ad account](https://www.linkedin.com/help/lms/answer/a422205).
 
+### Create the ad account in the browser
+
+Verified 2026-11-16 in a signed-in Chrome. Do each step in order.
+
+1. Open `https://www.linkedin.com/campaignmanager/accounts`.
+2. Select **Create account**. A dialog opens.
+3. Enter the account name. The field is prefilled, so replace the value.
+4. Choose the currency. You cannot change it later. Match the currency of the
+   card that will pay.
+5. Open **Associate a LinkedIn Page**. The list shows only Pages you administer.
+   Choose one, or skip it and associate a Page later.
+6. Tick **I agree to the LinkedIn Ads Agreement and Advertising Guidelines**.
+7. Select **Save**. LinkedIn opens the campaign setup page. The URL holds the new
+   account ID: `/campaignmanager/accounts/<ACCOUNT_ID>/campaigns/new/setup`.
+
+The new account has the status **On hold: payment method required**. No ad runs
+until a person adds a card under **Billing**. An agent must not enter card details.
+
+Traps:
+
+- The Escape key closes the whole dialog and discards the fields. To close the
+  Page list, select another field instead.
+- A Page you do not administer is not in the list. Create the Page first, or ask
+  its admin to add you.
+- Without a Page, ads cannot publish as a company. Associate one before launch.
+- Read the new account ID from the URL after Save.
+
 For a direct advertiser integration, use **Data → Signals Manager → Direct API
 → Generate access token**. This route needs no developer application. The
 token does not expire and appears once. Store it at once. See [CAPI access](https://learn.microsoft.com/en-us/linkedin/marketing/conversions/getting-access-conversions?view=li-lms-2026-08).

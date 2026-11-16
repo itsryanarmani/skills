@@ -14,8 +14,10 @@ envelope, consent gate, identity rules, retry policy, and adapter contract.
 
 Campaign Manager is self-serve. Select **For Business → Advertise** in
 LinkedIn, then create an ad account. A Business Manager account requires an
-admin. The creator gets account manager and billing admin access. Currency and
-Company Page cannot change later; a Company Page is required for full features.
+admin. The creator gets account manager and billing admin access. Currency
+cannot change later. LinkedIn says the same of the Company Page once set, but
+you can add a Page to an account that has none. A Company Page is required for
+full features.
 See [Create an ad account](https://www.linkedin.com/help/lms/answer/a422205).
 
 ### Create the ad account in the browser
@@ -27,8 +29,8 @@ Verified 2026-11-16 in a signed-in Chrome. Do each step in order.
 3. Enter the account name. The field is prefilled, so replace the value.
 4. Choose the currency. You cannot change it later. Match the currency of the
    card that will pay.
-5. Open **Associate a LinkedIn Page**. The list shows only Pages you administer.
-   Choose one, or skip it and associate a Page later.
+5. Open **Associate a LinkedIn Page**. Type the Page name to search. Choose the
+   Page. You can also save without one and add it later (see the traps).
 6. Tick **I agree to the LinkedIn Ads Agreement and Advertising Guidelines**.
 7. Select **Save**. LinkedIn opens the campaign setup page. The URL holds the new
    account ID: `/campaignmanager/accounts/<ACCOUNT_ID>/campaigns/new/setup`.
@@ -40,10 +42,12 @@ Traps:
 
 - The Escape key closes the whole dialog and discards the fields. To close the
   Page list, select another field instead.
-- A Page you do not administer is not in the list. Create the Page first, or ask
-  its admin to add you.
-- Without a Page, ads cannot publish as a company. Associate one before launch.
-- Read the new account ID from the URL after Save.
+- The Page list shows only about ten Pages. A Page you administer can be
+  missing from it. Type the name to search before you create a new Page.
+- A Page you do not administer never appears. Ask its admin to add you.
+- To add a Page to an account that has none, open the accounts list, hover the
+  row, select **Edit**, choose the Page under **Associate a LinkedIn Page**, and
+  select **Update account**. Verified on a live account.
 
 For a direct advertiser integration, use **Data → Signals Manager → Direct API
 → Generate access token**. This route needs no developer application. The

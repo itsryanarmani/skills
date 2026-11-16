@@ -27,13 +27,14 @@ The stages, in order, each with its own dedicated skill. Not every project needs
 
 ## Subscription cancellation before launch
 
-For every paid product, complete the
+For every product that offers subscriptions, complete the
 [subscription cancellation flow](../saas-billing-stripe/references/subscription-cancellation.md)
 with stage 3b, before the announcement.
 
 Ship site-specific reasons, follow-up questions, value messages, and eligible
 alternatives. Make them editable through the site's admin API, CLI, and MCP tools.
-Apply this requirement to every paid site in a multi-site product.
+Apply this requirement to every subscription site in a multi-site product.
+Skip this gate for products that sell only one-time purchases.
 
 Verify the actual billing result, access date, and data policy.
 Keep confirmation reachable when the user skips feedback and retention offers.

@@ -1,7 +1,9 @@
 # Subscription cancellation flow
 
-Ship cancellation with every paid product. Apply this contract to each site
-in a multi-site product. Use the site's existing billing service and design system.
+Ship cancellation with every product that offers subscriptions.
+Apply this contract to each subscription site in a multi-site product.
+Skip it for products that sell only one-time purchases.
+Use the site's existing billing service and design system.
 
 Use the screen structure below. Write the questions and value messages
 for the current product. Never copy another product's prices or success claims.
@@ -98,7 +100,8 @@ Keep access, retention, export, and deletion policies in their existing policy s
 Render those facts beside the editable copy. Reject copy that contradicts those facts.
 
 Support read, validate, update, and reset through each admin surface.
-Return a version on reads. Require the expected version on updates to prevent lost edits.
+Return a version on reads. Require the expected version on updates and resets to prevent lost edits.
+Reject stale versions for both operations.
 Validate unique reason IDs, routes, limits, lengths, locales, and allowed metric keys.
 Accept only approved HTTPS destinations or existing internal routes.
 Resolve billing references on the server. Do not accept arbitrary discounts from a customer.
@@ -106,7 +109,7 @@ Audit the actor, site, time, version, and changed fields for each update and res
 Restrict history reads to authorized site administrators.
 Restrict feedback access and apply the product's retention policy.
 
-Ship defaults for every paid site. Permit site overrides through the settings service.
+Ship defaults for every subscription site. Permit site overrides through the settings service.
 A change for one site must not change another site's flow.
 Check effective configuration across the site registry before release.
 Do not require a rebuild to publish validated text, reason, or offer changes.
@@ -160,10 +163,11 @@ Verify these cases:
 - Reject cross-site reads, invalid references, and stale versions.
 - Reject cancellation by a signed-in user who does not own billing.
 - Change configuration during the flow and verify the user sees the new terms before consent.
-- Verify distinct effective reasons and value messages for every paid site.
+- Verify distinct effective reasons and value messages for every subscription site.
 - Verify keyboard navigation, focus restoration, small screens, and readable error states.
 
 Save before and after screenshots outside the repository.
-Attach them to the PR. Save a repeatable JSON report with site IDs, configuration
+Keep private evidence in private storage. Attach only sanitized evidence approved for the PR's audience.
+Save a repeatable JSON report with site IDs, configuration
 versions, test outcomes, and confirmed billing states. Exclude credentials and personal feedback.
 Include the exact commands and results in the PR.

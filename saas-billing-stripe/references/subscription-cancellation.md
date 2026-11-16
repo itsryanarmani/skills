@@ -3,7 +3,7 @@
 Ship cancellation with every paid product. Apply this contract to each site
 in a multi-site product. Use the site's existing billing service and design system.
 
-Use the reference flow's structure. Write the questions and value messages
+Use the screen structure below. Write the questions and value messages
 for the current product. Never copy another product's prices or success claims.
 
 ## Before implementation
@@ -24,6 +24,10 @@ Use one responsive dialog or page with consistent Back and Close controls.
 Keep cancellation visible in billing settings. Never hide it behind “Show more.”
 Allow direct continuation to confirmation from every retention screen.
 
+After a declined reason offer, permit optional feedback and one final offer.
+Then show impact review, an optional pause offer, and confirmation.
+Skipping feedback goes to impact review. Skipping all offers goes to confirmation.
+
 | Screen | Content and action | Next state |
 | --- | --- | --- |
 | Modify subscription | Show the current plan and actual price. Show upgrade, trial extension, downgrade, and cancel actions when supported. | The chosen action or reason selection. |
@@ -36,13 +40,14 @@ Allow direct continuation to confirmation from every retention screen.
 | Value guide | Show a short plan for the product's outcome. Include measured results only when evidence exists. | Open the guide, or impact review. |
 | Impact review | Show the paid features and verified account values affected by cancellation. State when each change takes effect. | Confirm, optional pause, or return. |
 | Pause offer | Show preserved data, disabled features, duration, restart date, and all charges. Show this only when billing supports it. | Explicit acceptance, or confirmation. |
-| Feedback | Ask an optional follow-up based on the selected reason. Use neutral prompts and a Skip action. | Confirmation, or an eligible offer. |
-| Final offer | Show at most one eligible alternative after feedback. Do not restart the offer sequence after refusal. | Explicit acceptance, or confirmation. |
+| Feedback | Ask an optional follow-up based on the selected reason. Use neutral prompts and a Skip action. | An eligible final offer, or impact review. |
+| Final offer | Show at most one eligible alternative after feedback. Do not restart the offer sequence after refusal. | Explicit acceptance, or impact review. |
 | Confirmation | Summarize the subscription, effective date, final charge, access, and data policy. Provide a clear Cancel subscription action. | A pending result, success, or a retryable error. |
 | Completion | Show the confirmed cancellation date and remaining access. Show reactivation or support only when supported. | Return to billing or the account. |
 
 Feedback and offers must never become required steps. Use neutral decline labels,
 such as “Continue cancellation.” Avoid guilt messages such as “I don't need customers.”
+Show the applicable proration and refund terms before confirmation.
 
 Closing the flow changes nothing unless the user already confirms a billing action.
 Preserve progress during errors. Do not repeat an accepted or declined offer on Back.
@@ -97,7 +102,8 @@ Return a version on reads. Require the expected version on updates to prevent lo
 Validate unique reason IDs, routes, limits, lengths, locales, and allowed metric keys.
 Accept only approved HTTPS destinations or existing internal routes.
 Resolve billing references on the server. Do not accept arbitrary discounts from a customer.
-Audit the actor, site, time, version, and changed fields for each update.
+Audit the actor, site, time, version, and changed fields for each update and reset.
+Restrict history reads to authorized site administrators.
 Restrict feedback access and apply the product's retention policy.
 
 Ship defaults for every paid site. Permit site overrides through the settings service.
@@ -150,7 +156,10 @@ Verify these cases:
 - Verify paid access and stored data match the stated effective date and policy.
 - Edit each field group through API, CLI, and MCP as a site administrator.
 - Read the edited values through the other surfaces and in a fresh browser session.
-- Reject unauthorized writes, cross-site reads, invalid references, and stale versions.
+- Reject unauthorized writes through each admin surface and unauthorized history reads.
+- Reject cross-site reads, invalid references, and stale versions.
+- Reject cancellation by a signed-in user who does not own billing.
+- Change configuration during the flow and verify the user sees the new terms before consent.
 - Verify distinct effective reasons and value messages for every paid site.
 - Verify keyboard navigation, focus restoration, small screens, and readable error states.
 

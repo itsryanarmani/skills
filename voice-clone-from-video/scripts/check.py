@@ -36,7 +36,7 @@ def pitch(x):
 
 
 def words(text):
-    return re.findall(r"[a-z0-9']+", text.lower())
+    return re.findall(r"[\w']+", text.lower())   # Unicode words, so no script is dropped
 
 
 def transcript(path):
@@ -61,8 +61,9 @@ if t is None:
     sys.exit(2)
 want, got = words(text), words(t)
 res["transcript"] = " ".join(got)
-res["word_match"] = round(difflib.SequenceMatcher(None, want, got).ratio(), 2)  # order and counts matter
-res["words_ok"] = bool(want) and res["word_match"] >= 0.9
+ratio = difflib.SequenceMatcher(None, want, got).ratio()  # order and counts matter
+res["word_match"] = round(ratio, 2)
+res["words_ok"] = bool(want) and ratio >= 0.9   # test the unrounded value
 res["pass"] = res["pitch_ok"] and res["words_ok"]
 print(json.dumps(res, indent=2))
 sys.exit(0 if res["pass"] else 1)

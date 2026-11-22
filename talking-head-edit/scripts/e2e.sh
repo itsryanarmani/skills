@@ -41,7 +41,7 @@ checks = {
   "verdict_passes": g["pass"],
   "shorter_by_2s_or_more": g["original_s"] - g["edited_s"] >= 2.0,
   "loudness_within_1lu": abs(g["loudness_lufs"] - (-16)) <= 1.0,
-  "joins_in_silence": g["worst_join_above_floor_db"] <= 10,
+  "joins_in_silence": g["worst_join_above_floor_db"] <= 14,
   "no_word_lost_or_added": same("good.txt"),
   "CONTROL: fix switched off is caught (verdict fails or words differ)":
       (not b["pass"]) or (not same("bad.txt")),

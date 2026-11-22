@@ -18,7 +18,7 @@ asr() {  # audio.wav -> word json in $work/$2
     --initial_prompt "${PROMPT:-}" --output_format json --output_dir "$work/$2" --verbose False >/dev/null 2>&1
 }
 
-ffmpeg -loglevel error -y -i "$in" -vn -ac 1 -ar 16000 "$work/a.wav"; stage extract
+ffmpeg -loglevel error -y -i "$in" -map 0:a:0 -ac 1 -ar 16000 "$work/a.wav"; stage extract
 asr "$work/a.wav" src; stage transcribe
 python3 -I "$here/edit.py" "$in" "$out" --words "$work/src/a.json" \
   --report "${out%.*}.report.json" "$@" >/dev/null; stage edit

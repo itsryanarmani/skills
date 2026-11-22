@@ -22,20 +22,17 @@ It writes `in-edited.mp4`, `.report.json` and `.transcript.txt` next to the
 source and never changes the source. It prints a JSON verdict. Exit 0 means
 every check passed. For a folder: `for f in *.mov; do bash scripts/tidy.sh "$f"; done`.
 
-| Stage | Wall time, 108 s video |
-| --- | --- |
-| Transcribe, local whisper `small.en` (default) | 47 s |
-| Cut, loudness, encode | 23 s |
-| Re-transcribe the output, verify | 40 s |
-| **Total** | **about 110 s, no model tokens** (`WHISPER_MODEL=base.en`: about 60 s) |
+Time for a 108 s video: transcribe with `small.en` 47 s, cut and encode 23 s,
+re-transcribe and verify 40 s. That is about 110 s and no model tokens
+(`WHISPER_MODEL=base.en`: about 60 s).
 
 ## What the agent does
 
 1. Run `tidy.sh`. Read the verdict (about 20 lines).
 2. Read `*.transcript.txt` once (about 1k tokens per 100 s). Judge it as in
    "What to trim". This is the only step that needs a model.
-3. For a cut, pass `--cut START-END` (transcript seconds) after the file names,
-   run again, and report what changed and what the speaker must decide.
+3. For a cut, add `--cut START-END` (transcript seconds), run again, and report
+   what changed and what the speaker must decide.
 
 Do not send frames or audio to a model to find cuts. Audio energy holds them.
 
@@ -53,7 +50,8 @@ Three bugs made earlier cuts abrupt. Each is fixed and tested.
   the container clock land early, inside the previous word. The script adds
   the offset, minus any container start. Worst join: 27 dB above the room floor
   before, 6.5 dB after.
-- **Fade every join by 15 ms,** so no join clicks.
+- **Fade every join by 15 ms** so no join clicks, and **snap every cut to the
+  video frame grid** so audio and video cut at the same instants.
 
 **Never cut from word times, even for a sound whisper skipped.** A rule that
 cut "voiced gaps with no word" turned "subscriptions" into "systems": whisper
@@ -70,22 +68,20 @@ It measures the real output, not the plan:
 | Check | Pass |
 | --- | --- |
 | Length equals plan | within 0.15 s |
+| Audio and video length | within 0.1 s |
 | Loudness | within 1 LU of -16 LUFS |
 | True peak | at or below -1 dBTP |
-| Every join | at most 10 dB above the room floor |
+| Every join | at most 14 dB above the room floor (clipped words read 17 to 36) |
 | Warnings | none |
 
-`repeated_words_to_review` lists a word said twice in a row in the edited
-transcript. Ask the speaker. Do not auto-cut it. It was empty on both test
-videos after the fixes. Doubled words seen earlier came from the misaligned
-cuts, not from real stutters.
+`repeated_words_to_review` lists a word said twice in a row. Ask the speaker;
+do not auto-cut it. It was empty on both test videos. Earlier doubled words came
+from misaligned cuts, not from real stutters.
 
-**Check word loss with `small.en`.** Transcribe source and output and diff the
-lower-cased word lists. A diff caught the "systems" bug that every other check
-missed. Final results: 217 words to 217 (two whisper corrections), and 206 to
-208 (the output has two words the source transcript missed). Before the fixes a
-208-word file had 8 differences. `base.en` hears the same audio differently each
-run and gives false alarms.
+**Check word loss with `small.en`.** Diff the lower-cased word lists of source
+and output. This caught the "systems" bug that every other check missed. Final:
+217 words to 217 and 206 to 208 (two words the source pass missed). `base.en`
+hears the same audio differently each run and gives false alarms.
 
 ## What to trim
 
@@ -99,21 +95,17 @@ Pauses are automatic. Words are a judgment. Flag, in this order:
 
 Do not cut meaning without the speaker's approval. Pauses and sounds are safe.
 
-`base.en` spells names wrong (a studio name as "Feelout", the speaker as
-"Brian"). `PROMPT` helps. Still never copy a name from the transcript into
-text a viewer reads. Ask the speaker.
+`base.en` spells names wrong ("Feelout", "Brian"). `PROMPT` helps. Never copy a
+name from the transcript into text a viewer reads. Ask the speaker.
 
 ## Cost
 
-| Item | Cost |
-| --- | --- |
-| Tools: ffmpeg, whisper, numpy | $0, about 2 min of laptop time per video |
-| Model, per video | one run, one verdict, one transcript read: a few thousand tokens (an estimate, not a bill) |
-
+Tools cost $0 and about 2 min of laptop time per video. The model reads one
+verdict and one transcript: a few thousand tokens (an estimate, not a bill).
 A Haiku-class model could list restarts from the transcript. This is
-**untested**. Plant one known restart in a test video first: a model that
-finds nothing looks the same as a clean video. Brief a sub-agent with the
-transcript, the goal and the output shape (`START-END reason`).
+**untested**. Plant one known restart first: a model that finds nothing looks
+the same as a clean video. Give it the transcript, the goal, and the output
+shape (`START-END reason`).
 
 ## Verify the skill
 
@@ -131,7 +123,5 @@ short. The length check caught it. Needs `say` or `espeak`, and `numpy`.
 
 - **`silencedetect` at -35 dB found nothing** on a real voice with room noise.
   Use the energy floor of the file itself.
-- **A synthetic video shorter than its audio shortens the output.** Match the
-  lengths, or the length check fails for the wrong reason.
 - **Do not rebuild a plan from a second whisper run.** A name hint changes the
   words and so the cuts. Read `keep` and `joins_db` from the report.

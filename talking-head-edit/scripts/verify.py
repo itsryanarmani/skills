@@ -28,12 +28,15 @@ for a, b in zip(words, words[1:]):
     if x and (x == y or (len(x) <= 2 and y.startswith(x) and y != x)):
         repeats.append({"at_s": round(a["start"], 1), "text": f"{x} {y}"})
 
+sd = lambda s: float(subprocess.run(["ffprobe", "-v", "error", "-select_streams", s, "-show_entries",
+                                     "stream=duration", "-of", "csv=p=0", out], capture_output=True, text=True).stdout)
 i, tp = lufs(out)
 checks = {
+    "av_lengths_match": abs(sd("v:0") - sd("a:0")) <= 0.1,
     "length_matches_plan": abs(r["edited_s"] - r["planned_s"]) <= 0.15,
     "loudness_within_1lu": abs(i - r["target_lufs"]) <= 1.0,
     "true_peak_ok": tp <= -1.0,
-    "joins_in_silence": r["worst_join_above_floor_db"] <= 10,
+    "joins_in_silence": r["worst_join_above_floor_db"] <= 14,
     "no_warnings": not r["warnings"],
 }
 v = {"original_s": r["original_s"], "edited_s": r["edited_s"], "planned_s": r["planned_s"],

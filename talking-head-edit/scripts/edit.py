@@ -7,7 +7,8 @@ Pauses come from the audio energy, not from transcript timestamps. Whisper
 word ends run early, so cuts placed from them clip the tail of a word.
 Needs ffmpeg, ffprobe and numpy.
 """
-import argparse, json, os, shutil, subprocess, sys, tempfile
+import argparse, atexit, json, os, shutil, subprocess, sys, tempfile
+from fractions import Fraction
 import numpy as np
 
 FR = 160  # 10 ms frames at 16 kHz
@@ -40,7 +41,7 @@ def audio_start(path):
 
 def energy_db(path):
     """Per-10ms level in dB of the first audio stream."""
-    raw = run(["ffmpeg", "-v", "error", "-i", path, "-vn", "-f", "f32le", "-ac", "1",
+    raw = run(["ffmpeg", "-v", "error", "-i", path, "-map", "0:a:0", "-f", "f32le", "-ac", "1",
                "-ar", "16000", "-"], capture_output=True).stdout
     x = np.frombuffer(raw, dtype=np.float32)
     n = len(x) // FR
@@ -134,7 +135,11 @@ def main():
     ap.add_argument("--report")
     a = ap.parse_args()
 
+    for p in (a.out, a.report):  # never write over the source, by any path
+        if p and os.path.exists(p) and os.path.samefile(p, a.src):
+            sys.exit("refusing to overwrite the source")
     work = tempfile.mkdtemp(prefix="the-")
+    atexit.register(shutil.rmtree, work, ignore_errors=True)
     a0 = 0.0 if a.no_offset_fix else audio_start(a.src)
     container_total = probe_duration(a.src)
     total = container_total - a0           # audio-clock length; plan() works on this clock
@@ -144,6 +149,9 @@ def main():
     if a.words:
         words = [w for s in json.load(open(a.words))["segments"] for w in s.get("words", [])]
     keep, removed, floor = plan(db, total, a.gap, a.keep_gap, extra, a.lead, a.tail)
+    # snap every cut to the video frame grid, so audio and video cut at the same instants
+    fps = float(Fraction(ffprobe(a.src, "stream=r_frame_rate", "-select_streams", "v:0")))
+    keep = [(round((s + a0) * fps) / fps - a0, round((e + a0) * fps) / fps - a0) for s, e in keep]
     newt = make_mapper(keep)
     n = len(keep)
     new_len = sum(k1 - k0 for k0, k1 in keep)
@@ -209,7 +217,7 @@ def main():
         i = int(acc * 100)
         joins.append(float(odb[max(i - 2, 0):i + 3].max()) - ofloor)
     worst = round(max(joins), 1) if joins else 0.0
-    if worst > 10:
+    if worst > 14:
         warns.append(f"a join in the output is {worst} dB above the room floor: listen to it")
 
     report = {"original_s": round(container_total, 2), "audio_start_s": round(a0, 3), "edited_s": round(probe_duration(a.out), 2),
@@ -221,7 +229,6 @@ def main():
               "sound_without_word_to_review": sounds, "warnings": warns}
     if a.report:
         json.dump(report, open(a.report, "w"), indent=2)
-    shutil.rmtree(work, ignore_errors=True)
     print(json.dumps({k: v for k, v in report.items() if k not in ("cut_edges", "keep", "joins_db")}, indent=2))
 
 

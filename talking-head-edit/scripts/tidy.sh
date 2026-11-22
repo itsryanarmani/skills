@@ -10,7 +10,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 in="$1"; shift
 out="${1:-}"; if [[ -n "$out" && "$out" != --* ]]; then shift; else out="${in%.*}-edited.mp4"; fi
-[[ "$in" -ef "$out" ]] && { echo "refusing to overwrite the source" >&2; exit 2; }
+for f in "$out" "${out%.*}".{report.json,transcript.txt}; do [[ "$in" -ef "$f" ]] && { echo "refusing to overwrite the source" >&2; exit 2; }; done
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT; t0=$(date +%s)
 stage() { echo "  $1: $(( $(date +%s) - t0 ))s" >&2; t0=$(date +%s); }
 asr() {  # audio.wav -> word json in $work/$2

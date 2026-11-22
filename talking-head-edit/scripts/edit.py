@@ -149,7 +149,7 @@ def main():
     if a.words:
         words = [w for s in json.load(open(a.words))["segments"] for w in s.get("words", [])]
     keep, removed, floor = plan(db, total, a.gap, a.keep_gap, extra, a.lead, a.tail)
-    # snap every cut to the video frame grid, so audio and video cut at the same instants
+    # snap cuts to a 1/fps grid, trim video half a frame early. Cut by TIME, never frame number.
     fps = float(Fraction(ffprobe(a.src, "stream=r_frame_rate", "-select_streams", "v:0")))
     keep = [(round((s + a0) * fps) / fps - a0, round((e + a0) * fps) / fps - a0) for s, e in keep]
     newt = make_mapper(keep)
@@ -186,7 +186,7 @@ def main():
             fx += f",afade=t=in:st=0:d={f}"
         if i < n - 1:
             fx += f",afade=t=out:st={e - s - f:.3f}:d={f}"
-        parts.append(f"[0:a]atrim={s + a0:.3f}:{e + a0:.3f},asetpts=PTS-STARTPTS{fx}[a{i}];")
+        parts.append(f"[0:a]atrim={s + a0:.6f}:{e + a0:.6f},asetpts=PTS-STARTPTS{fx}[a{i}];")
     cat = "".join(f"[a{i}]" for i in range(n)) + f"concat=n={n}:v=0:a=1,highpass=f=80[ac]"
     cut_wav, norm_wav = f"{work}/cut.wav", f"{work}/norm.wav"
     run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", a.src, "-vn",
@@ -199,14 +199,14 @@ def main():
          "-af", ln, "-ar", "48000", norm_wav])
 
     # video: cut with the same offset-corrected times
-    chain = "".join(f"[0:v]trim={s + a0:.3f}:{e + a0:.3f},setpts=PTS-STARTPTS[v{i}];"
+    chain = "".join(f"[0:v]trim={s + a0 - 0.5 / fps:.6f}:{e + a0 - 0.5 / fps:.6f},setpts=PTS-STARTPTS[v{i}];"
                     for i, (s, e) in enumerate(keep))
     chain += "".join(f"[v{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc]"
     inputs = ["-i", a.src, "-i", norm_wav]
     run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y"] + inputs +
         ["-filter_complex", chain, "-map", "[vc]", "-map", "1:a",
          "-c:v", "libx264", "-crf", a.crf, "-preset", a.preset, "-pix_fmt", "yuv420p",
-         "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", a.out])
+         "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", a.out])
 
     # measure the OUTPUT at every join: it must be as quiet as the room
     odb = energy_db(a.out)

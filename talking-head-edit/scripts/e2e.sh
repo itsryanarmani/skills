@@ -6,7 +6,7 @@
 # Needs macOS `say` (or espeak), ffmpeg, whisper, python3 + numpy.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
-work="$(mktemp -d)"; verdict="${1:-$work/verdict.json}"
+work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT; verdict="${1:-$work/verdict.json}"
 [[ "$verdict" = /* ]] || verdict="$PWD/$verdict"
 cd "$work"
 

@@ -5,7 +5,7 @@
 
 Passes when the median pitch is within 15% of the sample and the transcript of the
 generated audio matches the text in order (90% sequence match). Needs ffmpeg, numpy,
-whisper-cli and a ggml model. With no model it FAILS CLOSED (exit 2): an unchecked
+whisper-cli and a ggml model. With no model, or a failed run, it FAILS CLOSED (exit 2): an unchecked
 transcript is not a pass.
 """
 import difflib, json, os, re, subprocess, sys, tempfile
@@ -46,7 +46,8 @@ def transcript(path):
     with tempfile.TemporaryDirectory() as d:
         wav = os.path.join(d, "g.wav")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-ac", "1", "-ar", "16000", wav], check=True)
-        return subprocess.run(["whisper-cli", "-m", model, "-f", wav, "-nt", "-np"], capture_output=True, text=True).stdout
+        r = subprocess.run(["whisper-cli", "-m", model, "-f", wav, "-nt", "-np"], capture_output=True, text=True)
+        return r.stdout if r.returncode == 0 else None   # a crashed transcription is not evidence
 
 
 sample, gen, text = sys.argv[1:4]
@@ -56,7 +57,7 @@ res = {"sample_pitch_hz": [round(v) for v in ps], "generated_pitch_hz": [round(v
        "pitch_ratio": round(pg[0] / ps[0], 2) if ps[0] else None}
 res["pitch_ok"] = bool(ps[0] and abs(pg[0] / ps[0] - 1) <= 0.15)
 if t is None:
-    res.update(transcript="no whisper-cli model, so the words are unchecked", words_ok=None, pass_=False)
+    res.update(transcript="no whisper-cli model, or it failed, so the words are unchecked", words_ok=None, pass_=False)
     print(json.dumps({("pass" if k == "pass_" else k): v for k, v in res.items()}, indent=2))
     sys.exit(2)
 want, got = words(text), words(t)

@@ -7,6 +7,7 @@
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 work="$(mktemp -d)"; verdict="${1:-$work/verdict.json}"
+[[ "$verdict" = /* ]] || verdict="$PWD/$verdict"
 cd "$work"
 
 text='Hello this is a test clip. [[slnc 2500]] The middle part has a long pause before it. [[slnc 2500]] And this is the end of the clip.'
@@ -37,6 +38,7 @@ rd = lambda p: open(p).read().split()
 same = lambda p: rd("before.txt") == rd(p)
 checks = {
   "input_audio_starts_late (test is meaningful)": off >= 0.25,
+  "verdict_passes": g["pass"],
   "shorter_by_2s_or_more": g["original_s"] - g["edited_s"] >= 2.0,
   "loudness_within_1lu": abs(g["loudness_lufs"] - (-16)) <= 1.0,
   "joins_in_silence": g["worst_join_above_floor_db"] <= 10,

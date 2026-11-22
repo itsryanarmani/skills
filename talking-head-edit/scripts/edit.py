@@ -7,7 +7,7 @@ Pauses come from the audio energy, not from transcript timestamps. Whisper
 word ends run early, so cuts placed from them clip the tail of a word.
 Needs ffmpeg, ffprobe and numpy.
 """
-import argparse, json, os, subprocess, sys, tempfile
+import argparse, json, os, shutil, subprocess, sys, tempfile
 import numpy as np
 
 FR = 160  # 10 ms frames at 16 kHz
@@ -29,9 +29,11 @@ def probe_duration(path):
 def audio_start(path):
     """Seconds the audio starts after the container clock (often 0.1-0.2 s). ffmpeg
     trims on the container clock; energy frames start at audio sample 0. Without
-    this offset every cut lands early, inside the tail of the previous word."""
+    this offset every cut lands early, inside the tail of the previous word.
+    ffmpeg also shifts the clock by the container start, so subtract it."""
     try:
-        return float(ffprobe(path, "stream=start_time", "-select_streams", "a:0"))
+        return (float(ffprobe(path, "stream=start_time", "-select_streams", "a:0"))
+                - float(ffprobe(path, "format=start_time")))
     except ValueError:
         return 0.0
 
@@ -116,7 +118,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("src")
     ap.add_argument("out")
-    ap.add_argument("--words", help="whisper JSON: also cuts voiced gaps with no word")
+    ap.add_argument("--words", help="whisper JSON: only used to flag sounds with no word")
     ap.add_argument("--cut", action="append", default=[], help="extra removal START-END seconds")
     ap.add_argument("--gap", type=float, default=0.5, help="shorten silences longer than this")
     ap.add_argument("--keep-gap", type=float, default=0.3, help="silence left after a cut")
@@ -219,6 +221,7 @@ def main():
               "sound_without_word_to_review": sounds, "warnings": warns}
     if a.report:
         json.dump(report, open(a.report, "w"), indent=2)
+    shutil.rmtree(work, ignore_errors=True)
     print(json.dumps({k: v for k, v in report.items() if k not in ("cut_edges", "keep", "joins_db")}, indent=2))
 
 

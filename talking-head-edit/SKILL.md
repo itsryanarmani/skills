@@ -9,8 +9,8 @@ One command edits a talking-head video: it cuts dead air, sets loudness, then
 measures its own output. No model runs during the edit. Measured November 2026
 on two 1080p ProRes files (97 s and 108 s), Apple-silicon laptop.
 
-For short vertical ads use `ad-video-editing`. For product demos use
-`ship-demo-video`. This skill adds no graphics: no cards, titles or callouts.
+For short vertical ads use `ad-video-editing`; for product demos,
+`ship-demo-video`. This skill adds no graphics.
 
 ## Run it
 
@@ -34,12 +34,10 @@ every check passed. For a folder: `for f in *.mov; do bash scripts/tidy.sh "$f";
 1. Run `tidy.sh`. Read the verdict (about 20 lines).
 2. Read `*.transcript.txt` once (about 1k tokens per 100 s). Judge it as in
    "What to trim". This is the only step that needs a model.
-3. For a cut, pass `--cut START-END` (transcript seconds) after the file names
-   and run again.
-4. Report what changed and what the speaker must decide.
+3. For a cut, pass `--cut START-END` (transcript seconds) after the file names,
+   run again, and report what changed and what the speaker must decide.
 
-Do not send frames or audio to a model to find cuts. The audio energy holds
-them. A talking head needs no frame review.
+Do not send frames or audio to a model to find cuts. Audio energy holds them.
 
 ## How the cuts stay smooth
 
@@ -53,7 +51,8 @@ Three bugs made earlier cuts abrupt. Each is fixed and tested.
 - **Add the audio start offset.** In real camera files the audio starts 0.12
   to 0.17 s after the video. Cuts measured on the audio clock but trimmed on
   the container clock land early, inside the previous word. The script adds
-  the offset. Worst join: 27 dB above the room floor before, 6.5 dB after.
+  the offset, minus any container start. Worst join: 27 dB above the room floor
+  before, 6.5 dB after.
 - **Fade every join by 15 ms,** so no join clicks.
 
 **Never cut from word times, even for a sound whisper skipped.** A rule that
@@ -74,7 +73,7 @@ It measures the real output, not the plan:
 | Loudness | within 1 LU of -16 LUFS |
 | True peak | at or below -1 dBTP |
 | Every join | at most 10 dB above the room floor |
-| Warnings | none (a cut edge on voice is a warning) |
+| Warnings | none |
 
 `repeated_words_to_review` lists a word said twice in a row in the edited
 transcript. Ask the speaker. Do not auto-cut it. It was empty on both test
@@ -110,15 +109,11 @@ text a viewer reads. Ask the speaker.
 | --- | --- |
 | Tools: ffmpeg, whisper, numpy | $0, about 2 min of laptop time per video |
 | Model, per video | one run, one verdict, one transcript read: a few thousand tokens (an estimate, not a bill) |
-| Model, first build | tens of tool calls, mostly finding the bugs above |
 
 A Haiku-class model could list restarts from the transcript. This is
 **untested**. Plant one known restart in a test video first: a model that
 finds nothing looks the same as a clean video. Brief a sub-agent with the
 transcript, the goal and the output shape (`START-END reason`).
-
-Encoder: use `libx264 -crf 20 -preset veryfast`. On 30 s of ProRes it took 4.9 s;
-`medium` took 8.9 s; hardware `h264_videotoolbox` gained nothing.
 
 ## Verify the skill
 

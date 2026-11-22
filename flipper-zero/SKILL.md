@@ -1,6 +1,6 @@
 ---
 name: flipper-zero
-description: "Use when answering Flipper Zero storage, official app install, or lawful use questions. Covers microSD sizing, qFlipper and Flipper Lab installs, defensive tools, and own-device NFC, IR, and Sub-GHz checks."
+description: "Use when answering Flipper Zero storage, official app install, or lawful use questions. Covers microSD sizing, qFlipper and Flipper Lab installs, defensive tools, and own-device NFC, IR, and Sub-GHz checks. For the Wi‑Fi dev board, Marauder flash, or DFU recovery, use flipper-wifi-devboard."
 ---
 
 # flipper-zero
@@ -42,7 +42,7 @@ Flipper Zero is a handheld radio and hardware tool. Use it on your own devices a
 
 - Prefer catalog builds over random GitHub builds. Catalog builds match your firmware.
 - Do not sideload radio-transmit, BadUSB, or ESP32 tools from untrusted forks.
-- If an app needs an ESP32 board, buy the official Wi-Fi dev board.
+- If an app needs an ESP32 board, buy the official Wi-Fi dev board. For flashing Marauder, download mode, or Blackmagic vs Marauder, use [flipper-wifi-devboard](../flipper-wifi-devboard/SKILL.md).
 
 ## Lawful categories
 

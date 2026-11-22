@@ -27,13 +27,13 @@ def probe_duration(path):
     return float(ffprobe(path, "format=duration"))
 
 
-def audio_start(path):
-    """Seconds the audio starts after the container clock (often 0.1-0.2 s). ffmpeg
-    trims on the container clock; energy frames start at audio sample 0. Without
-    this offset every cut lands early, inside the tail of the previous word.
-    ffmpeg also shifts the clock by the container start, so subtract it."""
+def stream_start(path, sel):
+    """Seconds a stream starts after the container clock (audio often 0.1-0.2 s). ffmpeg
+    trims on the container clock; energy frames start at audio sample 0. Without this
+    offset every cut lands early, inside the tail of the previous word. ffmpeg also
+    shifts the clock by the container start, so subtract it."""
     try:
-        return (float(ffprobe(path, "stream=start_time", "-select_streams", "a:0"))
+        return (float(ffprobe(path, "stream=start_time", "-select_streams", sel))
                 - float(ffprobe(path, "format=start_time")))
     except ValueError:
         return 0.0
@@ -63,6 +63,7 @@ def snap(db, t, reach=0.08):
 
 
 def plan(db, total, gap, keep_gap, extra, lead, tail):
+    db = db[:int(total * 100)]   # nothing past the shorter track
     floor = float(np.percentile(db, 10))
     half = keep_gap / 2
     n = len(db)
@@ -77,7 +78,8 @@ def plan(db, total, gap, keep_gap, extra, lead, tail):
                 remove.append((s / 100 + tail, total))
         else:
             remove.append((s / 100 + half, e / 100 - half))
-    remove += [(snap(db, a), snap(db, b)) for a, b in extra]
+    cap = total - 0.02   # a manual cut past the shorter track is clipped to it
+    remove += [(snap(db, min(a, cap)), snap(db, min(b, cap))) for a, b in extra]
     merged = []
     for r in sorted(r for r in remove if r[1] - r[0] > 0.02):
         if merged and r[0] <= merged[-1][1] + 0.02:
@@ -140,16 +142,25 @@ def main():
             sys.exit("refusing to overwrite the source")
     work = tempfile.mkdtemp(prefix="the-")
     atexit.register(shutil.rmtree, work, ignore_errors=True)
-    a0 = 0.0 if a.no_offset_fix else audio_start(a.src)
+    a0 = 0.0 if a.no_offset_fix else stream_start(a.src, "a:0")
+    v0 = stream_start(a.src, "v:0")
     container_total = probe_duration(a.src)
-    total = container_total - a0           # audio-clock length; plan() works on this clock
+    # end at the shorter track, on the audio clock that plan() uses; a longer video tail has no audio
+    ends = [container_total]
+    for sel, shift in (("v:0", v0), ("a:0", a0)):
+        try:
+            ends.append(shift + float(ffprobe(a.src, "stream=duration", "-select_streams", sel)))
+        except ValueError:
+            pass
+    total = min(ends) - a0
     db = energy_db(a.src)
     extra = [tuple(float(x) for x in c.split("-")) for c in a.cut]
     words = None
     if a.words:
         words = [w for s in json.load(open(a.words))["segments"] for w in s.get("words", [])]
     keep, removed, floor = plan(db, total, a.gap, a.keep_gap, extra, a.lead, a.tail)
-    # snap cuts to a 1/fps grid, trim video half a frame early. Cut by TIME, never frame number.
+    # snap cuts to a 1/fps grid. Convert to constant frame rate first, then cut by frame number:
+    # a variable-rate source loses frames under a time cut and drifts out of sync.
     fps = float(Fraction(ffprobe(a.src, "stream=r_frame_rate", "-select_streams", "v:0")))
     keep = [(round((s + a0) * fps) / fps - a0, round((e + a0) * fps) / fps - a0) for s, e in keep]
     newt = make_mapper(keep)
@@ -199,7 +210,7 @@ def main():
          "-af", ln, "-ar", "48000", norm_wav])
 
     # video: cut with the same offset-corrected times
-    chain = "".join(f"[0:v]trim={s + a0 - 0.5 / fps:.6f}:{e + a0 - 0.5 / fps:.6f},setpts=PTS-STARTPTS[v{i}];"
+    chain = "".join(f"[0:v]fps={fps:.5f}:start_time=0,trim=start_frame={round((s + a0) * fps)}:end_frame={round((e + a0) * fps)},setpts=PTS-STARTPTS[v{i}];"
                     for i, (s, e) in enumerate(keep))
     chain += "".join(f"[v{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc]"
     inputs = ["-i", a.src, "-i", norm_wav]

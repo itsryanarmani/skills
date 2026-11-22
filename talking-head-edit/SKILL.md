@@ -70,7 +70,7 @@ It measures the real output, not the plan:
 | Check | Pass |
 | --- | --- |
 | Length equals plan | within 0.15 s |
-| Audio and video length | within 0.1 s |
+| Audio and video length | within 0.07 s (two frames) |
 | Loudness | within 1 LU of -16 LUFS |
 | True peak | at or below -1 dBTP |
 | Every join | at most 14 dB above the room floor (clipped words read 17 to 36) |
@@ -124,8 +124,13 @@ short. The length check caught it. Needs `say` or `espeak`, and `numpy`.
 ## Traps
 
 - **`silencedetect` at -35 dB found nothing** on a real voice. Use the file's own energy floor.
-- **Cut video by time, never by frame number.** A file averaging 28.97 fps under
-  a 30 fps label drifted 3 s, and `-shortest` hid it. Without it, lengths show drift.
+- **Convert to constant frame rate, then cut by frame number.** Raw frame numbers
+  drifted 3 s on a file averaging 28.97 fps under a 30 fps label. Time cuts lost 7
+  frames on a 28.76 fps file with gaps (0.23 s of drift). `-shortest` hid both.
+  Without it, audio and video lengths show drift. Use `fps=30:start_time=0`: without
+  `start_time=0` a video that starts late was cut about 9 frames off, while the lengths
+  still matched. End the plan at the shorter track: audio 7.6 s past the video left a
+  4.2 s gap. A stream with no `duration` (some mkv) falls back to the container length.
 - **whisper-cli needs `-nfa -dtw MODEL -mc 0`.** Its plain word times smooth over
   a pause and hide the flag. `-dtw` restores them, but needs flash attention off.
   Then it dropped a whole phrase until `-mc 0`. `-mc 0` also hears "uh" and a

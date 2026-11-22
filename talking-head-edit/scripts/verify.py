@@ -32,7 +32,7 @@ sd = lambda s: float(subprocess.run(["ffprobe", "-v", "error", "-select_streams"
                                      "stream=duration", "-of", "csv=p=0", out], capture_output=True, text=True).stdout)
 i, tp = lufs(out)
 checks = {
-    "av_lengths_match": abs(sd("v:0") - sd("a:0")) <= 0.1,
+    "av_lengths_match": abs(sd("v:0") - sd("a:0")) <= 0.07,
     "length_matches_plan": abs(r["edited_s"] - r["planned_s"]) <= 0.15,
     "loudness_within_1lu": abs(i - r["target_lufs"]) <= 1.0,
     "true_peak_ok": tp <= -1.0,

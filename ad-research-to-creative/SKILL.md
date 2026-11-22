@@ -79,3 +79,6 @@ Rules:
 
 ## Worked example
 A directory site, 2026-11-10: about 800 live ads read for one topic, 33 contractor advertisers found, one free-guide ad in the whole set, and no guide ads aimed at the premium segment. Keep project names, products and hooks in a private notes file, not here.
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`ad-creative-templates/impulse-formats.md`](../ad-creative-templates/impulse-formats.md). That shared reference contains the ranked table, launch-first rotation rule, WaveSpeed CLI usage (key from `WAVESPEED_API_KEY` only), and the creative rules (blurry lo-fi 2000s phone-photo people; no header/footer/logo; never text-only; plain STE-100 copy; no invented testimonials). Economics ladder (free checklist → guide → kit) cross-references the ROAS ranking. WaveSpeed model picks from `impulse-formats.md` §3. Creative rules from `impulse-formats.md` §4 restated.

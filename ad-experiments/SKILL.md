@@ -85,3 +85,6 @@ Seeding a lookalike sends your customers' (hashed) emails to a third party, and 
 - If the ad-ops service must read your product's user warehouse to build the seed, grant **least-privilege and cross-project**: dataset-level READER on the source warehouse + a job-runner role on the consumer's *own* project. A project-wide grant is more access than the job needs.
 
 See the per-platform skills for wiring up that server-side tracking and campaign setup: `ads-google`, `ads-meta`, `ads-reddit`.
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`ad-creative-templates/impulse-formats.md`](../ad-creative-templates/impulse-formats.md). That shared reference contains the launch-first rotation rule (first wave: Notes, iMessage, blurred guide screenshot + lo-fi UGC selfie; first swaps: us-vs-them and whiteboard; second wave: Zack D and stickman). Kill gate from `impulse-formats.md` §2: judge on CTR, CPC, and landing-page views; do not claim ROAS winner until Stripe purchases or verified leads exist. If CTR healthy and sales/leads zero, stop swapping formats and fix the landing page. Budget sizing: $50 test reads CPC/CTR, not ROAS (needs ~25-30 conversions, often $300-750 per arm).

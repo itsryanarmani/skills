@@ -124,3 +124,6 @@ and model ids change.
 - `references/providers.md` — cheapest working models and prices, dated and
   marked verified or unverified.
 - `references/failures.md` — every failure hit and the fix.
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`ad-creative-templates/impulse-formats.md`](../ad-creative-templates/impulse-formats.md). That shared reference contains the ranked table, launch-first rotation rule, WaveSpeed CLI usage (key from `WAVESPEED_API_KEY` only), and the creative rules (blurry lo-fi 2000s phone-photo people; no header/footer/logo; never text-only; plain STE-100 copy; no invented testimonials). The camera-and-era-first prompt rule is cross-linked (no overwrite of verified model notes). Model picks from `impulse-formats.md` §3 (Seedream 5.5, Z-Image Turbo, Recraft Flash, Nano Banana 2 Lite, Wan 2.2). ffmpeg degrade recipe referenced.

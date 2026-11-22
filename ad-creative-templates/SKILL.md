@@ -107,3 +107,6 @@ If the real data isn't there, the honest move is a different style — not a pla
 - **A bespoke renderer per style.** One `render()` + a data loop. Add machinery only when volume proves you need it.
 
 Pairs with: `ad-creative-generation` (photoreal scenes, and the gen-vs-template rule), `app-screenshots` (capturing real product UI to drop into product-UI-in-context ads), `ad-experiments` (which styles/angles to test and how to judge them).
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`impulse-formats.md`](impulse-formats.md). That shared reference contains the ranked table, launch-first rotation rule, WaveSpeed CLI usage (key from `WAVESPEED_API_KEY` only), and the creative rules (blurry lo-fi 2000s phone-photo people; no header/footer/logo; never text-only; plain STE-100 copy; no invented testimonials). The iMessage/Notes/ChatGPT HTML templates in Part A remain the canonical pipeline for text/UI-heavy styles.

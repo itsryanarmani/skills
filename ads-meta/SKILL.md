@@ -241,3 +241,6 @@ Official references checked 2026-08-11:
 - [Meta Conversions API](https://developers.facebook.com/docs/marketing-api/conversions-api/)
 - [Meta Pixel](https://developers.facebook.com/docs/meta-pixel/)
 - [Custom Audiences](https://developers.facebook.com/docs/marketing-api/audiences/)
+
+## Ranked Meta ad formats — cross-reference
+For the 12 ranked formats, ROAS ranking table, WaveSpeed model picks, and creative rules, see [`ad-creative-templates/impulse-formats.md`](../ad-creative-templates/impulse-formats.md). That shared reference contains the honesty rules (no fabricated testimonials, no deceptive pricing, no fake interface, no invented stats). Tracking setup cross-references the honesty rules: no fake buttons, fake notification badges, or fake platform marks. Meta's current rules on labelling AI-generated images checked before launch.

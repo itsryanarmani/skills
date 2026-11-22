@@ -22,9 +22,11 @@ It writes `in-edited.mp4`, `.report.json` and `.transcript.txt` next to the
 source and never changes the source. It prints a JSON verdict. Exit 0 means
 every check passed. For a folder: `for f in *.mov; do bash scripts/tidy.sh "$f"; done`.
 
-Time for a 108 s video: transcribe with `small.en` 47 s, cut and encode 23 s,
-re-transcribe and verify 40 s. That is about 110 s and no model tokens
-(`WHISPER_MODEL=base.en`: about 60 s).
+Time for a 108 s video: transcribe 5 s, cut and encode 22 s, re-transcribe and
+verify 10 s. That is about 40 s and no model tokens. Transcription uses
+`whisper-cli` (whisper.cpp on Metal) and the `small.en` model in
+`~/.cache/hyperframes/whisper/models`, or `WHISPER_CPP_MODEL`. With neither, it
+falls back to Python whisper, which takes 47 s per pass, so about 110 s in all.
 
 ## What the agent does
 
@@ -57,8 +59,8 @@ Three bugs made earlier cuts abrupt. Each is fixed and tested.
 cut "voiced gaps with no word" turned "subscriptions" into "systems": whisper
 had ended the word early, so real speech looked untranscribed. Such sounds are
 only flagged (`sound_without_word_to_review`, 0.8 s or more of voice with no
-word). The flag needs `small.en`: `base.en` filled a known 1.1 s gap and missed
-it. Listen, then cut it with `--cut`. A manual cut snaps to the quietest 10 ms
+word). The flag needs `small.en` word times: `base.en` filled a known 1.1 s gap
+and missed it. Listen, then cut it with `--cut`. A manual cut snaps to the quietest 10 ms
 within 80 ms and warns if the edge is on voice.
 
 ## What the verdict checks
@@ -124,4 +126,8 @@ short. The length check caught it. Needs `say` or `espeak`, and `numpy`.
 - **`silencedetect` at -35 dB found nothing** on a real voice. Use the file's own energy floor.
 - **Cut video by time, never by frame number.** A file averaging 28.97 fps under
   a 30 fps label drifted 3 s, and `-shortest` hid it. Without it, lengths show drift.
+- **whisper-cli needs `-nfa -dtw MODEL -mc 0`.** Its plain word times smooth over
+  a pause and hide the flag. `-dtw` restores them, but needs flash attention off.
+  Then it dropped a whole phrase until `-mc 0`. `-mc 0` also hears "uh" and a
+  doubled word that Python whisper smooths over, so read the transcript for both.
 - **Do not rebuild a plan from a second whisper run:** a name hint changes the cuts. Read `keep` from the report.

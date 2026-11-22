@@ -122,7 +122,6 @@ short. The length check caught it. Needs `say` or `espeak`, and `numpy`.
 ## Traps
 
 - **`silencedetect` at -35 dB found nothing** on a real voice. Use the file's own energy floor.
-- **Cut video by time, never by frame number.** One test file averaged 28.97 fps
-  with a 30 fps label. Frame-number cuts drifted 3 s out of sync, and `-shortest`
-  hid it. Without `-shortest`, audio and video lengths expose drift.
+- **Cut video by time, never by frame number.** A file averaging 28.97 fps under
+  a 30 fps label drifted 3 s, and `-shortest` hid it. Without it, lengths show drift.
 - **Do not rebuild a plan from a second whisper run:** a name hint changes the cuts. Read `keep` from the report.

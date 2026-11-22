@@ -4,10 +4,11 @@
   check.py SAMPLE.wav GENERATED.mp3 "the exact text that was spoken"
 
 Passes when the median pitch is within 15% of the sample and the transcript of the
-generated audio matches the text (90% of words). Needs ffmpeg and numpy; the transcript
-check needs whisper-cli and a ggml model, and is skipped with a notice when missing.
+generated audio matches the text in order (90% sequence match). Needs ffmpeg, numpy,
+whisper-cli and a ggml model. With no model it FAILS CLOSED (exit 2): an unchecked
+transcript is not a pass.
 """
-import json, os, re, subprocess, sys
+import difflib, json, os, re, subprocess, sys, tempfile
 import numpy as np
 
 SR = 16000
@@ -42,10 +43,10 @@ def transcript(path):
     model = os.environ.get("WHISPER_CPP_MODEL", os.path.expanduser("~/.cache/hyperframes/whisper/models/ggml-small.en.bin"))
     if not os.path.exists(model):
         return None
-    wav = "/tmp/_check16.wav"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-ac", "1", "-ar", "16000", wav], check=True)
-    out = subprocess.run(["whisper-cli", "-m", model, "-f", wav, "-nt", "-np"], capture_output=True, text=True).stdout
-    return out
+    with tempfile.TemporaryDirectory() as d:
+        wav = os.path.join(d, "g.wav")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-ac", "1", "-ar", "16000", wav], check=True)
+        return subprocess.run(["whisper-cli", "-m", model, "-f", wav, "-nt", "-np"], capture_output=True, text=True).stdout
 
 
 sample, gen, text = sys.argv[1:4]
@@ -55,13 +56,13 @@ res = {"sample_pitch_hz": [round(v) for v in ps], "generated_pitch_hz": [round(v
        "pitch_ratio": round(pg[0] / ps[0], 2) if ps[0] else None}
 res["pitch_ok"] = bool(ps[0] and abs(pg[0] / ps[0] - 1) <= 0.15)
 if t is None:
-    res["transcript"] = "skipped: no whisper-cli model"
-    res["words_ok"] = True
-else:
-    want, got = words(text), words(t)
-    hit = sum(1 for w in want if w in got)
-    res["transcript"] = " ".join(got)
-    res["words_ok"] = bool(want) and hit / len(want) >= 0.9
+    res.update(transcript="no whisper-cli model, so the words are unchecked", words_ok=None, pass_=False)
+    print(json.dumps({("pass" if k == "pass_" else k): v for k, v in res.items()}, indent=2))
+    sys.exit(2)
+want, got = words(text), words(t)
+res["transcript"] = " ".join(got)
+res["word_match"] = round(difflib.SequenceMatcher(None, want, got).ratio(), 2)  # order and counts matter
+res["words_ok"] = bool(want) and res["word_match"] >= 0.9
 res["pass"] = res["pitch_ok"] and res["words_ok"]
 print(json.dumps(res, indent=2))
 sys.exit(0 if res["pass"] else 1)

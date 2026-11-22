@@ -46,9 +46,9 @@ Check a price before you pay: `wavespeed price minimax/voice-clone`.
 3. **Train.** The ID needs 8 or more characters, a leading letter, letters and
    digits, and must be new. A duplicate fails.
    ```bash
-   bash scripts/clone.sh video.mp4 MyVoice2026 --start 0.4 --secs 20
+   bash scripts/clone.sh video.mp4 MyVoice2026 --consent "own voice" --start 0.4 --secs 20
    ```
-   It uploads the sample, clones, uses the voice once, and writes
+   `--consent` is required and is written to the record. It uploads the sample, clones, uses the voice once, and writes
    `~/.voice-clones/MyVoice2026/voice.json` (mode 600). Move that record to a
    private place. A voice ID is an asset, so do not publish it.
 4. **Check it.** Generate a line you also have on tape, then compare:
@@ -56,7 +56,7 @@ Check a price before you pay: `wavespeed price minimax/voice-clone`.
    python3 scripts/check.py sample.wav generated.mp3 "the exact words spoken"
    ```
    It passes when the median pitch is within 15% of the sample and the words
-   match. First real run: 134 Hz sample against 136 Hz clone, same pitch range,
+   match in order. With no whisper model it fails closed. First real run: 134 Hz sample against 136 Hz clone, same pitch range,
    and the transcript matched word for word. **This is a rough check. Listen.**
 5. **Use it once.** WaveSpeed deletes an ID, and its embedding, that **no speech
    call has used within 7 days**. Its page says one call makes the voice reusable

@@ -6,7 +6,7 @@
 # It proves four things with the real service and the real balance:
 #   1. clone.sh --dry-run extracts a sample and prints the price, and the balance does not move.
 #   2. A speech call with a system voice works and check.py passes on its own output.
-#   3. CONTROL: check.py fails on a different voice (wrong pitch) and on wrong text.
+#   3. CONTROL: check.py fails on a different voice for the PITCH reason, and on wrong text for the WORDS reason.
 #   4. The whole run cost under $0.05.
 # Needs say (macOS) or espeak, ffmpeg, whisper-cli with a ggml model, numpy, wavespeed.
 set -euo pipefail
@@ -14,7 +14,7 @@ exec </dev/null
 here="$(cd "$(dirname "$0")" && pwd)"
 [[ -n "${WAVESPEED_API_KEY:-}" ]] || { echo "set WAVESPEED_API_KEY first" >&2; exit 2; }
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
-verdict="${1:-$work/verdict.json}"; [[ "$verdict" = /* ]] || verdict="$PWD/$verdict"
+verdict="${1:-$PWD/voice-verdict.json}"; [[ "$verdict" = /* ]] || verdict="$PWD/$verdict"
 bal() { wavespeed balance 2>&1 | grep -o 'Balance: \$[0-9.]*' | grep -o '[0-9.]*$'; }
 cd "$work"
 
@@ -38,13 +38,17 @@ python3 -I - "$before" "$after_dry" "$end" "$ok" "$diffv" "$wrongt" "$verdict" <
 import json, sys
 before, after_dry, end = map(float, sys.argv[1:4]); ok, diffv, wrongt = (a == "true" for a in sys.argv[4:7])
 dry = open("dry.txt").read()
+def why(path, must_fail, must_pass):   # the intended check fails and the other holds; a crash is no pass
+    try: r = json.load(open(path))
+    except Exception: return False
+    return r.get(must_fail) is False and r.get(must_pass) is True
 checks = {
   "dry_run_prints_sample_and_price": "sample:" in dry and "price:" in dry and "1.6" in dry and "dry run" in dry,
   "dry_run_costs_nothing": abs(before - after_dry) < 1e-9,
   "speech_call_made_audio_file": __import__("glob").glob("gen.*") != [] and __import__("os").path.getsize(__import__("glob").glob("gen.*")[0]) > 5000,
   "check_passes_on_matching_clip": ok,
-  "CONTROL: check fails on a different voice": not diffv,
-  "CONTROL: check fails on wrong text": not wrongt,
+  "CONTROL: a different voice fails on PITCH, words still match": why("diffvoice.json", "pitch_ok", "words_ok"),
+  "CONTROL: wrong text fails on WORDS, pitch still matches": why("wrongtext.json", "words_ok", "pitch_ok"),
   "whole_run_under_5_cents": before - end < 0.05,
 }
 v = {"balance_before": before, "balance_end": end, "spent": round(before - end, 4), "checks": checks, "pass": all(checks.values())}

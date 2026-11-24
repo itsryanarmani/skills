@@ -28,19 +28,14 @@ chmod +x "$T/bin/"*; export PATH="$T/bin:$PATH"
 mk() { "$REAL_FF" -v error -y -f lavfi -i "testsrc=s=320x180:r=30:d=$2" -f lavfi -i "sine=f=300:d=$2" -shortest -c:v libx264 -g 30 -c:a aac "$1" </dev/null; }
 mk "$T/in2.mp4" 2; mk "$T/in60.mp4" 60; mk "$T/in100.mp4" 100
 
-# 1 fresh project: init runs before assets are made; base video and sound effects exist
 bash "$here/prep.sh" "$T/in2.mp4" "$T/p" >/dev/null 2>&1; rc=$?
 [ $rc = 0 ] && [ -s "$T/p/assets/base.mp4" ] && [ -s "$T/p/assets/sfx/whoosh.wav" ] && [ -f "$T/p/index.html" ]; ok prep_fresh_project $?
-# 2 a folder that is not a project is refused (exit 2) and left alone
 mkdir "$T/other"; echo keep > "$T/other/f"; bash "$here/prep.sh" "$T/in2.mp4" "$T/other" >/dev/null 2>&1; rc=$?
 [ $rc = 2 ] && [ "$(cat "$T/other/f")" = keep ]; ok prep_refuses_foreign_folder $?
-# 3 no readable base video: build fails, it does not fall back to an example length
 mkdir -p "$T/e"; python3 "$here/build.py" "$T/e" >/dev/null 2>&1; rc=$?
 [ $rc != 0 ] && [ ! -f "$T/e/index.html" ]; ok build_requires_base_video $?
-# 4 a timeline longer than the video is refused, never silently cut
 python3 "$here/build.py" "$T/p" > "$T/o" 2>&1; rc=$?
 [ $rc != 0 ] && grep -q 'long' "$T/o" && [ ! -f "$T/p/windows.txt" ]; ok build_refuses_timeline_longer_than_video $?
-# 5 a 100 s base: the full structure is there (clips, images from assets/gen, morphs with immediateRender off, a timeline file)
 mkdir -p "$T/q/assets"; cp "$T/in100.mp4" "$T/q/assets/base.mp4"
 python3 "$here/build.py" "$T/q" >/dev/null 2>&1; rc=$?; h="$T/q/index.html"
 n=$(grep -o 'class="clip' "$h" | wc -l | tr -d ' ')
@@ -53,7 +48,6 @@ n = sum(1 for i, (t, st) in enumerate(seq) if st != (seq[i - 1][1] if i else "fu
 print("ok" if n >= 6 and len(re.findall("immediateRender:false", h)) == 2 * n else "bad")
 PY
 [ "$(cat "$T/o")" = ok ]; ok morphs_do_not_pre_render $?
-# 6 the pacing rules. tl 'CODE' builds with only that timeline and prints the exit status.
 tl() {
   python3 - "$here/build.py" "$T/t.py" "$1" <<'PY'
 import sys
@@ -127,7 +121,6 @@ behind(\"two words\",14.2,14.4,15.5,\"\")"; do
   [ "$(tl "$code")" != 0 ] || bad=1
 done
 [ $bad = 0 ]; ok build_refuses_bad_windows $?
-# 7 cutouts: the expected file for every window id, each a real video, even when a tool reads stdin
 python3 "$here/build.py" "$T/q" >/dev/null 2>&1
 STUB_EAT_STDIN=1 bash "$here/cutouts.sh" "$T/in60.mp4" "$T/q" > "$T/o" 2>&1; rc=$?; good=0; want=0
 while read -r id a b; do want=$((want + 1)); f="$T/q/assets/person-$id.webm"; [ -s "$f" ] && [ "$("$REAL_FF" -i "$f" 2>&1 | grep -c 'Video:')" -ge 1 ] && good=$((good + 1)); done < "$T/q/windows.txt"
@@ -136,7 +129,6 @@ rm -f "$T/q/assets"/person-*.webm; STUB_FAIL=1 bash "$here/cutouts.sh" "$T/in60.
 [ $rc != 0 ] && ! grep -q 'cutouts done' "$T/o"; ok control_failed_cutout_fails_script $?
 mkdir -p "$T/r/assets"; printf 'b9 1.00 2.00' > "$T/r/windows.txt"; bash "$here/cutouts.sh" "$T/in60.mp4" "$T/r" >/dev/null 2>&1; rc=$?
 [ $rc = 0 ] && [ -s "$T/r/assets/person-b9.webm" ]; ok last_line_without_newline $?
-# 8 render: default run passes and reports the loudness target; --pace and --end change the length as stated
 bash "$here/render.sh" "$T/q" "$T/out.mp4" > "$T/o" 2>&1; rc=$?
 python3 -c "
 import json, sys

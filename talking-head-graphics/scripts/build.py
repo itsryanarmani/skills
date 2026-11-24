@@ -209,13 +209,10 @@ def behind(id, t0, pop, t1, inner):
 
 
 # ================= TIMELINE (times are seconds in the base video) =================
-# opening: just the name, bottom left
 clip("s0", 0.3, 5.4, '<div class="nt"><b>Name</b></div>', z=4)
 J('tl.fromTo("#s0 .nt",{opacity:0},{opacity:1,duration:.6,ease:"power2.out"},0.6);'); J('tl.to("#s0 .nt",{opacity:0,duration:.4},4.9);')
 
-# 1 logos (blue)
 scene("m", "blue", 6.3, [("m1", 7.4, 12.2, '<div style="display:flex;gap:50px;align-items:center">' + tile("logo-a", 330) + tile("logo-e", 330) + '</div>')])
-# 2 role, the product, the growth line (light)
 chart = ('<div class="num" id="c-n" style="font-size:250px">20K</div>'
          f'<svg width="1000" height="300" viewBox="0 0 1000 300" style="margin-top:20px;overflow:visible"><path id="c-p" d="M20 270 C250 262 420 240 560 170 S840 40 980 22" pathLength="1" fill="none" stroke="{INK}" stroke-width="8" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1"/>'
          f'<circle id="c-d0" cx="20" cy="270" r="12" fill="{INK}"/><text x="20" y="320" font-family="Inter" font-weight="700" font-size="34" fill="#6E6E73">20K</text><circle id="c-d1" cx="980" cy="22" r="16" fill="{ACC}" style="filter:drop-shadow(0 0 14px {ACC})"/></svg>')
@@ -226,20 +223,17 @@ scene("p", "light", 12.5, [
 J('tl.fromTo("#c-d1",{opacity:0,scale:.2,transformOrigin:"50% 50%"},{opacity:1,scale:1,duration:.4,ease:"back.out(2.4)"},20.4);')
 J('tl.fromTo("#c-p",{strokeDashoffset:1},{strokeDashoffset:0,duration:1.1,ease:"power2.inOut"},19.4);')
 J('(()=>{const o={v:20};tl.to(o,{v:80,duration:1.1,ease:"power2.inOut",onUpdate:()=>{document.getElementById("c-n").textContent=Math.round(o.v)+"K"}},19.4);})();'); S(19.4, "rise", 0.1)
-# 3 tactics (blue)
 scene("t", "blue", 26.65, [
     ("t1", 27.8, 28.55, pic("phones", 700)),
     ("t2", 28.7, 31.4, big("GEO", 220) + f'<div id="t-aeo">{big("AEO", 220, ACC)}</div>'),
     ("t3", 31.5, 34.3, pic("hat", 620))])
 J('tl.fromTo("#t-aeo",{opacity:0},{opacity:1,duration:.35,ease:"power2.out"},29.6);')
-# 4 the studio (light)
 scene("b", "light", 34.85, [
     ("be1", 36.0, 38.65, pic("rocket", 620)),
     ("be2", 38.85, 41.35, card(big("Studio Name", 190), 880, 70)),
     ("g0", 41.5, 43.75, big("Pre-seed", 140) + '<div class="arrow"></div>' + big("Seed", 140, ACC)),
     ("g1", 43.9, 45.2, pic("coins", 560)), ("g2", 45.3, 46.25, pic("mentor", 560)), ("g3", 46.35, 47.35, pic("gift", 560)),
     ("g4", 47.45, 48.45, pic("hack", 560)), ("g5", 48.55, 49.25, pic("stage", 560))], exit_=49.3)
-# 5 subscriptions, users, downloads (blue)
 fan = "".join(f'<div class="tile" style="position:absolute;left:{i * 165}px;top:{(i % 2) * 36}px;width:230px;height:230px;transform:rotate({[-6, 3, -2, 5][i]}deg)"><img src="assets/logos/logo-c.svg" style="width:128px;height:128px"></div>' for i in range(4))
 scene("s", "blue", 52.4, [
     ("cl", 53.5, 55.9, f'<div style="position:relative;width:850px;height:290px">{fan}</div>'),
@@ -247,17 +241,14 @@ scene("s", "blue", 52.4, [
     ("np", 62.2, 69.6, f'<div style="display:flex;gap:60px;align-items:center">{tile("logo-b", 240)}<div class="num" id="n-n" style="font-size:260px;opacity:0">0</div></div>')], exit_=69.7)
 J('tl.fromTo("#us-n",{opacity:0},{opacity:1,duration:.35},58.1);')
 J('tl.fromTo("#n-n",{opacity:0},{opacity:1,duration:.3},63.3);'); J('(()=>{const o={v:0};tl.to(o,{v:100,duration:1.5,ease:"power2.out",onUpdate:()=>{document.getElementById("n-n").textContent="~"+Math.round(o.v)+"K"}},63.4);})();'); S(63.4, "rise", 0.1)
-# 6 what I bring, the company (light)
 venn = (f'<svg width="860" height="640" viewBox="0 0 860 640"><g fill="rgba(212,98,63,.10)" stroke="{INK}" stroke-width="5"><circle id="v1" cx="300" cy="230" r="200"/><circle id="v2" cx="560" cy="230" r="200"/><circle id="v3" cx="430" cy="430" r="200"/></g>'
         f'<g font-family="Inter" font-weight="800" font-size="40" fill="{INK}" text-anchor="middle"><text id="v1t" x="220" y="200">Product</text><text id="v2t" x="640" y="200">Business</text><text id="v3t" x="430" y="520">Growth</text></g></svg>')
 scene("v", "light", 78.55, [("ve", 79.7, 84.15, venn), ("di", 84.7, 90.8, card(big("Company", 200), 860, 70))])
 for k, t in (("v1", 79.7), ("v2", 80.4), ("v3", 81.0)):
     J(f'tl.fromTo("#{k}",{{opacity:0,scale:.6,transformOrigin:"50% 50%"}},{{opacity:1,scale:1,duration:.6,ease:"back.out(1.6)"}},{t});'); J(f'tl.fromTo("#{k}t",{{opacity:0}},{{opacity:1,duration:.4}},{t + 0.25});')
-# 7 calendar (blue)
 scene("k", "blue", 91.3, [("ca", 92.45, 98.3, tile("logo-d", 340))], exit_=98.4)
 
 SEQ = compute_seq()
-# big words behind the speaker: the cutout starts after the speaker is back at full frame, the word appears on the spoken word
 behind("b2", 24.7, 24.9, 26.2, f'<div class="bt" style="top:340px"><span id="b2w" style="color:{INK}">GROWTH</span></div>')
 J('tl.fromTo("#b2w",{opacity:0,y:50,scale:1.05},{opacity:1,y:0,scale:1,duration:.9,ease:"expo.out"},24.9);'); S(24.9, "whoosh_big", 0.12)
 behind("b3", 50.4, 50.6, 52.0, f'<div class="bt" style="top:350px;font-size:210px"><span id="b3a" style="color:{INK}">BIG</span> <span id="b3b" style="color:{ACC}">IDEA</span></div>')

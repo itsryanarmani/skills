@@ -69,6 +69,14 @@ PY
   python3 "$T/x.py" "$T/q" >/dev/null 2>&1 && bad=1
 done
 [ $bad = 0 ]; ok build_refuses_bad_windows $?
+# 7b a window that the 0.7 s shift would push into the next panel state is refused
+python3 - "$here/build.py" "$T/y.py" <<'PY'
+import re, sys
+s = open(sys.argv[1]).read()
+s = s.replace('SEQ = [(6.1, "R"), ', 'SEQ = [(6.1, "R"), (10.0, "full"), (10.5, "R"), ', 1)   # the other windows stay valid
+open(sys.argv[2], "w").write(s.replace("states(SEQ)", 'behind("unsafe", 10.1, 11.0, "")\nstates(SEQ)', 1))
+PY
+python3 "$T/y.py" "$T/q" >/dev/null 2>&1; [ $? != 0 ]; ok build_refuses_shifted_window_in_panel $?
 # 8 cutouts: the expected file for every window id, each a real video, even when a tool reads stdin
 python3 "$here/build.py" "$T/q" >/dev/null 2>&1
 STUB_EAT_STDIN=1 bash "$here/cutouts.sh" "$T/in60.mp4" "$T/q" > "$T/o" 2>&1; rc=$?; good=0; want=0
@@ -99,7 +107,7 @@ rm -f "$T/out3.mp4"; STUB_SHORT=1 bash "$here/render.sh" "$T/q" "$T/out3.mp4" > 
 python3 - "$res" "${1:-}" <<'PY'
 import json, sys
 c = {a: b == "true" for a, b in (l.rstrip("\n").split("\t") for l in open(sys.argv[1]))}
-v = {"checks": c, "pass": all(c.values()) and len(c) == 13}
+v = {"checks": c, "pass": all(c.values()) and len(c) == 14}
 s = json.dumps(v, indent=2); print(s)
 if sys.argv[2]: open(sys.argv[2], "w").write(s + "\n")
 sys.exit(0 if v["pass"] else 1)

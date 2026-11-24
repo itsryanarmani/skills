@@ -25,7 +25,8 @@ cat > "$P/sfx.json" <<'J'
 {"name":"whoosh","want":"a hand swept quickly through the air"},{"name":"whoosh_big","want":"a heavy deep whoosh of something large passing"},
 {"name":"pop","want":"a soft rounded tactile tap with a faint note"},{"name":"coin","want":"a small metallic tick, a coin clink"},
 {"name":"rise","want":"three quick rising notes, a short soft confirmation"},{"name":"tick","want":"a small dry wooden tick"},
-{"name":"win","want":"a quick rising major arpeggio landing on the octave, a small happy flourish"}]}
+{"name":"win","want":"a quick rising major arpeggio landing on the octave, a small happy flourish"},
+{"name":"paper","want":"a page of a paperback turned"}]}
 J
 earshot make --spec "$P/sfx.json" -o "$P/assets/sfx" >/dev/null
 echo "prep done: $P"

@@ -4,7 +4,7 @@ Rules: ONE visual at a time; the speaker morphs into a rounded panel (right or l
 one accent colour; real logos on ink tiles; paper cards with soft shadow; text may sit behind the speaker (cutout)."""
 import sys, math, random
 
-import os, re, subprocess
+import json, os, re, subprocess
 from html.parser import HTMLParser
 
 
@@ -81,13 +81,13 @@ def states(seq):
         cur = st
 
 
-def poly(w, h, inset, amp, seed, step=44):
-    r = random.Random(seed); pts = []
+def poly(w, h, inset, amp, seed, step=44, jit=0.0, v=0):
+    r = random.Random(seed); j = random.Random(seed * 31 + v + 1); pts = []
     def edge(x0, y0, x1, y1):
         n = max(2, int(math.hypot(x1 - x0, y1 - y0) / step))
         for i in range(n):
             t = i / n
-            pts.append((x0 + (x1 - x0) * t + r.uniform(-amp, amp), y0 + (y1 - y0) * t + r.uniform(-amp, amp)))
+            pts.append((x0 + (x1 - x0) * t + r.uniform(-amp, amp) + (j.uniform(-jit, jit) if jit else 0), y0 + (y1 - y0) * t + r.uniform(-amp, amp) + (j.uniform(-jit, jit) if jit else 0)))
     edge(inset, inset, w - inset, inset); edge(w - inset, inset, w - inset, h - inset); edge(w - inset, h - inset, inset, h - inset); edge(inset, h - inset, inset, inset)
     return "polygon(" + ",".join(f"{x:.0f}px {y:.0f}px" for x, y in pts) + ")"
 
@@ -153,15 +153,17 @@ def _emit_scenes():
     for k, sc in enumerate(SCENES):
         n += 1; d = 7 + 11 * n
         end = sc["exit"] + 0.7 if sc["exit"] else (SCENES[k + 1]["enter"] + SLIDE + 0.1 if k + 1 < len(SCENES) else DUR)
-        html = (f'<div class="sheet" id="{sc["sid"]}-sh"><div class="so" style="clip-path:{poly(1920, 1080, 38, 7, d)}"></div>'
-                f'<div class="si" style="background:{SHEET_COLORS[sc["color"]]};clip-path:{poly(1920, 1080, 54, 6, d + 5)}"></div>'
+        vo = [poly(1920, 1080, 38, 7, d, jit=1.6, v=v) for v in range(3)]; vi = [poly(1920, 1080, 54, 6, d + 5, jit=1.6, v=v) for v in range(3)]
+        html = (f'<div class="sheet" id="{sc["sid"]}-sh"><div class="so" style="clip-path:{vo[0]}"></div>'
+                f'<div class="si" style="background:{SHEET_COLORS[sc["color"]]};clip-path:{vi[0]}"><div class="tex"></div></div>'
                 f'<div class="tape" style="left:{120 + d % 90}px;top:22px;transform:rotate(-8deg)"></div><div class="tape" style="left:{1600 + d % 60}px;top:1012px;transform:rotate(5deg)"></div></div>')
         clip(sc["sid"] + "-sc", sc["enter"], end, html, z=0)
+        J(f'(()=>{{const VO={json.dumps(vo)},VI={json.dumps(vi)};for(let k=0;k<{int((end - sc["enter"]) * 12) + 2};k++){{tl.set("#{sc["sid"]}-sh .so",{{clipPath:VO[k%3]}},{sc["enter"]:.3f}+k/12);tl.set("#{sc["sid"]}-sh .si",{{clipPath:VI[k%3]}},{sc["enter"]:.3f}+k/12);}}}})();')   # hand-cut edge boil on a 12 fps grid
         J(f'tl.fromTo("#{sc["sid"]}-sh",{{x:1950,rotation:3}},{{x:0,rotation:-0.3,duration:{SLIDE},ease:"expo.out"}},{sc["enter"]:.2f});')   # always from the right
-        S(sc["enter"], "whoosh_big", 0.14)
+        S(sc["enter"], "paper", 0.2)
         if sc["exit"]:
             J(f'tl.to("#{sc["sid"]}-sh",{{x:-1950,duration:{SHEET_OUT},ease:"power3.in"}},{sc["exit"]:.2f});')   # always to the left
-            S(sc["exit"], "whoosh_big", 0.12)
+            S(sc["exit"], "paper", 0.16)
         for iid, a, b, ih in sc["items"]:
             clip(iid, a - 0.05, b, f'<div class="stage">{ih}</div>', z=4)
             J(f'tl.fromTo("#{iid} .stage",{{opacity:0,scale:.97}},{{opacity:1,scale:1,duration:{FADE_IN},ease:"power2.out"}},{a:.2f});')
@@ -209,46 +211,55 @@ def behind(id, t0, pop, t1, inner):
 
 
 # ================= TIMELINE (times are seconds in the base video) =================
+# opening: just the name, bottom left
 clip("s0", 0.3, 5.4, '<div class="nt"><b>Name</b></div>', z=4)
 J('tl.fromTo("#s0 .nt",{opacity:0},{opacity:1,duration:.6,ease:"power2.out"},0.6);'); J('tl.to("#s0 .nt",{opacity:0,duration:.4},4.9);')
 
+# 1 logos (blue)
 scene("m", "blue", 6.3, [("m1", 7.4, 12.2, '<div style="display:flex;gap:50px;align-items:center">' + tile("logo-a", 330) + tile("logo-e", 330) + '</div>')])
-chart = ('<div class="num" id="c-n" style="font-size:250px">20K</div>'
+# 2 role, the product, the growth line (light)
+chart = (card('<div class="num" id="c-n" style="font-size:210px">20K</div>', 560, 36) +
          f'<svg width="1000" height="300" viewBox="0 0 1000 300" style="margin-top:20px;overflow:visible"><path id="c-p" d="M20 270 C250 262 420 240 560 170 S840 40 980 22" pathLength="1" fill="none" stroke="{INK}" stroke-width="8" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1"/>'
          f'<circle id="c-d0" cx="20" cy="270" r="12" fill="{INK}"/><text x="20" y="320" font-family="Inter" font-weight="700" font-size="34" fill="#6E6E73">20K</text><circle id="c-d1" cx="980" cy="22" r="16" fill="{ACC}" style="filter:drop-shadow(0 0 14px {ACC})"/></svg>')
 scene("p", "light", 12.5, [
-    ("so1", 13.6, 16.35, big("Role title<br>here", 120)),
+    ("so1", 13.6, 16.35, card(big("Role title<br>here", 110), 1000, 50)),
     ("so2", 16.6, 18.6, card('<div class="dots"><i></i><i></i><i></i><b style="margin-left:14px;font-size:30px;color:#6E6E73">Previous Co</b></div><div class="blk" style="width:100%;height:46px"></div><div class="blk" style="width:58%;height:120px;margin-top:18px"></div>', 760, 40)),
     ("c1", 18.8, 22.3, chart)], exit_=22.35)
 J('tl.fromTo("#c-d1",{opacity:0,scale:.2,transformOrigin:"50% 50%"},{opacity:1,scale:1,duration:.4,ease:"back.out(2.4)"},20.4);')
 J('tl.fromTo("#c-p",{strokeDashoffset:1},{strokeDashoffset:0,duration:1.1,ease:"power2.inOut"},19.4);')
 J('(()=>{const o={v:20};tl.to(o,{v:80,duration:1.1,ease:"power2.inOut",onUpdate:()=>{document.getElementById("c-n").textContent=Math.round(o.v)+"K"}},19.4);})();'); S(19.4, "rise", 0.1)
+# 3 tactics (blue)
 scene("t", "blue", 26.65, [
     ("t1", 27.8, 28.55, pic("phones", 700)),
-    ("t2", 28.7, 31.4, big("GEO", 220) + f'<div id="t-aeo">{big("AEO", 220, ACC)}</div>'),
+    ("t2", 28.7, 31.4, card(big("GEO", 200) + f'<div id="t-aeo">{big("AEO", 200, ACC)}</div>', 640, 50)),
     ("t3", 31.5, 34.3, pic("hat", 620))])
 J('tl.fromTo("#t-aeo",{opacity:0},{opacity:1,duration:.35,ease:"power2.out"},29.6);')
+# 4 the studio (light)
 scene("b", "light", 34.85, [
     ("be1", 36.0, 38.65, pic("rocket", 620)),
     ("be2", 38.85, 41.35, card(big("Studio Name", 190), 880, 70)),
-    ("g0", 41.5, 43.75, big("Pre-seed", 140) + '<div class="arrow"></div>' + big("Seed", 140, ACC)),
+    ("g0", 41.5, 43.75, card(big("Pre-seed", 110) + '<div class="arrow"></div>' + big("Seed", 110, ACC), 560, 44)),
     ("g1", 43.9, 45.2, pic("coins", 560)), ("g2", 45.3, 46.25, pic("mentor", 560)), ("g3", 46.35, 47.35, pic("gift", 560)),
     ("g4", 47.45, 48.45, pic("hack", 560)), ("g5", 48.55, 49.25, pic("stage", 560))], exit_=49.3)
+# 5 subscriptions, users, downloads (blue)
 fan = "".join(f'<div class="tile" style="position:absolute;left:{i * 165}px;top:{(i % 2) * 36}px;width:230px;height:230px;transform:rotate({[-6, 3, -2, 5][i]}deg)"><img src="assets/logos/logo-c.svg" style="width:128px;height:128px"></div>' for i in range(4))
 scene("s", "blue", 52.4, [
     ("cl", 53.5, 55.9, f'<div style="position:relative;width:850px;height:290px">{fan}</div>'),
-    ("us", 56.8, 59.9, f'<div id="us-n">{big("10,000s", 240)}</div>' + pic("crowd", 520)),
-    ("np", 62.2, 69.6, f'<div style="display:flex;gap:60px;align-items:center">{tile("logo-b", 240)}<div class="num" id="n-n" style="font-size:260px;opacity:0">0</div></div>')], exit_=69.7)
+    ("us", 56.8, 59.9, f'<div id="us-n">{card(big("10,000s", 200), 620, 40)}</div>' + pic("crowd", 520)),
+    ("np", 62.2, 69.6, f'<div style="display:flex;gap:60px;align-items:center">{tile("logo-b", 240)}<div class="paper" id="n-n" style="opacity:0;padding:36px 60px"><div class="pb"></div><div class="pc"><div class="num" id="n-t" style="font-size:210px">0</div></div></div></div>')], exit_=69.7)
 J('tl.fromTo("#us-n",{opacity:0},{opacity:1,duration:.35},58.1);')
-J('tl.fromTo("#n-n",{opacity:0},{opacity:1,duration:.3},63.3);'); J('(()=>{const o={v:0};tl.to(o,{v:100,duration:1.5,ease:"power2.out",onUpdate:()=>{document.getElementById("n-n").textContent="~"+Math.round(o.v)+"K"}},63.4);})();'); S(63.4, "rise", 0.1)
+J('tl.fromTo("#n-n",{opacity:0},{opacity:1,duration:.3},63.3);'); J('(()=>{const o={v:0};tl.to(o,{v:100,duration:1.5,ease:"power2.out",onUpdate:()=>{document.getElementById("n-t").textContent="~"+Math.round(o.v)+"K"}},63.4);})();'); S(63.4, "rise", 0.1)
+# 6 what I bring, the company (light)
 venn = (f'<svg width="860" height="640" viewBox="0 0 860 640"><g fill="rgba(212,98,63,.10)" stroke="{INK}" stroke-width="5"><circle id="v1" cx="300" cy="230" r="200"/><circle id="v2" cx="560" cy="230" r="200"/><circle id="v3" cx="430" cy="430" r="200"/></g>'
         f'<g font-family="Inter" font-weight="800" font-size="40" fill="{INK}" text-anchor="middle"><text id="v1t" x="220" y="200">Product</text><text id="v2t" x="640" y="200">Business</text><text id="v3t" x="430" y="520">Growth</text></g></svg>')
 scene("v", "light", 78.55, [("ve", 79.7, 84.15, venn), ("di", 84.7, 90.8, card(big("Company", 200), 860, 70))])
 for k, t in (("v1", 79.7), ("v2", 80.4), ("v3", 81.0)):
     J(f'tl.fromTo("#{k}",{{opacity:0,scale:.6,transformOrigin:"50% 50%"}},{{opacity:1,scale:1,duration:.6,ease:"back.out(1.6)"}},{t});'); J(f'tl.fromTo("#{k}t",{{opacity:0}},{{opacity:1,duration:.4}},{t + 0.25});')
+# 7 calendar (blue)
 scene("k", "blue", 91.3, [("ca", 92.45, 98.3, tile("logo-d", 340))], exit_=98.4)
 
 SEQ = compute_seq()
+# big words behind the speaker: the cutout starts after the speaker is back at full frame, the word appears on the spoken word
 behind("b2", 24.7, 24.9, 26.2, f'<div class="bt" style="top:340px"><span id="b2w" style="color:{INK}">GROWTH</span></div>')
 J('tl.fromTo("#b2w",{opacity:0,y:50,scale:1.05},{opacity:1,y:0,scale:1,duration:.9,ease:"expo.out"},24.9);'); S(24.9, "whoosh_big", 0.12)
 behind("b3", 50.4, 50.6, 52.0, f'<div class="bt" style="top:350px;font-size:210px"><span id="b3a" style="color:{INK}">BIG</span> <span id="b3b" style="color:{ACC}">IDEA</span></div>')
@@ -262,7 +273,7 @@ open(os.path.join(OUT, "timeline.json"), "w").write(json.dumps({"duration": DUR,
 
 
 # ---- audio ----
-L = {"whoosh": 0.42, "whoosh_big": 1.2, "pop": 0.26, "coin": 0.39, "rise": 1.2, "tick": 0.07, "win": 1.2}
+L = {"paper": 1.15, "whoosh": 0.42, "whoosh_big": 1.2, "pop": 0.26, "coin": 0.39, "rise": 1.2, "tick": 0.07, "win": 1.2}
 aud = "".join(f'<audio id="sfx{i}" class="clip" data-start="{t:.2f}" data-duration="{min(L[n], DUR - t):.2f}" data-track-index="{tr()}" src="assets/sfx/{n}.wav" data-volume="{v}"></audio>' for i, (t, n, v) in enumerate(sorted(sfx), 1) if t < DUR - 0.1)
 
 CSS = """
@@ -273,10 +284,10 @@ CSS = """
 #bw{position:absolute;inset:0;z-index:1;overflow:hidden}#bi{position:absolute;inset:0;transform-origin:960px 540px}#base{position:absolute;left:0;top:0;width:1920px;height:1080px}
 .sh{position:absolute;z-index:0;top:90px;height:900px;width:530px;border-radius:40px;opacity:0;box-shadow:0 40px 90px rgba(0,0,0,.28),0 4px 0 rgba(0,0,0,.05)}#shR{left:1330px}#shL{left:60px}
 .person{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:3}
-.stage{position:absolute;top:0;width:1120px;height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;text-align:center}
+.stage{position:absolute;top:0;left:115px;width:1120px;height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;text-align:center}
 .big{font-weight:900;letter-spacing:-.045em;line-height:.95}.num{font-weight:900;letter-spacing:-.05em;line-height:.9;color:%INK%}.sub{font-weight:600;letter-spacing:-.01em;line-height:1.15}
 .tile{background:%INK%;border-radius:28%;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(0,0,0,.22),0 2px 0 rgba(255,255,255,.08) inset}
-.sheet{position:absolute;inset:0;filter:drop-shadow(0 20px 30px rgba(0,0,0,.22))}.so,.si{position:absolute;inset:0}.tape{position:absolute;width:170px;height:46px;background:rgba(240,228,176,.78);box-shadow:0 2px 6px rgba(0,0,0,.18);clip-path:polygon(0 10%,4% 0,8% 12%,12% 0,16% 10%,100% 10%,96% 100%,92% 88%,88% 100%,84% 90%,0 90%)}.paper{position:relative;border-radius:14px}.pb{position:absolute;inset:0;background:%CARD%;border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 36px 70px rgba(0,0,0,.16);filter:url(#rough)}.pc{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px}
+.sheet{position:absolute;inset:0;filter:drop-shadow(0 20px 30px rgba(0,0,0,.22))}.so,.si{position:absolute;inset:0}.tex{position:absolute;inset:0;opacity:.55;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='9'/><feColorMatrix values='0 0 0 0 .25  0 0 0 0 .22  0 0 0 0 .18  0 0 0 .16 0'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>")}.tape{position:absolute;width:170px;height:46px;background:rgba(240,228,176,.78);box-shadow:0 2px 6px rgba(0,0,0,.18);clip-path:polygon(0 10%,4% 0,8% 12%,12% 0,16% 10%,100% 10%,96% 100%,92% 88%,88% 100%,84% 90%,0 90%)}.paper{position:relative;border-radius:14px}.pb{position:absolute;inset:0;background:%CARD%;border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 36px 70px rgba(0,0,0,.16);filter:url(#rough)}.pc{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px}
 .pic{filter:drop-shadow(0 26px 30px rgba(0,0,0,.2))}.arrow{width:6px;height:70px;background:%INK%;border-radius:3px}
 .dots{display:flex;gap:10px;width:100%}.dots i{width:16px;height:16px;border-radius:50%;background:#cfcac0}.blk{background:#e4dfd4;border-radius:10px}
 .nt{position:absolute;left:64px;top:900px;display:flex;flex-direction:column;gap:4px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55),0 4px 24px rgba(0,0,0,.45)}.nt b{font-size:64px;font-weight:900;letter-spacing:-.03em}

@@ -154,6 +154,9 @@ def behind(id, t0, t1, inner):
         sys.exit(f"build: window {id} starts at {t0}s while the speaker is in the panel; move it after a return to full frame")
     if past:
         t0 = max(t0, past[-1][0] + 0.7)
+        again = [(t, st) for t, st in SEQ if t <= t0 + 0.01]   # the shift may have moved the start past the next morph
+        if again[-1][1] != "full":
+            sys.exit(f"build: window {id} cannot start before the speaker is back at full frame ({again[-1][0]}s is a panel morph); move it later")
     nxt = [t for t, st in SEQ if t > t0 + 0.01]
     if nxt and t1 > nxt[0]:
         sys.exit(f"build: window {id} ({t0}-{t1}s) runs into the panel morph at {nxt[0]}s")

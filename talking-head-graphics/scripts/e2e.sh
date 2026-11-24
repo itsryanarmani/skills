@@ -22,7 +22,7 @@ S
 printf '#!/usr/bin/env bash\nexit 0\n' > "$T/bin/whisper-cli"
 cat > "$T/bin/earshot" <<'S'
 #!/usr/bin/env bash
-mkdir -p "$5"; for n in whoosh whoosh_big pop coin rise tick win; do echo x > "$5/$n.wav"; done
+mkdir -p "$5"; python3 -c "import json,sys; [open(sys.argv[2] + '/' + s['name'] + '.wav', 'w').write('x') for s in json.load(open(sys.argv[1]))['sounds']]" "$3" "$5"
 S
 chmod +x "$T/bin/"*; export PATH="$T/bin:$PATH"
 mk() { "$REAL_FF" -v error -y -f lavfi -i "testsrc=s=320x180:r=30:d=$2" -f lavfi -i "sine=f=300:d=$2" -shortest -c:v libx264 -g 30 -c:a aac "$1" </dev/null; }
@@ -48,6 +48,36 @@ n = sum(1 for i, (t, st) in enumerate(seq) if st != (seq[i - 1][1] if i else "fu
 print("ok" if n >= 6 and len(re.findall("immediateRender:false", h)) == 2 * n else "bad")
 PY
 [ "$(cat "$T/o")" = ok ]; ok morphs_do_not_pre_render $?
+python3 - "$h" > "$T/o" <<'PY'
+import json, re, sys
+from html.parser import HTMLParser
+h = open(sys.argv[1]).read(); bad = []
+sets = re.findall(r'const VO=(\[.*?\]),VI=(\[.*?\]);for\(let k=0;k<(\d+);k\+\+\)\{tl\.set\("[^"]+ \.so",\{clipPath:VO\[k%3\]\},[\d.]+\+k/12\);tl\.set\("[^"]+ \.si",\{clipPath:VI\[k%3\]\},[\d.]+\+k/12\);\}', h)
+sheets = re.findall(r'class="sheet" id="([^"]+)"', h)
+if len(sheets) < 6 or len(sets) != len(sheets): bad.append("boil steps do not match the sheets")
+for sid in sheets:
+    if f'"#{sid} .so"' not in h or f'"#{sid} .si"' not in h or f'<div class="si" style="background:' not in h: bad.append("boil target")
+for vo, vi, n in sets:
+    if len(set(json.loads(vo))) != 3 or len(set(json.loads(vi))) != 3 or int(n) < 12: bad.append("boil variants")
+tex = re.search(r"\.tex\{[^}]*opacity:([0-9.]+)[^}]*background-image:url\(", h)
+if not tex or float(tex.group(1)) <= 0 or h.count('class="tex"') != len(sheets): bad.append("grain")
+VOID = {"br", "hr", "img", "input", "meta", "link", "area", "base", "col", "embed", "source", "track", "wbr", "path", "circle", "rect"}
+class P(HTMLParser):   # every big or num text must sit inside a paper tag; svg diagram labels are exempt
+    def __init__(self): super().__init__(); self.st = []; self.n = 0
+    def handle_starttag(self, tag, attrs):
+        c = (dict(attrs).get("class") or "").split()
+        if tag not in VOID: self.st.append(c)
+        if ("big" in c or "num" in c) and not any("paper" in x for x in self.st[:-1]): self.n += 1
+    def handle_endtag(self, tag):
+        if tag not in VOID and self.st: self.st.pop()
+p = P(); p.feed(h)
+if p.n: bad.append(f"{p.n} bare text")
+m = re.search(r"\.stage\{position:absolute;top:0;left:(\d+)px;width:(\d+)px", h)
+if not m or not (600 <= int(m.group(1)) + int(m.group(2)) / 2 <= 700 and int(m.group(1)) + int(m.group(2)) <= 1330): bad.append("stage position")
+print("ok" if not bad else "bad " + ",".join(bad))
+PY
+[ "$(cat "$T/o")" = ok ]; ok paper_craft_details_are_present $?
+[ -s "$T/p/assets/sfx/paper.wav" ] && grep -q 'sfx/paper.wav' "$h"; ok paper_sound_is_made_and_used $?
 tl() {
   python3 - "$here/build.py" "$T/t.py" "$1" <<'PY'
 import sys
@@ -149,7 +179,7 @@ bash "$here/render.sh" "$T/q" "$T/out6.mp4" --end 0 >/dev/null 2>&1; rc1=$?; bas
 python3 - "$res" "${1:-}" <<'PY'
 import json, sys
 c = {a: b == "true" for a, b in (l.rstrip("\n").split("\t") for l in open(sys.argv[1]))}
-v = {"checks": c, "pass": all(c.values()) and len(c) == 33}
+v = {"checks": c, "pass": all(c.values()) and len(c) == 35}
 s = json.dumps(v, indent=2); print(s)
 if sys.argv[2]: open(sys.argv[2], "w").write(s + "\n")
 sys.exit(0 if v["pass"] else 1)

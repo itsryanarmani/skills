@@ -4,7 +4,22 @@ Rules: ONE visual at a time; the speaker morphs into a rounded panel (right or l
 one accent colour; real logos on ink tiles; paper cards with soft shadow; text may sit behind the speaker (cutout)."""
 import sys, math, random
 
-import os, subprocess
+import os, re, subprocess
+from html.parser import HTMLParser
+
+
+def ids_in(html):
+    """Every id attribute in an HTML string, however it is quoted (id="a", id='a', id=a)."""
+    out = []
+    class P(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            out.extend(v for k, v in attrs if k == "id" and v)
+        handle_startendtag = handle_starttag
+    P().feed(html)
+    return out
+
+
+RESERVED = {"root", "paper", "shR", "shL", "bw", "bi", "base", "rough", "s0"}   # ids the builder itself writes
 OUT = sys.argv[1] if len(sys.argv) > 1 else "."
 def _probe():
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", os.path.join(OUT, "assets/base.mp4")], capture_output=True, text=True)
@@ -63,11 +78,9 @@ def states(seq):
             on = 1 if st == side else 0
             if (cur == side) != (st == side):
                 J(f'tl.to("#sh{side}",{{opacity:{on},duration:.5,ease:"power2.out"}},{t + 0.1:.2f});')
-        S(t, "whoosh", 0.22)
         cur = st
 
 
-# ---- one visual at a time: items live in the content area beside the panel ----
 def poly(w, h, inset, amp, seed, step=44):
     r = random.Random(seed); pts = []
     def edge(x0, y0, x1, y1):
@@ -77,42 +90,6 @@ def poly(w, h, inset, amp, seed, step=44):
             pts.append((x0 + (x1 - x0) * t + r.uniform(-amp, amp), y0 + (y1 - y0) * t + r.uniform(-amp, amp)))
     edge(inset, inset, w - inset, inset); edge(w - inset, inset, w - inset, h - inset); edge(w - inset, h - inset, inset, h - inset); edge(inset, h - inset, inset, inset)
     return "polygon(" + ",".join(f"{x:.0f}px {y:.0f}px" for x, y in pts) + ")"
-
-
-def sheet(id, a, b, color, seed, exit_, dark):
-    _n[0] += 1; d = 1 if _n[0] % 2 else -1
-    r = random.Random(seed)
-    ht = f'<div class="ht" style="{"left:110px;bottom:120px" if seed % 2 else "right:110px;top:120px"};background-image:radial-gradient(circle,rgba({255 if dark else 0},{255 if dark else 0},{255 if dark else 0},.16) 34%,transparent 36%)"></div>'
-    tapes = "".join(f'<div class="tape" style="left:{x}px;top:{y}px;transform:rotate({rot}deg)"></div>' for x, y, rot in [(r.randint(80, 220), 22, r.randint(-14, -4)), (r.randint(1560, 1700), 1012, r.randint(-12, 10))])
-    html = f'<div class="sheet" id="{id}-sh"><div class="so" style="clip-path:{poly(1920, 1080, 38, 7, seed)}"></div><div class="si" style="background:{color};clip-path:{poly(1920, 1080, 54, 6, seed + 5)}">{ht}</div>{tapes}</div>'
-    clip(id + "-sc", a - 0.12, b + (0.7 if exit_ else 0.5), html, z=0)
-    J(f'tl.fromTo("#{id}-sh",{{x:{d * 1950},rotation:{d * 3}}},{{x:0,rotation:{[-0.4, 0.5][seed % 2]},duration:.85,ease:"expo.out"}},{a - 0.12:.2f});')
-    if exit_:
-        J(f'tl.to("#{id}-sh",{{x:{-d * 1950},duration:.6,ease:"power3.in"}},{b:.2f});')
-    S(a - 0.1, "whoosh", 0.2)
-
-
-CFG = {"m1": "blue", "so1": "light", "so2": "light", "c1": ("blue", 1), "t1": "light", "t2": "char", "t3": ("blue", 1), "be1": "light", "be2": "blue", "g0": "char",
-       "g1": "light", "g2": "blue", "g3": "light", "g4": "blue", "g5": ("light", 1), "cl": "blue", "us": "light", "np": ("blue", 1), "ve": "light", "di": ("char", 1), "ca": ("blue", 1)}
-
-
-def _dk(on):
-    global TXT, MUT
-    TXT, MUT = ("#FFFFFF", "#CFCFCF") if on else (INK, MID)
-
-
-def item(id, side, a, b, html, rot=0.0):
-    side = "R"
-    c = CFG[id]; color, exit_ = (c, 0) if isinstance(c, str) else c
-    dark = color == "char"
-    sheet(id, a, b, SHEETS[color], len(id) * 7 + int(a * 3), exit_, dark)
-    html = html if not dark else html
-    cx = PANEL[side]["cx"]
-    clip(id, a, b, f'<div class="stage" style="left:{cx - 560}px">{html}</div>', z=4)
-    d = min(0.75, max(0.2, (b - a) - 0.6))
-    J(f'tl.fromTo("#{id} .stage > *",{{opacity:0,y:40,rotation:{rot - 2.5}}},{{opacity:1,y:0,rotation:{rot},duration:{d:.2f},ease:"power3.out",stagger:{0.12 if d > 0.5 else 0},}},{a + 0.05:.2f});')
-    J(f'tl.to("#{id} .stage",{{opacity:0,y:-26,duration:.3,ease:"power2.in"}},{b - 0.32:.2f});')
-    S(a + 0.1, "tick", 0.3)
 
 
 def tile(name, size=300):
@@ -137,29 +114,90 @@ def pic(name, w=520):
     return f'<img class="pic" src="assets/gen/{name}.png" style="width:{w}px">'
 
 
-SEQ = [(6.1, "R"), (22.45, "full"), (26.25, "R"), (49.05, "full"), (52.0, "R"), (69.8, "full"), (78.85, "R"), (98.55, "full")]
-# ================= TIMELINE =================
-# opening: name tag, text behind speaker
-clip("s0", 0.3, 5.7, f'<div class="nt"><b>Name</b><span>Intro · Role</span></div>', z=4)
-J('tl.fromTo("#s0 .nt",{opacity:0,y:30},{opacity:1,y:0,duration:.7,ease:"power3.out"},0.6);'); J('tl.to("#s0 .nt",{opacity:0,duration:.3},5.3);')
+
+# ---- scenes: a background sheet plus the visuals that play on it ----
+# One scene change = background sheet + speaker panel together. Then a pause. Then the visuals fade in on the settled sheet.
+# Inside a scene only the visuals change, with one effect (fade). Nothing else moves at the same time.
+SLIDE, PAUSE, FADE_IN, FADE_OUT, SHEET_OUT, MORPH = 0.85, 0.25, 0.35, 0.25, 0.6, 0.65
+SCENES = []
+_IDS = set(RESERVED)
+SHEET_COLORS = {"blue": "#B9CAD9", "light": "#F4F0E6"}
 
 
-def behind(id, t0, t1, inner):
-    """Text between the video and a cutout of the speaker. The speaker must be full frame for the whole window."""
+def scene(sid, color, enter, items, exit_=None):
+    """items: [(id, a, b, html)] with the content windows. Checks the pacing rules and writes the clips."""
+    assert color in SHEET_COLORS, f"scene {sid}: unknown sheet colour {color!r}"
+    assert enter >= 0 and (exit_ is None or exit_ > enter), f"scene {sid}: bad enter/exit times"
+    html_ids = [x for it in items for x in ids_in(it[3])]
+    for i in [sid, sid + "-sc", sid + "-sh"] + [it[0] for it in items] + html_ids:
+        assert i not in _IDS and not re.fullmatch(r"sfx\d+", i), f"duplicate or reserved id {i!r}: every scene, visual and element id must be unique"
+        _IDS.add(i)
+    for iid, a, b, _ in items:
+        assert b <= DUR + 0.01, f"visual {iid} ends at {b}s but the video is {DUR}s long"
+    assert exit_ is None or exit_ + MORPH <= DUR + 0.01, f"scene {sid}: the return to full frame ends after the video ({DUR}s)"
+    first = items[0][1]
+    assert first >= enter + SLIDE + PAUSE - 0.01, f"scene {sid}: first visual at {first}s needs the sheet settled ({enter + SLIDE + PAUSE:.2f}s)"
+    if SCENES:
+        prev = SCENES[-1]
+        assert enter >= prev["items"][-1][2] - 0.01, f"scene {sid}: sheet starts at {enter}s before the last visual of {prev['sid']} ends ({prev['items'][-1][2]}s)"
+        assert prev["exit"] is None or enter >= prev["exit"] + MORPH + 0.05 - 0.01, f"scene {sid}: starts {enter - prev['exit']:.2f}s after a return to full frame; the morph takes {MORPH}s, wait {MORPH + 0.05:.2f}s"
+    for i, (iid, a, b, html) in enumerate(items):
+        assert b - a >= FADE_IN + FADE_OUT + 0.05 - 0.001, f"visual {iid}: {b - a:.2f}s on screen is too short for a fade in and a fade out"
+        assert i == 0 or a >= items[i - 1][2] + 0.1 - 0.01, f"visual {iid}: starts before the last one has faded out"
+        assert exit_ is None or b <= exit_ - 0.05 + 0.01, f"visual {iid}: still on screen when the sheet leaves"
+    SCENES.append({"sid": sid, "color": color, "enter": enter, "items": items, "exit": exit_})
+
+
+def _emit_scenes():
+    n = 0
+    for k, sc in enumerate(SCENES):
+        n += 1; d = 7 + 11 * n
+        end = sc["exit"] + 0.7 if sc["exit"] else (SCENES[k + 1]["enter"] + SLIDE + 0.1 if k + 1 < len(SCENES) else DUR)
+        html = (f'<div class="sheet" id="{sc["sid"]}-sh"><div class="so" style="clip-path:{poly(1920, 1080, 38, 7, d)}"></div>'
+                f'<div class="si" style="background:{SHEET_COLORS[sc["color"]]};clip-path:{poly(1920, 1080, 54, 6, d + 5)}"></div>'
+                f'<div class="tape" style="left:{120 + d % 90}px;top:22px;transform:rotate(-8deg)"></div><div class="tape" style="left:{1600 + d % 60}px;top:1012px;transform:rotate(5deg)"></div></div>')
+        clip(sc["sid"] + "-sc", sc["enter"], end, html, z=0)
+        J(f'tl.fromTo("#{sc["sid"]}-sh",{{x:1950,rotation:3}},{{x:0,rotation:-0.3,duration:{SLIDE},ease:"expo.out"}},{sc["enter"]:.2f});')   # always from the right
+        S(sc["enter"], "whoosh_big", 0.14)
+        if sc["exit"]:
+            J(f'tl.to("#{sc["sid"]}-sh",{{x:-1950,duration:{SHEET_OUT},ease:"power3.in"}},{sc["exit"]:.2f});')   # always to the left
+            S(sc["exit"], "whoosh_big", 0.12)
+        for iid, a, b, ih in sc["items"]:
+            clip(iid, a - 0.05, b, f'<div class="stage">{ih}</div>', z=4)
+            J(f'tl.fromTo("#{iid} .stage",{{opacity:0,scale:.97}},{{opacity:1,scale:1,duration:{FADE_IN},ease:"power2.out"}},{a:.2f});')
+            J(f'tl.to("#{iid} .stage",{{opacity:0,duration:{FADE_OUT},ease:"power2.in"}},{b - FADE_OUT - 0.05:.2f});')
+
+
+def compute_seq():
+    seq = []
+    for sc in SCENES:
+        seq.append((sc["enter"], "R"))
+        if sc["exit"]:
+            seq.append((sc["exit"], "full"))
+    return seq
+
+
+def behind(id, t0, pop, t1, inner):
+    """Text between the video and a cutout of the speaker. t0 = cutout start, pop = when the word appears (say it on the spoken word)."""
     import re
     if not re.fullmatch(r"[a-z0-9_-]+", id):
         sys.exit(f"build: window id {id!r} must match [a-z0-9_-]+")
+    for i in [id, id + "-bt", id + "-pv"] + ids_in(inner):
+        assert i not in _IDS, f"duplicate id {i!r}"
+        _IDS.add(i)
+    if t1 > DUR + 0.01:
+        sys.exit(f"build: window {id} ends at {t1}s but the video is {DUR}s long")
     past = [(t, st) for t, st in SEQ if t <= t0 + 0.01]
     if past and past[-1][1] != "full":
         sys.exit(f"build: window {id} starts at {t0}s while the speaker is in the panel; move it after a return to full frame")
     if past:
         t0 = max(t0, past[-1][0] + 0.7)
-        again = [(t, st) for t, st in SEQ if t <= t0 + 0.01]   # the shift may have moved the start past the next morph
-        if again[-1][1] != "full":
-            sys.exit(f"build: window {id} cannot start before the speaker is back at full frame ({again[-1][0]}s is a panel morph); move it later")
+        if [(t, st) for t, st in SEQ if t <= t0 + 0.01][-1][1] != "full":
+            sys.exit(f"build: window {id} cannot start before the speaker is back at full frame; move it later")
+        assert pop >= past[-1][0] + 1.0 - 0.01, f"window {id}: the word appears {pop - past[-1][0]:.2f}s after the morph; wait 1 s so only one thing moves at a time"
     nxt = [t for t, st in SEQ if t > t0 + 0.01]
-    if nxt and t1 > nxt[0]:
-        sys.exit(f"build: window {id} ({t0}-{t1}s) runs into the panel morph at {nxt[0]}s")
+    if nxt and t1 > nxt[0] - 0.4:
+        sys.exit(f"build: window {id} ({t0}-{t1}s) is too close to the next scene change at {nxt[0]}s")
     t1 = min(t1, DUR)
     if t0 >= t1:
         return
@@ -170,71 +208,67 @@ def behind(id, t0, t1, inner):
         J(f'tl.to("{e}",{{opacity:0,duration:.25,ease:"power2.in"}},{t1 - 0.25:.2f});')
 
 
-behind("b1", 3.3, 6.0, f'<div class="bt" style="top:330px"><span id="b1w" style="color:{INK}">COMPANY</span></div>')
-J('tl.fromTo("#b1w",{opacity:0,y:60,scale:1.06},{opacity:1,y:0,scale:1,duration:.9,ease:"expo.out"},3.45);'); S(3.45, "whoosh_big", 0.25)
+# ================= TIMELINE (times are seconds in the base video) =================
+# opening: just the name, bottom left
+clip("s0", 0.3, 5.4, '<div class="nt"><b>Name</b></div>', z=4)
+J('tl.fromTo("#s0 .nt",{opacity:0},{opacity:1,duration:.6,ease:"power2.out"},0.6);'); J('tl.to("#s0 .nt",{opacity:0,duration:.4},4.9);')
 
-# 1 a logo tile
-item("m1", "R", 6.5, 12.2, tile("logo-a", 380), -1.5)
-# 2 title, then a mock window
-item("so1", "R", 12.5, 16.4, big("Role title<br>here", 120))
-item("so2", "R", 16.5, 18.6, card(f'<div class="dots"><i></i><i></i><i></i><b style="margin-left:14px;font-size:30px;color:#6E6E73">Previous Co</b></div><div class="blk" style="width:100%;height:46px"></div><div class="blk" style="width:58%;height:120px;margin-top:18px"></div>', 760, 40), -1.2)
-# 3 30K -> 80K: one continuous line, one accent
+# 1 logos (blue)
+scene("m", "blue", 6.3, [("m1", 7.4, 12.2, '<div style="display:flex;gap:50px;align-items:center">' + tile("logo-a", 330) + tile("logo-e", 330) + '</div>')])
+# 2 role, the product, the growth line (light)
 chart = ('<div class="num" id="c-n" style="font-size:250px">20K</div>'
          f'<svg width="1000" height="300" viewBox="0 0 1000 300" style="margin-top:20px;overflow:visible"><path id="c-p" d="M20 270 C250 262 420 240 560 170 S840 40 980 22" pathLength="1" fill="none" stroke="{INK}" stroke-width="8" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1"/>'
-         f'<circle id="c-d0" cx="20" cy="270" r="12" fill="{INK}"/><text id="c-l0" x="20" y="320" font-family="Inter" font-weight="700" font-size="34" fill="#6E6E73" text-anchor="start">20K</text><circle id="c-d1" cx="980" cy="22" r="16" fill="{ACC}" style="filter:drop-shadow(0 0 14px {ACC})"/></svg>'
-         )
-item("c1", "R", 18.7, 22.4, chart)
-J('tl.fromTo("#c-d0",{opacity:0,scale:.2,transformOrigin:"50% 50%"},{opacity:1,scale:1,duration:.4,ease:"back.out(2)"},18.9);')
-J('tl.fromTo("#c-d1",{opacity:0,scale:.2,transformOrigin:"50% 50%"},{opacity:0,scale:.2,duration:.01},18.9);')
-J('tl.fromTo("#c-l0",{opacity:0},{opacity:1,duration:.4},18.95);')
+         f'<circle id="c-d0" cx="20" cy="270" r="12" fill="{INK}"/><text x="20" y="320" font-family="Inter" font-weight="700" font-size="34" fill="#6E6E73">20K</text><circle id="c-d1" cx="980" cy="22" r="16" fill="{ACC}" style="filter:drop-shadow(0 0 14px {ACC})"/></svg>')
+scene("p", "light", 12.5, [
+    ("so1", 13.6, 16.35, big("Role title<br>here", 120)),
+    ("so2", 16.6, 18.6, card('<div class="dots"><i></i><i></i><i></i><b style="margin-left:14px;font-size:30px;color:#6E6E73">Previous Co</b></div><div class="blk" style="width:100%;height:46px"></div><div class="blk" style="width:58%;height:120px;margin-top:18px"></div>', 760, 40)),
+    ("c1", 18.8, 22.3, chart)], exit_=22.35)
+J('tl.fromTo("#c-d1",{opacity:0,scale:.2,transformOrigin:"50% 50%"},{opacity:1,scale:1,duration:.4,ease:"back.out(2.4)"},20.4);')
 J('tl.fromTo("#c-p",{strokeDashoffset:1},{strokeDashoffset:0,duration:1.1,ease:"power2.inOut"},19.4);')
-J('(()=>{const o={v:20};tl.to(o,{v:80,duration:1.1,ease:"power2.inOut",onUpdate:()=>{document.getElementById("c-n").textContent=Math.round(o.v)+"K"}},19.4);})();')
-J('tl.fromTo("#c-d1",{opacity:0,scale:.2},{opacity:1,scale:1,duration:.4,ease:"back.out(2.4)"},20.4);'); S(19.4, "rise", 0.2); S(20.45, "win", 0.22)
-
-# 4 growth: text behind the speaker
-behind("b2", 22.6, 26.2, f'<div class="bt" style="top:340px"><span id="b2w" style="color:{INK}">GROWTH</span></div>')
-J('tl.fromTo("#b2w",{opacity:0,y:60,scale:1.06},{opacity:1,y:0,scale:1,duration:.9,ease:"expo.out"},23.25);'); S(23.25, "whoosh_big", 0.25)
-
-# 5 tactics (L): phones -> GEO/AEO -> grey hat, one at a time
-item("t1", "L", 26.6, 28.6, pic("phones", 700), -1)
-(_dk(1), item("t2", "L", 28.7, 31.4, big("GEO", 220) + big("AEO", 220, ACC)), _dk(0))
-item("t3", "L", 31.5, 34.4, pic("hat", 620), 1.5)
-
-# 6 Studio Name (R)
-item("be1", "R", 34.55, 38.7, pic("rocket", 620))
-item("be2", "R", 38.8, 41.3, card(big("Studio Name", 190), 880, 70), -1)
-# 7 what Studio Name gives (R): one icon at a time
-(_dk(1), item("g0", "R", 41.45, 43.7, big("Pre-seed", 140) + f'<div class="arrow" style="background:#fff"></div>' + big("Seed", 140, ACC)), _dk(0))
-for i, (n, lab, a, b) in enumerate([("coins", "Funding", 43.8, 45.2), ("mentor", "Mentorship", 45.25, 46.25), ("gift", "Perks", 46.3, 47.35), ("hack", "Hackathons", 47.4, 48.45), ("stage", "Events", 48.5, 49.1)]):
-    item(f"g{i + 1}", "R", a, b, pic(n, 560))
-
-# 8 token maxer: behind the speaker
-behind("b3", 49.2, 52.0, f'<div class="bt" style="top:350px;font-size:210px"><span id="b3a" style="color:{INK}">BIG</span> <span id="b3b" style="color:{ACC}">IDEA</span></div>')
-J('tl.fromTo("#b3a",{opacity:0,y:50},{opacity:1,y:0,duration:.7,ease:"expo.out"},50.6);'); J('tl.fromTo("#b3b",{opacity:0,y:50},{opacity:1,y:0,duration:.7,ease:"expo.out"},51.1);'); S(50.6, "whoosh_big", 0.25); S(51.1, "coin", 0.3)
-
-# 9 Claude subscriptions (L)
+J('(()=>{const o={v:20};tl.to(o,{v:80,duration:1.1,ease:"power2.inOut",onUpdate:()=>{document.getElementById("c-n").textContent=Math.round(o.v)+"K"}},19.4);})();'); S(19.4, "rise", 0.1)
+# 3 tactics (blue)
+scene("t", "blue", 26.65, [
+    ("t1", 27.8, 28.55, pic("phones", 700)),
+    ("t2", 28.7, 31.4, big("GEO", 220) + f'<div id="t-aeo">{big("AEO", 220, ACC)}</div>'),
+    ("t3", 31.5, 34.3, pic("hat", 620))])
+J('tl.fromTo("#t-aeo",{opacity:0},{opacity:1,duration:.35,ease:"power2.out"},29.6);')
+# 4 the studio (light)
+scene("b", "light", 34.85, [
+    ("be1", 36.0, 38.65, pic("rocket", 620)),
+    ("be2", 38.85, 41.35, card(big("Studio Name", 190), 880, 70)),
+    ("g0", 41.5, 43.75, big("Pre-seed", 140) + '<div class="arrow"></div>' + big("Seed", 140, ACC)),
+    ("g1", 43.9, 45.2, pic("coins", 560)), ("g2", 45.3, 46.25, pic("mentor", 560)), ("g3", 46.35, 47.35, pic("gift", 560)),
+    ("g4", 47.45, 48.45, pic("hack", 560)), ("g5", 48.55, 49.25, pic("stage", 560))], exit_=49.3)
+# 5 subscriptions, users, downloads (blue)
 fan = "".join(f'<div class="tile" style="position:absolute;left:{i * 165}px;top:{(i % 2) * 36}px;width:230px;height:230px;transform:rotate({[-6, 3, -2, 5][i]}deg)"><img src="assets/logos/logo-c.svg" style="width:128px;height:128px"></div>' for i in range(4))
-item("cl", "L", 52.2, 55.4, f'<div style="position:relative;width:850px;height:290px">{fan}</div>')
-# 10 users (L)
-item("us", "L", 55.7, 59.9, big("10,000s", 240) + pic("crowd", 520))
-# 11 npm (L)
-item("np", "L", 60.1, 69.7, f'<div style="display:flex;gap:60px;align-items:center">{tile("logo-b", 240)}<div><div class="num" id="n-n" style="font-size:260px">0</div></div></div>')
-J('(()=>{const o={v:0};tl.to(o,{v:100,duration:1.5,ease:"power2.out",onUpdate:()=>{document.getElementById("n-n").textContent="~"+Math.round(o.v)+"K"}},63.4);})();'); S(63.4, "rise", 0.2)
-
-# 13 venn (R)
-venn = (f'<svg width="860" height="640" viewBox="0 0 860 640"><g fill="rgba(232,85,47,.10)" stroke="{INK}" stroke-width="5"><circle id="v1" cx="300" cy="230" r="200"/><circle id="v2" cx="560" cy="230" r="200"/><circle id="v3" cx="430" cy="430" r="200"/></g>'
+scene("s", "blue", 52.4, [
+    ("cl", 53.5, 55.9, f'<div style="position:relative;width:850px;height:290px">{fan}</div>'),
+    ("us", 56.8, 59.9, f'<div id="us-n">{big("10,000s", 240)}</div>' + pic("crowd", 520)),
+    ("np", 62.2, 69.6, f'<div style="display:flex;gap:60px;align-items:center">{tile("logo-b", 240)}<div class="num" id="n-n" style="font-size:260px;opacity:0">0</div></div>')], exit_=69.7)
+J('tl.fromTo("#us-n",{opacity:0},{opacity:1,duration:.35},58.1);')
+J('tl.fromTo("#n-n",{opacity:0},{opacity:1,duration:.3},63.3);'); J('(()=>{const o={v:0};tl.to(o,{v:100,duration:1.5,ease:"power2.out",onUpdate:()=>{document.getElementById("n-n").textContent="~"+Math.round(o.v)+"K"}},63.4);})();'); S(63.4, "rise", 0.1)
+# 6 what I bring, the company (light)
+venn = (f'<svg width="860" height="640" viewBox="0 0 860 640"><g fill="rgba(212,98,63,.10)" stroke="{INK}" stroke-width="5"><circle id="v1" cx="300" cy="230" r="200"/><circle id="v2" cx="560" cy="230" r="200"/><circle id="v3" cx="430" cy="430" r="200"/></g>'
         f'<g font-family="Inter" font-weight="800" font-size="40" fill="{INK}" text-anchor="middle"><text id="v1t" x="220" y="200">Product</text><text id="v2t" x="640" y="200">Business</text><text id="v3t" x="430" y="520">Growth</text></g></svg>')
-item("ve", "R", 79.1, 84.1, venn)
+scene("v", "light", 78.55, [("ve", 79.7, 84.15, venn), ("di", 84.7, 90.8, card(big("Company", 200), 860, 70))])
 for k, t in (("v1", 79.7), ("v2", 80.4), ("v3", 81.0)):
     J(f'tl.fromTo("#{k}",{{opacity:0,scale:.6,transformOrigin:"50% 50%"}},{{opacity:1,scale:1,duration:.6,ease:"back.out(1.6)"}},{t});'); J(f'tl.fromTo("#{k}t",{{opacity:0}},{{opacity:1,duration:.4}},{t + 0.25});')
-# 14 Company (R)
-item("di", "R", 84.4, 90.9, card(big("Company", 200), 860, 70), -1)
-# 15 calendar (L)
-item("ca", "L", 91.3, 98.5, tile("logo-d", 340), -1)
+# 7 calendar (blue)
+scene("k", "blue", 91.3, [("ca", 92.45, 98.3, tile("logo-d", 340))], exit_=98.4)
 
-# morph sequence (explicit, so every beat has the right side)
+SEQ = compute_seq()
+# big words behind the speaker: the cutout starts after the speaker is back at full frame, the word appears on the spoken word
+behind("b2", 24.7, 24.9, 26.2, f'<div class="bt" style="top:340px"><span id="b2w" style="color:{INK}">GROWTH</span></div>')
+J('tl.fromTo("#b2w",{opacity:0,y:50,scale:1.05},{opacity:1,y:0,scale:1,duration:.9,ease:"expo.out"},24.9);'); S(24.9, "whoosh_big", 0.12)
+behind("b3", 50.4, 50.6, 52.0, f'<div class="bt" style="top:350px;font-size:210px"><span id="b3a" style="color:{INK}">BIG</span> <span id="b3b" style="color:{ACC}">IDEA</span></div>')
+J('tl.fromTo("#b3a",{opacity:0,y:50},{opacity:1,y:0,duration:.7,ease:"expo.out"},50.6);'); J('tl.fromTo("#b3b",{opacity:0,y:50},{opacity:1,y:0,duration:.7,ease:"expo.out"},51.1);'); S(51.1, "coin", 0.12)
+
+_emit_scenes()
 states(SEQ)
 open(os.path.join(OUT, "windows.txt"), "w").write("".join(f"{i} {a:.2f} {b:.2f}\n" for i, a, b in WINDOWS))
+import json
+open(os.path.join(OUT, "timeline.json"), "w").write(json.dumps({"duration": DUR, "seq": SEQ, "scenes": [{"id": c["sid"], "enter": c["enter"], "exit": c["exit"], "items": [[i[0], i[1], i[2]] for i in c["items"]]} for c in SCENES], "windows": WINDOWS}, indent=1))
+
 
 # ---- audio ----
 L = {"whoosh": 0.42, "whoosh_big": 1.2, "pop": 0.26, "coin": 0.39, "rise": 1.2, "tick": 0.07, "win": 1.2}
@@ -251,10 +285,10 @@ CSS = """
 .stage{position:absolute;top:0;width:1120px;height:1080px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;text-align:center}
 .big{font-weight:900;letter-spacing:-.045em;line-height:.95}.num{font-weight:900;letter-spacing:-.05em;line-height:.9;color:%INK%}.sub{font-weight:600;letter-spacing:-.01em;line-height:1.15}
 .tile{background:%INK%;border-radius:28%;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(0,0,0,.22),0 2px 0 rgba(255,255,255,.08) inset}
-.sheet{position:absolute;inset:0;filter:drop-shadow(0 20px 30px rgba(0,0,0,.22))}.so,.si{position:absolute;inset:0}.ht{position:absolute;width:420px;height:300px;background-size:20px 20px;-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 10%,transparent 70%)}.tape{position:absolute;width:170px;height:46px;background:rgba(240,228,176,.78);box-shadow:0 2px 6px rgba(0,0,0,.18);clip-path:polygon(0 10%,4% 0,8% 12%,12% 0,16% 10%,100% 10%,96% 100%,92% 88%,88% 100%,84% 90%,0 90%)}.paper{position:relative;border-radius:14px}.pb{position:absolute;inset:0;background:%CARD%;border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 36px 70px rgba(0,0,0,.16);filter:url(#rough)}.pc{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px}
+.sheet{position:absolute;inset:0;filter:drop-shadow(0 20px 30px rgba(0,0,0,.22))}.so,.si{position:absolute;inset:0}.tape{position:absolute;width:170px;height:46px;background:rgba(240,228,176,.78);box-shadow:0 2px 6px rgba(0,0,0,.18);clip-path:polygon(0 10%,4% 0,8% 12%,12% 0,16% 10%,100% 10%,96% 100%,92% 88%,88% 100%,84% 90%,0 90%)}.paper{position:relative;border-radius:14px}.pb{position:absolute;inset:0;background:%CARD%;border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.05),0 36px 70px rgba(0,0,0,.16);filter:url(#rough)}.pc{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px}
 .pic{filter:drop-shadow(0 26px 30px rgba(0,0,0,.2))}.arrow{width:6px;height:70px;background:%INK%;border-radius:3px}
 .dots{display:flex;gap:10px;width:100%}.dots i{width:16px;height:16px;border-radius:50%;background:#cfcac0}.blk{background:#e4dfd4;border-radius:10px}
-.nt{position:absolute;left:64px;top:900px;display:flex;flex-direction:column;gap:4px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55),0 4px 24px rgba(0,0,0,.45)}.nt b{font-size:64px;font-weight:900;letter-spacing:-.03em}.nt span{font-size:36px;font-weight:700}
+.nt{position:absolute;left:64px;top:900px;display:flex;flex-direction:column;gap:4px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55),0 4px 24px rgba(0,0,0,.45)}.nt b{font-size:64px;font-weight:900;letter-spacing:-.03em}
 .bt{position:absolute;left:0;width:1920px;text-align:center;font-size:330px;font-weight:900;letter-spacing:-.05em;line-height:1}
 """
 for k, v in {"%PAPER%": PAPER, "%INK%": INK, "%CARD%": CARD}.items():

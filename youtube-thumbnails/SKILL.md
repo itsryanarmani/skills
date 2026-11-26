@@ -50,8 +50,8 @@ compare both on your own photos before a large batch.
 3. **Generate poses** with `thumbnail-poses`. Look at every pose at full size
    against the checklist in `references/checklists.md`. Redo a bad tag with
    `--force --tags TAG`.
-4. **Open the gallery** for one real item. Show the person the 34 layouts, the
-   pose strip, and the 120 px test. Do not pick for them. Let them choose a
+4. **Open the gallery** for one real item. Show the person the layouts (24, or 34
+   with a `cutout.png`), the pose strip, and the 120 px test. Do not pick for them. Let them choose a
    layout and optionally one pose for all.
 5. **Export** with `thumbnail-export` for all items. Read the JSON lines. Every
    row must say `"ok": true`.

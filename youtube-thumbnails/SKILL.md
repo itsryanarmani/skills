@@ -41,6 +41,15 @@ minutes with 3 parallel runs. A second model, `google/nano-banana-2/edit`, cost
 the same. In one side-by-side sample (n=1) it looked less like the person, so
 compare both on your own photos before a large batch.
 
+## Study real thumbnails first (optional, recommended for a batch)
+
+Collect recent thumbnails of your niche with `thumbnail-dataset` (a real run needs a
+`youtube.readonly` token and costs about 100 quota units per search; `--dry-run` needs none), drop vertical
+Shorts, label the biggest over- and under-performers, and read the table as hints.
+Recreate one or two references with your own person and words to see why they work.
+See `references/dataset-and-recreation.md`. The images are other people's work:
+keep them local and never publish or commit them.
+
 ## What the agent does
 
 1. **Read the video's one idea** and its title. The thumbnail must not repeat the
@@ -70,6 +79,7 @@ compare both on your own photos before a large batch.
 - **The model never writes text.** Image models misspell. The gallery page draws
   every word from `config.json`.
 - Do not copy another creator's thumbnail. Take the format, not the artwork.
+- Promise only what the video keeps.
 
 ## Boundaries
 
@@ -86,4 +96,6 @@ compare both on your own photos before a large batch.
 - `references/tactics.md`: expressions, colour pairs, text, composition, tests.
 - `references/checklists.md`: before, per pose, per layout, export, upload.
 - `references/prompts.md`: the 25 pose prompts and prompts for no-person images.
+- `references/dataset-and-recreation.md`: collect real thumbnails, clean, label, read the hints, recreate one.
+- `references/element-menu.md`: opt-in elements, environments, the interview, letters and numbers, verification.
 - `references/inspiration.md`: where the rules come from and where to look.

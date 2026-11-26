@@ -12,6 +12,7 @@ Repositories change. A verified run of ours outranks anything below.
 | https://github.com/meibraransari/YouTube-Thumbnail-Generator-Prompt | A category list of prompt styles (tech, business, education, mystery) and a prompt shape: subject, lighting, contrast, "viral YouTube style". We did not use its AI-face prompts. |
 | https://x.com/designbykashyap/status/2125271065823936795 | The 20 formats in `formats.md`. |
 | https://github.com/bdebon/youtube-thumbnail-tester-chrome-extension | Not run by us. Its description says it shows a thumbnail and title in the real home feed, which is the right test for "does it stand out". |
+| https://github.com/hassancs91/claude-youtube-editor (`.claude/skills/thumbnail`) | The opt-in element menu, environments, the interview step, the honesty rule, the letter and number scheme, the verify list and its failure modes (`element-menu.md`). It lets the model draw the text; we do not. |
 | https://github.com/sediman-agent/OpenSkynet (`skills/kostja94_marketing-skills/youtube`) | Title, description and thumbnail repeat one message, each aimed at a different part of the algorithm. |
 
 Where a source says "preserve the person exactly" (titstack) and our skill makes

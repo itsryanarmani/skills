@@ -76,7 +76,7 @@ let CFG = {items: []}, TAGS = [], POSE = {}, st = {i: 0, l: 0, pose: null};
 const hs = new URLSearchParams(location.hash.slice(1));
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeTag = t => (t && /^[a-z0-9_-]+$/i.test(t)) ? t : null;
-const sub = (s, C) => s.replace(/\{C\}/g, C).replace(/\{N\}/g, esc(CFG.name || ''));
+const sub = (s, C) => s.replace(/\{C\}/g, () => C).replace(/\{N\}/g, () => esc(CFG.name || ''));
 function lines(txt, max){ // balanced word wrap into at most 3 lines
   const w = txt.split(' '), n = Math.min(3, Math.max(1, Math.ceil(txt.length / max)));
   if (n === 1 || w.length < 2) return [txt];
@@ -118,7 +118,7 @@ const LAYOUTS = [
 // cutout layouts need cutout.png (transparent person); they ignore poses
 const CUT = [
   ['Paper cut', (C, P) => `<div class="th k1"><div class="sheet"><div class="tape"></div><div class="kk">A VIDEO FOR</div><span class="fit" data-max="620" data-start="150" style="font-family:Georgia,serif;font-weight:900">${C}</span></div>${P}</div>`],
-  ['Color block', (C, P) => `<div class="th k2"><div class="t" style="top:150px"><span class="fit" data-max="700" data-start="170">${C}</span></div><div class="pill" style="top:420px;background:#ffd84a;color:#111">Watch this</div>${P}</div>`],
+  ['Color block', (C, P) => `<div class="th k2"><div class="t" style="top:150px"><span class="fit" data-max="540" data-start="170">${C}</span></div><div class="pill" style="top:420px;background:#ffd84a;color:#111">Watch this</div>${P}</div>`],
   ['Dark spotlight', (C, P) => `<div class="th k3">${P}<div style="position:absolute;left:640px;top:140px;font:900 120px Arial;color:#ffd84a">Hi,</div><div class="t" style="left:640px;top:290px;width:600px"><span class="fit" data-max="600" data-start="130">${C}</span></div></div>`],
   ['Split screen', (C, P, R) => `<div class="th k4"><div class="l"></div>${P}<div class="t" style="left:600px;top:150px;width:640px;white-space:normal">${stack(R, 620, 112, 10)}</div><div style="position:absolute;left:600px;top:480px;font:800 56px Arial;color:#ffd84a">for ${C}</div></div>`],
   ['Postcard card', (C, P) => `<div class="th k5"><div class="card"><div class="hand" style="font-size:80px;margin-top:40px">To:</div><span class="fit hand" data-max="620" data-start="150" style="color:#2447ff">${C}</span></div>${P}</div>`],
@@ -160,6 +160,7 @@ async function solo(){ // one thumbnail; sets <html data-ready="ok"> or "fail:re
   const set = v => { document.documentElement.dataset.ready = v; };
   const l = +hs.get('l'), item = CFG.items[+hs.get('i')], pose = safeTag(hs.get('pose')), max = LAYOUTS.length + (HAS_CUT ? CUT.length : 0);
   if (!item) return set('fail:unknown item');
+  if (!String(item.title || '').trim()) return set('fail:item has no title');
   if (!Number.isInteger(l) || l < 0 || l >= max) return set('fail:unknown layout (need cutout.png for layouts above ' + LAYOUTS.length + ')');
   if (hs.get('pose') && (!pose || !TAGS.includes(pose))) return set('fail:unknown pose');
   if (l < LAYOUTS.length && !TAGS.includes(pose || LAYOUTS[l][1])) return set('fail:pose file missing: ' + (pose || LAYOUTS[l][1]));
@@ -170,10 +171,10 @@ async function solo(){ // one thumbnail; sets <html data-ready="ok"> or "fail:re
   set('ok');
 }
 Promise.all([fetch('config.json').then(x => x.json()), fetch('poses/index.json').then(x => x.json()).catch(() => []), fetch('cutout.png', {method: 'HEAD'}).then(r => r.ok).catch(() => false)]).then(async ([c, tags, cut]) => {
-  CFG = c; TAGS = tags; HAS_CUT = cut; await Promise.all(tags.map(sample));
+  CFG = c; TAGS = tags.filter(t => safeTag(t)); HAS_CUT = cut; await Promise.all(TAGS.map(sample));
   if (hs.get('solo')) return solo();
   const sel = document.getElementById('item'); CFG.items.forEach((x, i) => { const o = document.createElement('option'); o.value = i; o.textContent = x.title + (x.sub ? ' - ' + x.sub : ''); sel.appendChild(o); });
-  if (hs.get('i')) { st.i = +hs.get('i'); sel.value = st.i; }
+  if (hs.get('i') && CFG.items[+hs.get('i')]) { st.i = +hs.get('i'); sel.value = st.i; }
   sel.onchange = () => { st.i = +sel.value; render(); };
   document.getElementById('reset').onclick = () => { st.pose = null; render(); };
   document.getElementById('gd').onclick = e => { const on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); document.getElementById('app').classList.toggle('guides', on); };

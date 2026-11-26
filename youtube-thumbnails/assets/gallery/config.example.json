@@ -1,0 +1,9 @@
+{
+  "name": "Alex",
+  "quote": "Watch this, {C}",
+  "items": [
+    { "title": "Acme Robotics", "sub": "Senior PM" },
+    { "title": "Northwind", "sub": "Staff Engineer" },
+    { "title": "Globex Research", "sub": "Researcher" }
+  ]
+}

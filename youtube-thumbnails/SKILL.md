@@ -49,7 +49,8 @@ compare both on your own photos before a large batch.
    front view. Say that they will be uploaded to WaveSpeed and ask before `--yes`.
 3. **Generate poses** with `thumbnail-poses`. Look at every pose at full size
    against the checklist in `references/checklists.md`. Redo a bad tag with
-   `--force --tags TAG`.
+   `--force --tags TAG`; `--force` deletes the old file first, so copy a pose you
+   like before you redo it.
 4. **Open the gallery** for one real item. Show the person the layouts (24, or 34
    with a `cutout.png`), the pose strip, and the 120 px test. Do not pick for them. Let them choose a
    layout and optionally one pose for all.

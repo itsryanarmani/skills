@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thumbnail styler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@600;900&family=Poppins:wght@500;800&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ecebe7;--ink:#161513;--muted:#6b665d;--card:#fff}
+@media (prefers-color-scheme: dark){:root{--bg:#171614;--ink:#eee9df;--muted:#9a948a;--card:#242321}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,"Helvetica Neue",Arial,sans-serif}
+body.solo{background:#000}
+header{padding:14px 20px 4px}h1{font:700 21px/1.2 Georgia,serif;margin:0 0 4px}.sub{color:var(--muted);margin:0;max-width:900px}
+.wrap{display:flex;flex-wrap:wrap;gap:20px;padding:10px 20px 30px;align-items:flex-start}
+.panel{width:360px;display:flex;flex-direction:column;gap:12px}
+.grp{background:var(--card);border-radius:10px;padding:10px 12px}
+.grp>b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+select,button,input[type=text]{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid #8a857b;background:transparent;color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sw{width:30px;height:30px;border-radius:8px;border:2px solid transparent;cursor:pointer;padding:0}
+.sw[aria-pressed=true]{border-color:#ff5a1f;outline:2px solid var(--ink)}
+label.sl{display:flex;align-items:center;gap:8px;width:100%}label.sl span{width:92px;color:var(--muted)}label.sl input{flex:1}label.sl em{width:44px;font-style:normal;text-align:right}
+.main{flex:1;min-width:560px}
+.frame{position:relative;overflow:hidden}.scaler{position:absolute;left:0;top:0;transform-origin:0 0}
+.smalls{display:flex;gap:14px;align-items:flex-end;margin:12px 0}
+.guides .th::after{content:"";position:absolute;right:0;bottom:0;width:230px;height:70px;background:rgba(255,0,60,.35);border:2px dashed #f03;z-index:99}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,240px);gap:10px;margin-top:10px}
+.grid .c{cursor:pointer;border:3px solid transparent;border-radius:8px;padding:2px;background:var(--card)}.grid .c.sel{border-color:#ff5a1f}
+.grid small{display:block;padding:2px 4px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+textarea{width:100%;height:96px;font:12px ui-monospace,Menlo,monospace;background:var(--card);color:var(--ink);border:1px solid #8a857b;border-radius:8px;padding:6px}
+/* 1280x720 canvas */
+.th{width:1280px;height:720px;position:relative;overflow:hidden;font-family:"Arial Black",Arial,sans-serif}
+.th .bgl{position:absolute;inset:0}
+.th .person{position:absolute;left:0;top:0;width:1280px;height:720px;filter:drop-shadow(0 14px 20px rgba(0,0,0,.35))}
+.th .tb{position:absolute;display:flex;flex-direction:column}
+.th .ln{white-space:nowrap;line-height:1;display:block;paint-order:stroke fill}
+.th .pl{display:inline-block;white-space:nowrap;border-radius:99px;line-height:1;margin-top:18px;align-self:flex-start}
+.th .logo{position:absolute;z-index:5}
+.presets{padding:6px 20px 0}.presets h2{font:700 17px/1.2 Georgia,serif;margin:6px 0 4px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(540px,1fr));gap:12px;margin-top:10px}
+.pc{background:var(--card);border:3px solid transparent;border-radius:10px;padding:8px;cursor:pointer}.pc.sel{border-color:#ff5a1f}
+.pc .pair{display:flex;gap:8px}.pc img.real{width:256px;height:144px;object-fit:cover;border-radius:4px;display:block}
+.pc b{display:block;margin:6px 0 0}.pc small{color:var(--muted)}
+</style></head>
+<body>
+<div id="app">
+<header><h1>Thumbnail styler, 1280 x 720</h1>
+<p class="sub">Pick a preset, then change the background, text, outline, size, placement and logo. The two small boxes show phone sizes. Everything changes live, for every video at once (grid at the bottom).</p></header>
+<section class="presets"><h2>Presets from real YouTube thumbnails</h2>
+<p class="sub">Left: the real thumbnail it is based on (other people's work, shown here only to compare, never published). Right: your face and the current video's name in the same style. Click a card to apply it, then fine-tune below. The number is how many times the video's views beat the channel's subscriber count.</p>
+<div class="pgrid" id="presets"></div></section>
+<div class="wrap">
+ <div class="panel" id="panel"></div>
+ <div class="main">
+  <div class="row" style="margin-bottom:8px"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Video</b><select id="item" style="min-width:300px"></select><button id="gd" aria-pressed="false">Show safe zone</button></div>
+  <div id="hero"></div>
+  <div class="smalls" id="smalls"></div>
+  <div class="grp"><b>Your choices (paste this to the agent)</b><textarea id="out" readonly></textarea><div class="row" style="margin-top:6px"><button id="copy">Copy</button><button id="reset">Reset to defaults</button></div></div>
+  <div class="grp" style="margin-top:12px"><b>All videos, current style</b><div class="grid" id="grid"></div></div>
+ </div>
+</div>
+</div>
+<script>
+const LAY = [
+  {n: 2, pose: 'shocked', main: '{C}?!', pill: 'Watch this'},
+  {n: 4, pose: 'thinking', main: 'Why {C}?', pill: ''},
+  {n: 6, pose: 'headhands', main: 'Still deciding?', pill: '{C}'},
+  {n: 9, pose: 'shush', main: 'Psst, {C}.', pill: ''},
+  {n: 11, pose: 'shrug', main: 'Why not {C}?', pill: ''},
+  {n: 13, pose: 'mindblown', main: '{C} + me?', pill: ''},
+];
+const ORIG = {shocked: '#0a30ff', thinking: '#0f3d2e', headhands: '#f08a3a', shush: '#3b0a6e', shrug: '#f2e3d0', mindblown: '#3fb8c0'};
+const COLORS = ['#ffffff','#111111','#ffd84a','#e11d2e','#12a150','#2447ff','#ff5a1f','#ff4fa3','#7c3aed','#06b6d4','#f4f2ec','#0f3d2e'];
+const GRADS = [
+  ['sunset', 'linear-gradient(135deg,#ff5a1f,#ff2d55)'], ['ocean', 'linear-gradient(135deg,#2447ff,#06b6d4)'],
+  ['night', 'radial-gradient(circle at 30% 40%,#3a3a3a,#050505 70%)'], ['aurora', 'radial-gradient(circle at 20% 20%,#7c3aed,transparent 55%),radial-gradient(circle at 85% 80%,#06b6d4,transparent 55%),#1e1b4b'],
+  ['gold', 'linear-gradient(135deg,#ffd84a,#ff9f1c)'], ['mint', 'linear-gradient(135deg,#12a150,#a7f3d0)'], ['gemini', 'radial-gradient(circle at 72% 35%,#2a62f0,#02062e 72%)'], ['ember', 'radial-gradient(circle at 25% 62%,#6a3a18,#080807 72%)'],
+];
+const PATTERNS = [['none', ''], ['rays', 'repeating-conic-gradient(from 0deg at 62% 55%,rgba(255,255,255,.14) 0 6deg,transparent 6deg 12deg)'], ['dots', 'radial-gradient(rgba(0,0,0,.16) 3px,transparent 4px) 0 0/28px 28px'], ['grid', 'linear-gradient(rgba(0,0,0,.10) 2px,transparent 2px) 0 0/48px 48px,linear-gradient(90deg,rgba(0,0,0,.10) 2px,transparent 2px) 0 0/48px 48px']];
+const FONTS = [['Arial Black', '"Arial Black",Arial,sans-serif'], ['Anton', 'Anton,Impact,sans-serif'], ['Bebas Neue', '"Bebas Neue",Impact,sans-serif'], ['Oswald', 'Oswald,Impact,sans-serif'], ['Montserrat Black', 'Montserrat,Arial,sans-serif;font-weight:900'], ['Poppins', 'Poppins,Arial,sans-serif;font-weight:800'], ['Archivo Black', '"Archivo Black",Arial,sans-serif'], ['Impact', 'Impact,"Arial Narrow Bold",sans-serif'], ['Helvetica', '"Helvetica Neue",Arial,sans-serif;font-weight:700'], ['Georgia', 'Georgia,serif'], ['Marker', '"Marker Felt","Bradley Hand",cursive'], ['Futura', 'Futura,"Trebuchet MS",sans-serif'], ['Mono', 'ui-monospace,Menlo,monospace']];
+const PLACE = {left: [50, 60, 620, 600], right: [580, 60, 650, 600], top: [60, 30, 1160, 300], topleft: [40, 20, 680, 340], bottom: [60, 400, 1000, 290], center: [220, 160, 840, 400]};
+const DEF = {layout: 0, bg: 'orig', bgval: '', pattern: 0, font: 0, ink: '#ffffff', stroke: 8, strokeColor: '#111111', shadow: 1, size: 100, upper: 0, place: 'left', tx: 0, ty: 0, flip: 0, pscale: 100, px: 0, py: 0, pill: '#ffd84a', pillInk: '#111111', logo: 'none', logoPos: 'tl', logoSize: 200, box: '', boxBorder: '', tilt: 0, behind: 0, pillBorder: '', hidePill: 0};
+// Presets, each copied from a real YouTube thumbnail (refs/<id>.jpg). views / subscribers = outlier score.
+const PRESETS = [
+  {ref: 'gyN9lV9QgyA', name: 'Amber stack on grey', note: 'tall amber capitals fill the left half on mid grey, no box, no outline', s: {bg: 'solid', bgval: '#898b8c', font: 1, ink: '#f1b32c', stroke: 0, shadow: 1, upper: 1, size: 100, place: 'left', pscale: 105, hidePill: 1}},
+  {ref: 'lByNGAaamNc', name: 'Black on white, red accent', note: 'white background, huge black condensed capitals, red second line', s: {bg: 'solid', bgval: '#ffffff', font: 1, ink: '#111111', stroke: 0, shadow: 0, upper: 1, size: 100, place: 'left', pscale: 105, pill: '#e11d2e', pillInk: '#ffffff'}},
+  {ref: 'T__1QViXUxk', name: 'Blue box on olive', note: 'olive green background, white words in a blue box with a white edge', s: {bg: 'solid', bgval: '#667a5a', font: 4, ink: '#ffffff', stroke: 0, shadow: 0, upper: 1, size: 90, place: 'left', pscale: 105, box: '#3070f0', boxBorder: '#ffffff', pill: '#ffffff', pillInk: '#111111'}},
+  {ref: '_QK4FdjiCpQ', name: 'Cream, black and orange', note: 'warm cream background, black condensed capitals, orange second line', s: {bg: 'solid', bgval: '#fcf2e4', font: 1, ink: '#111111', stroke: 0, shadow: 0, upper: 1, size: 100, place: 'left', pscale: 105, pill: '#f09010', pillInk: '#111111'}},
+  {ref: 'mrEJu635RQE', name: 'Yellow on black', note: 'black background, huge yellow condensed capitals, white second line', s: {bg: 'solid', bgval: '#0b0b0b', font: 1, ink: '#f0d010', stroke: 0, shadow: 0, upper: 1, size: 100, place: 'left', pscale: 105, pill: '#ffffff', pillInk: '#111111'}},
+  {ref: '9VR8VwlYXWk', name: 'Navy to blue glow', note: 'deep navy with a blue glow behind me, white title, blue pill with a light edge', s: {bg: 'grad', bgval: '6', font: 5, ink: '#ffffff', stroke: 0, shadow: 1, upper: 0, size: 85, place: 'left', pscale: 105, pill: '#1d4ed8', pillInk: '#ffffff', pillBorder: '#8fb4ff'}},
+  {ref: '5p-sq8v3OXw', name: 'Teal grid, red tag', note: 'teal background with a faint grid, white title, red tag', s: {bg: 'solid', bgval: '#3d626a', pattern: 3, font: 8, ink: '#ffffff', stroke: 0, shadow: 0, upper: 0, size: 85, place: 'left', pscale: 105, pill: '#f01010', pillInk: '#ffffff'}},
+  {ref: 'MZyDYMWbmmw', name: 'Red label on pale', note: 'pale beige background, white words on a red label turned about 6 degrees', s: {bg: 'solid', bgval: '#d6cdc7', font: 4, ink: '#ffffff', stroke: 0, shadow: 0, upper: 0, size: 85, place: 'left', pscale: 115, box: '#f01010', boxBorder: '#ffffff', tilt: -6, pill: '#111111', pillInk: '#ffffff'}},
+  {ref: 'RjV84g_7kho', name: 'Neon green, black outline', note: 'green photo-like background, neon green capitals with a thick black outline', s: {bg: 'solid', bgval: '#94c797', font: 1, ink: '#10f050', stroke: 12, strokeColor: '#111111', shadow: 0, upper: 1, size: 100, place: 'left', pscale: 105, hidePill: 1}},
+  {ref: 'h8u840Wm-BI', name: 'Huge text behind me', note: 'giant white heavy text, my head overlaps it, dark background', s: {bg: 'solid', bgval: '#2a2a2a', font: 5, ink: '#ffffff', stroke: 0, shadow: 0, upper: 1, size: 100, place: 'left', behind: 1, pscale: 105, pill: '#ffffff', pillInk: '#111111'}},
+  {ref: '73eFWU-edO4', name: 'Headline across the top', note: 'black with an orange glow, one big white condensed line along the top', s: {bg: 'grad', bgval: '7', font: 1, ink: '#ffffff', stroke: 0, shadow: 1, upper: 1, size: 100, place: 'topleft', pscale: 105, hidePill: 1}},
+];
+const REF = {"gyN9lV9QgyA": "Wayne Phipps | Over 50 Reset", "lByNGAaamNc": "The Invisible Ladder", "T__1QViXUxk": "Farah Sharghi", "_QK4FdjiCpQ": "Amazon Bound", "mrEJu635RQE": "Edward Donner", "9VR8VwlYXWk": "Shawn Builds AI", "5p-sq8v3OXw": "Open Residency", "MZyDYMWbmmw": "This Is Not Covered", "RjV84g_7kho": "Wint Wealth", "h8u840Wm-BI": "Instantly", "73eFWU-edO4": "Benjamin Cordero"};
+const REFX = {"gyN9lV9QgyA": "67x subs", "lByNGAaamNc": "29x subs", "T__1QViXUxk": "12x subs", "_QK4FdjiCpQ": "4x subs", "mrEJu635RQE": "5x subs", "9VR8VwlYXWk": "3x subs", "5p-sq8v3OXw": "15x subs", "MZyDYMWbmmw": "3x subs", "RjV84g_7kho": "4x subs", "h8u840Wm-BI": "12x subs", "73eFWU-edO4": "3x subs"};
+let CFG = {items: []}, S = {...DEF}, I = 0, P = -1;
+const presetState = p => ({...DEF, layout: S.layout, logo: S.logo, logoPos: S.logoPos, logoSize: S.logoSize, ...p.s});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function wrapLines(txt, max){ const w = txt.split(' '), n = Math.min(3, Math.max(1, Math.ceil(txt.length / max))); if (n === 1 || w.length < 2) return [txt]; const out = [], per = txt.length / n; let cur = ''; w.forEach(x => { if (cur && (cur + ' ' + x).length > per && out.length < n - 1) { out.push(cur); cur = x; } else cur = cur ? cur + ' ' + x : x; }); out.push(cur); return out; }
+function bgCss(s, L){
+  const pat = PATTERNS[s.pattern][1];
+  let base = s.bg === 'orig' ? ORIG[L.pose] : s.bg === 'solid' ? s.bgval : GRADS[+s.bgval][1];
+  return (pat ? pat + ',' : '') + base;
+}
+function html(s, item){
+  const L = LAY[s.layout], C = esc(item.title), cp = x => x.replace(/\{C\}/g, () => C);
+  let main = cp(L.main), pill = s.hidePill ? '' : cp(L.pill); if (s.upper) { main = main.toUpperCase(); pill = pill.toUpperCase(); }
+  const [x, y, w, h] = PLACE[s.place];
+  const lines = wrapLines(main, 11);
+  const f = FONTS[s.font][1], stroke = s.stroke, sh = s.shadow ? 'text-shadow:0 6px 0 rgba(0,0,0,.28);' : '';
+  const flip = s.flip ? 'scaleX(-1)' : '', sc = s.pscale / 100;
+  const person = `<img class="person" src="cuts/${L.pose}.png" style="z-index:${s.behind ? 2 : 1};transform-origin:${s.flip ? 20 : 80}% 100%;transform:translate(${s.px}px,${s.py}px) ${flip} scale(${sc})" alt="">`;
+  const logo = s.logo === 'none' ? '' : `<img class="logo" src="logos/${s.logo}.svg" style="width:${s.logoSize}px;${{tl: 'left:40px;top:34px', tr: 'right:40px;top:34px', bl: 'left:40px;bottom:34px', br: 'right:40px;bottom:34px'}[s.logoPos]}" alt="">`;
+  const bg = s.bg === 'origimg' ? `<img class="bgl" src="poses/${L.pose}.png" style="width:100%;height:100%">` : `<div class="bgl" style="background:${bgCss(s, L)}"></div>`;
+  // person above text when the text sits over the body? text on top, as in the gallery
+  const al = s.place === 'top' || s.place === 'bottom' || s.place === 'center' ? 'center' : 'flex-start';
+  const boxCss = s.box ? `background:${s.box};padding:.06em .2em .1em;border-radius:.14em;${s.boxBorder ? `border:6px solid ${s.boxBorder};` : ''}align-self:${al};margin-bottom:10px;` : '';
+  const pillCss = `background:${s.pill};color:${s.pillInk};padding:10px 30px;${s.pillBorder ? `border:5px solid ${s.pillBorder};` : ''}align-self:${al}`;
+  return `<div class="th" style="font-family:${f}">${bg}${person}<div class="tb" data-w="${w}" data-size="${s.size}" data-h="${h}" style="z-index:${s.behind ? 1 : 3};transform:rotate(${s.tilt}deg);left:${x + s.tx}px;top:${y + s.ty}px;width:${w}px;height:${h}px;justify-content:center;align-items:${al}">${lines.map(l => `<span class="ln" style="color:${s.ink};${s.stroke ? `-webkit-text-stroke:${stroke}px ${s.strokeColor};` : ''}${sh}${boxCss}">${l}</span>`).join('')}${pill ? `<span class="pl" style="${pillCss}">${pill}</span>` : ''}</div>${logo}</div>`;
+}
+function fit(root, s){
+  root.querySelectorAll('.tb').forEach(b => {
+    const w = +b.dataset.w, ls = [...b.querySelectorAll('.ln')];
+    let best = 520;
+    ls.forEach(el => { let fs = 520; el.style.fontSize = fs + 'px'; while (el.scrollWidth > w - 4 && fs > 24) { fs -= 4; el.style.fontSize = fs + 'px'; } best = Math.min(best, fs); });
+    let size = Math.max(20, best * (+b.dataset.size || 100) / 100);
+    const hh = +b.dataset.h; if (hh) size = Math.min(size, (hh - (b.querySelector('.pl') ? 90 : 0)) / (ls.length * 1.04));
+    ls.forEach(el => { el.style.fontSize = size + 'px'; el.style.marginBottom = (size * .06) + 'px'; });
+    const pl = b.querySelector('.pl'); if (pl) { pl.style.fontSize = Math.min(size * .55, 70) + 'px'; }
+  });
+}
+const scaled = (h, w) => { const k = w / 1280; return `<div class="frame" style="width:${w}px;height:${Math.round(720 * k)}px"><div class="scaler" style="transform:scale(${k})">${h}</div></div>`; };
+function save(){ document.getElementById('out').value = JSON.stringify({layoutNumber: LAY[S.layout].n, ...S}); location.hash = 's=' + encodeURIComponent(JSON.stringify(S)) + '&i=' + I; }
+function render(){
+  const item = CFG.items[I];
+  const h = html(S, item);
+  document.getElementById('hero').innerHTML = scaled(h, 800);
+  document.getElementById('smalls').innerHTML = scaled(h, 240) + scaled(h, 120);
+  document.getElementById('presets').innerHTML = PRESETS.map((p, i) => `<div class="pc ${P === i ? 'sel' : ''}" data-p="${i}"><div class="pair"><img class="real" src="refs/${p.ref}.jpg" alt="real thumbnail">${scaled(html(presetState(p), item), 256)}</div><b>${i + 1}. ${p.name}</b><small>${p.note}. Real example: ${REF[p.ref]}, ${REFX[p.ref]}.</small></div>`).join('');
+  document.querySelectorAll('.pc').forEach(c => c.onclick = () => { P = +c.dataset.p; S = presetState(PRESETS[P]); panel(); render(); });
+  document.getElementById('grid').innerHTML = CFG.items.map((it, i) => `<div class="c ${i === I ? 'sel' : ''}" data-i="${i}">${scaled(html(S, it), 230)}<small>${esc(it.title)}</small></div>`).join('');
+  fit(document.body, S);
+  document.querySelectorAll('.c').forEach(c => c.onclick = () => { I = +c.dataset.i; document.getElementById('item').value = I; render(); scrollTo({top: 0, behavior: 'smooth'}); });
+  save();
+}
+const set = (k, v) => { S[k] = v; panel(); render(); };
+function sw(k, list, cur){ return list.map(c => `<button class="sw" style="background:${c}" aria-label="${c}" aria-pressed="${cur === c}" data-k="${k}" data-v="${c}"></button>`).join(''); }
+function btns(k, list, cur){ return list.map(([v, l]) => `<button aria-pressed="${String(cur) === String(v)}" data-k="${k}" data-v="${v}">${l}</button>`).join(''); }
+function sl(k, label, min, max, step = 1){ return `<label class="sl"><span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${S[k]}" data-sl="${k}"><em>${S[k]}</em></label>`; }
+function panel(){
+  const bgBtns = `<button aria-pressed="${S.bg === 'orig'}" data-k="bg" data-v="orig">pose's own colour</button><button aria-pressed="${S.bg === 'origimg'}" data-k="bg" data-v="origimg">original photo</button>`;
+  document.getElementById('panel').innerHTML = `
+   <div class="grp"><b>Layout</b><div class="row">${LAY.map((l, i) => `<button aria-pressed="${S.layout === i}" data-k="layout" data-v="${i}">${l.n}. ${l.pose}</button>`).join('')}</div></div>
+   <div class="grp"><b>Background</b><div class="row">${bgBtns}</div><div class="row" style="margin-top:6px">${sw('bgs', COLORS, S.bg === 'solid' ? S.bgval : '')}</div><div class="row" style="margin-top:6px">${GRADS.map(([n], i) => `<button aria-pressed="${S.bg === 'grad' && +S.bgval === i}" data-k="bgg" data-v="${i}">${n}</button>`).join('')}</div><div class="row" style="margin-top:6px"><span style="color:var(--muted)">pattern</span>${btns('pattern', PATTERNS.map(([n], i) => [i, n]), S.pattern)}</div></div>
+   <div class="grp"><b>Text</b><div class="row">${btns('font', FONTS.map(([n], i) => [i, n]), S.font)}</div><div class="row" style="margin-top:6px">${sw('ink', COLORS, S.ink)}</div>${sl('size', 'size %', 40, 140)}<div class="row">${btns('upper', [[0, 'Aa'], [1, 'AA']], S.upper)}</div></div>
+   <div class="grp"><b>Outline and shadow</b>${sl('stroke', 'outline px', 0, 22)}<div class="row">${sw('strokeColor', COLORS, S.strokeColor)}</div><div class="row" style="margin-top:6px">${btns('shadow', [[1, 'shadow on'], [0, 'shadow off']], S.shadow)}</div></div>
+   <div class="grp"><b>Pill (second line)</b><div class="row">${sw('pill', COLORS, S.pill)}</div><div class="row" style="margin-top:6px">${sw('pillInk', ['#111111', '#ffffff'], S.pillInk)}</div></div>
+   <div class="grp"><b>Placement</b><div class="row">${btns('place', Object.keys(PLACE).map(k => [k, k]), S.place)}</div>${sl('tx', 'text left/right', -300, 300)}${sl('ty', 'text up/down', -200, 200)}<div class="row">${btns('flip', [[0, 'me on right'], [1, 'flip me to left']], S.flip)}</div>${sl('pscale', 'my size %', 70, 140)}${sl('px', 'me left/right', -300, 300)}${sl('py', 'me up/down', -200, 200)}</div>
+   <div class="grp"><b>Label box, tilt, text behind me</b><div class="row">${btns('boxMode', [[0, 'no box'], [1, 'box']], S.box ? 1 : 0)}</div><div class="row" style="margin-top:6px">${sw('box', COLORS, S.box)}</div><div class="row" style="margin-top:6px"><span style="color:var(--muted)">edge</span>${btns('boxBorder', [['', 'none'], ['#ffffff', 'white'], ['#111111', 'black']], S.boxBorder)}</div>${sl('tilt', 'tilt degrees', -10, 10)}<div class="row">${btns('behind', [[0, 'text in front'], [1, 'text behind me']], S.behind)}</div></div>
+   <div class="grp"><b>Logo</b><div class="row">${btns('logo', [['none', 'none'], ['white', 'Brand white'], ['black', 'Brand black']], S.logo)}</div><div class="row" style="margin-top:6px">${btns('logoPos', [['tl', 'top left'], ['tr', 'top right'], ['bl', 'bottom left']], S.logoPos)}</div>${sl('logoSize', 'logo size', 80, 420)}<small style="color:var(--muted)">Company logos are not added: they are other people's marks.</small></div>`;
+  const p = document.getElementById('panel');
+  p.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => {
+    const k = b.dataset.k, v = b.dataset.v;
+    if (k === 'boxMode') { S.box = +v ? (S.box || '#2447ff') : ''; } else if (k === 'bgs') { S.bg = 'solid'; S.bgval = v; } else if (k === 'bgg') { S.bg = 'grad'; S.bgval = v; } else if (['layout', 'pattern', 'font', 'upper', 'shadow', 'flip', 'behind'].includes(k)) S[k] = +v; else S[k] = v;
+    panel(); render();
+  });
+  p.querySelectorAll('input[data-sl]').forEach(i => { i.oninput = () => { S[i.dataset.sl] = +i.value; i.nextElementSibling.textContent = i.value; render(); }; });
+}
+function solo(hs){ // for export: #solo=1&i=N&s=<json>
+  document.body.className = 'solo'; const set = v => { document.documentElement.dataset.ready = v; };
+  try { S = {...DEF, ...JSON.parse(hs.get('s'))}; } catch (e) { return set('fail:bad style'); }
+  const item = CFG.items[+hs.get('i')]; if (!item) return set('fail:unknown item');
+  Promise.all(FONTS.slice(1, 7).map(f => document.fonts.load('40px ' + f[1].split(';')[0].split(',')[0]))).catch(() => {}).then(() => { document.getElementById('app').innerHTML = html(S, item); fit(document.body, S);
+  const imgs = [...document.images]; Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => set(imgs.some(i => !i.naturalWidth) ? 'fail:image missing' : ([...document.querySelectorAll('.ln')].some(e => parseFloat(e.style.fontSize) < 32) ? 'fail:text too small' : 'ok'))); }).catch(() => set('fail:render'));
+}
+fetch('config.json').then(r => r.json()).then(c => {
+  CFG = c; const hs = new URLSearchParams(location.hash.slice(1));
+  if (hs.get('solo')) return solo(hs);
+  try { if (hs.get('s')) S = {...DEF, ...JSON.parse(hs.get('s'))}; } catch (e) {}
+  if (hs.get('i') && CFG.items[+hs.get('i')]) I = +hs.get('i');
+  const sel = document.getElementById('item'); CFG.items.forEach((x, i) => { const o = document.createElement('option'); o.value = i; o.textContent = x.title + (x.sub ? ' - ' + x.sub : ''); sel.appendChild(o); }); sel.value = I; sel.onchange = () => { I = +sel.value; render(); };
+  document.getElementById('gd').onclick = e => { const on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); document.getElementById('app').classList.toggle('guides', on); };
+  document.getElementById('copy').onclick = () => navigator.clipboard && navigator.clipboard.writeText(document.getElementById('out').value);
+  document.getElementById('reset').onclick = () => { S = {...DEF}; panel(); render(); };
+  Promise.all(FONTS.slice(1, 7).map(f => document.fonts.load('40px ' + f[1].split(';')[0].split(',')[0]))).catch(() => {}).then(() => { panel(); render(); });
+}).catch(() => { document.documentElement.dataset.ready = 'fail:config'; });
+</script></body></html>

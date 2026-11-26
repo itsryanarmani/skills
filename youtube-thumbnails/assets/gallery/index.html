@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thumbnail gallery</title>
+<style>
+:root{--bg:#ecebe7;--ink:#161513;--muted:#6b665d;--card:#fff}
+@media (prefers-color-scheme: dark){:root{--bg:#171614;--ink:#eee9df;--muted:#9a948a;--card:#242321}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,"Helvetica Neue",Arial,sans-serif}
+body.solo{background:#000}
+header{padding:18px 24px 6px}h1{font:700 22px/1.2 Georgia,serif;margin:0 0 4px}
+.sub{color:var(--muted);margin:0;max-width:900px}
+.bar{display:flex;flex-wrap:wrap;gap:16px;padding:12px 24px;align-items:flex-end}
+.grp{display:flex;flex-direction:column;gap:6px}.grp b{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+select,button{font:inherit;padding:7px 12px;border-radius:8px;border:1px solid #8a857b;background:transparent;color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{min-width:280px;max-width:90vw}
+.hero{padding:6px 24px 10px;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.small{display:flex;flex-direction:column;gap:10px}.small small{color:var(--muted);max-width:280px}
+.row{display:flex;gap:14px;align-items:flex-end}
+.strip{display:flex;gap:8px;flex-wrap:wrap;padding:4px 24px 14px}
+.strip img{width:96px;height:54px;object-fit:cover;border-radius:6px;cursor:pointer;border:3px solid transparent}
+.strip img.sel{border-color:#ff5a1f}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,400px);gap:20px;padding:6px 24px 40px}
+.cell{cursor:pointer;border-radius:10px;padding:8px;background:var(--card);border:3px solid transparent}
+.cell.sel{border-color:#ff5a1f}
+.cell .lab{padding:8px 2px 0;font-weight:600}
+.frame{position:relative;overflow:hidden}.scaler{position:absolute;left:0;top:0;transform-origin:0 0}
+.guides .th::after{content:"";position:absolute;right:0;bottom:0;width:230px;height:70px;background:rgba(255,0,60,.35);border:2px dashed #f03;z-index:99}
+/* 1280x720 canvas */
+.th{width:1280px;height:720px;position:relative;overflow:hidden;font-family:"Helvetica Neue",Arial,sans-serif;color:#111}
+.th .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.th .t{position:absolute;left:60px;width:640px;font-weight:900;letter-spacing:-.02em}
+.th .t div{margin-bottom:8px}
+.fit{display:inline-block;white-space:nowrap;line-height:1}
+.pill{position:absolute;left:60px;padding:12px 32px;border-radius:99px;font:900 54px Arial,sans-serif;white-space:nowrap}
+.band{position:absolute;left:0;padding:12px 36px;font:900 62px Arial,sans-serif;letter-spacing:.04em;background:#e11d2e;color:#fff}
+.hand{font-family:"Snell Roundhand","Bradley Hand",cursive;font-weight:700}
+.p{position:absolute;filter:drop-shadow(0 12px 18px rgba(0,0,0,.38));height:880px;width:auto;bottom:-160px}
+/* cutout styles */
+.k1{background:#f0e9db}.k1 .sheet{position:absolute;left:56px;top:170px;width:720px;height:340px;background:#fff;border:5px solid #111;box-shadow:12px 12px 0 #111;transform:rotate(-2.2deg);padding:44px 48px}
+.k1 .tape{position:absolute;left:300px;top:-30px;width:150px;height:56px;background:#ff5a1f;transform:rotate(4deg)}
+.k1 .kk{font:800 40px ui-monospace,Menlo,monospace;margin-bottom:22px}.k1 .p{right:-10px}
+.k2{background:#2447ff;color:#fff}.k2 .p{right:0}
+.k3{background:radial-gradient(circle at 30% 45%,#3a3a3a,#121212 65%,#050505);color:#fff}.k3 .p{left:10px}
+.k4{background:#111;color:#fff}.k4 .l{position:absolute;left:0;top:0;width:520px;height:720px;background:#f4f2ec}.k4 .p{left:-150px}
+.k5{background:#c7a56d}.k5 .card{position:absolute;left:50px;top:90px;width:760px;height:470px;background:#fffdf7;transform:rotate(-3deg);box-shadow:0 18px 30px rgba(0,0,0,.3);padding:50px 56px;color:#111}.k5 .p{right:-30px}
+.k6{background:linear-gradient(135deg,#ff5a1f,#ff2d55)}.k6 .p{left:0}
+.k6 .play{position:absolute;left:640px;top:150px;width:380px;height:380px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.k6 .play i{display:block;border-left:150px solid #111;border-top:95px solid transparent;border-bottom:95px solid transparent;margin-left:36px}
+.k7{background:#0d1117;color:#7ee787}.k7 .win{position:absolute;left:50px;top:90px;width:760px;height:430px;background:#161b22;border:3px solid #30363d;border-radius:16px;padding:34px 44px;font-family:ui-monospace,Menlo,monospace;white-space:nowrap}.k7 .p{right:-10px}
+.k8{background:#fbfbf8;background-image:linear-gradient(#e6e6df 2px,transparent 2px),linear-gradient(90deg,#e6e6df 2px,transparent 2px);background-size:48px 48px;color:#2447ff}.k8 .p{right:-10px}
+.k9{background:#0f3d2e}.k9 .p{right:-60px;z-index:2}.k9 .big{position:absolute;left:50px;top:130px;width:760px;color:#ffd84a}
+.k10{background:radial-gradient(circle at 20% 20%,#7c3aed 0,transparent 55%),radial-gradient(circle at 85% 80%,#06b6d4 0,transparent 55%),#1e1b4b;color:#fff}.k10 .p{right:-10px}
+.k10 .glass{position:absolute;left:56px;top:150px;width:700px;height:380px;border-radius:28px;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.35);padding:44px 52px}
+</style></head>
+<body>
+<div id="app">
+<header><h1>Thumbnail gallery, 1280 x 720</h1>
+<p class="sub">Pick an item, a layout and a pose. The small boxes show the 240 px and 120 px phone sizes. Rules: one idea, 4 words or fewer, 3 colours, face large, nothing in the bottom-right corner.</p></header>
+<div class="bar">
+ <div class="grp"><b>Item</b><select id="item"></select></div>
+ <div class="grp"><b>Pose for all layouts</b><button id="reset" aria-pressed="false">Use each layout's own pose</button></div>
+ <div class="grp"><b>View</b><button id="gd" aria-pressed="false">Show safe zone</button></div>
+ <div class="grp"><b>Chosen</b><div id="chosen" style="padding:7px 0;font-weight:700">none yet</div></div>
+</div>
+<div class="hero"><div id="hero"></div>
+ <div class="small"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">240 px and 120 px test</b><div class="row" id="smalls"></div><small>If the name and the face are not clear here, the layout fails.</small><button id="use">Use this layout for all items</button></div></div>
+<div class="strip" id="strip"></div>
+<div class="grid" id="grid"></div>
+</div>
+<script>
+// config.json: {"name":"Alex","items":[{"title":"Acme","sub":"Senior PM"}],"quote":"Watch this, {C}"}
+// poses/index.json: ["pointing","thinking",...]; poses/<tag>.png on a flat colour background; cutout.png optional.
+let CFG = {items: []}, TAGS = [], POSE = {}, st = {i: 0, l: 0, pose: null};
+const hs = new URLSearchParams(location.hash.slice(1));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeTag = t => (t && /^[a-z0-9_-]+$/i.test(t)) ? t : null;
+const sub = (s, C) => s.replace(/\{C\}/g, () => C).replace(/\{N\}/g, () => esc(CFG.name || ''));
+function lines(txt, max){ // balanced word wrap into at most 3 lines
+  const w = txt.split(' '), n = Math.min(3, Math.max(1, Math.ceil(txt.length / max)));
+  if (n === 1 || w.length < 2) return [txt];
+  const out = [], per = txt.length / n; let cur = '';
+  w.forEach(x => { if (cur && (cur + ' ' + x).length > per && out.length < n - 1) { out.push(cur); cur = x; } else cur = cur ? cur + ' ' + x : x; });
+  out.push(cur); return out;
+}
+function stack(txt, max, start, maxc){ return lines(txt, maxc || 11).map(l => `<div><span class="fit" data-max="${max}" data-start="${start}">${l}</span></div>`).join(''); }
+const T = (txt, style, o = {}) => `<div class="t" style="top:${o.top || 170}px;color:${style.ink};${o.css || ''}">${o.l ? o.l.map(l => `<div><span class="fit" data-max="${o.max || 560}" data-start="${o.start || 150}">${l}</span></div>`).join('') : stack(txt, o.max || 560, o.start || 150, o.mc)}</div>`;
+const PILL = (txt, s, top = 500) => `<div class="pill" style="top:${top}px;background:${s.hi};color:${s.hi === '#111' ? '#fff' : '#111'}"><span class="fit" data-max="520" data-start="54">${txt}</span></div>`;
+// layouts on a pose: [name, default pose, render(C, R, pose, style)]
+const TXT = (name, pose, main, pill) => [name, pose, (C, R, s) => T(sub(main, C), s, {top: pill ? 150 : 200}) + (pill ? PILL(sub(pill, C), s) : '')];
+const LAYOUTS = [
+  TXT('Name', 'pointing', '{C}'),
+  TXT('Name + watch', 'shocked', '{C}?!', 'Watch this'),
+  TXT('Hello', 'waving', 'Hi {C}!'),
+  TXT('Why', 'thinking', 'Why {C}?'),
+  TXT('Another resume', 'sad', 'Another resume?', '{C}'),
+  TXT('Too many resumes', 'headhands', 'Too many resumes?', '{C}'),
+  TXT('Not another', 'facepalm', 'Not another resume.', '{C}'),
+  TXT('Direct', 'pointcam', 'Hey {C}.'),
+  TXT('Psst', 'shush', 'Psst, {C}.'),
+  TXT("Let's build", 'fistpump', "Let's build it.", '{C}'),
+  TXT('Why not', 'shrug', 'Why not {C}?'),
+  TXT('Skeptic', 'skeptical', 'Still reading resumes?', '{C}'),
+  TXT('Mind blown', 'mindblown', '{C} + me?'),
+  TXT('The pitch', 'frame', 'The 1-minute pitch', '{C}'),
+  TXT('Please', 'pleading', 'Please watch.', '{C}'),
+  TXT('Thumbs up', 'thumbsup', '{C}', 'Watch this'),
+  ['Breaking news', 'armscrossed', (C, R, s) => `<div class="band" style="top:130px">BREAKING</div>` + T('', s, {top: 250, l: [C + ',', 'meet ' + esc(CFG.name || 'me')], start: 130})],
+  ['Postcard', 'card', (C, R, s) => T('To: ' + C, s, {top: 200, css: 'font-family:"Snell Roundhand","Bradley Hand",cursive;font-weight:700', start: 150})],
+  ['Resume to video', 'presenting', (C, R, s) => `<div style="position:absolute;left:60px;top:120px;font:900 96px Arial;color:${s.ink};opacity:.65;text-decoration:line-through;text-decoration-thickness:10px">Resume</div><div style="position:absolute;left:60px;top:240px;font:900 170px Arial;color:${s.hi};letter-spacing:-.03em">&rarr; Video</div>` + PILL(C, s, 470)],
+  ['Warning', 'shocked', (C, R, s) => `<div style="position:absolute;left:60px;top:90px;font:900 150px Arial;color:#ffd84a">&#9888;</div>` + T("Don't skip this", s, {top: 270, mc: 9, start: 130}) + PILL(C, s, 540)],
+  ['Quote', 'thumbsup', (C, R, s) => `<div style="position:absolute;left:50px;top:120px;width:640px;background:#fff;color:#111;border-radius:36px;padding:34px 40px;box-shadow:0 10px 0 rgba(0,0,0,.25)">${stack(sub(esc(CFG.quote || 'Watch this, {C}'), C), 560, 110, 14)}</div>`],
+  ['Minute', 'finger', (C, R, s) => T(C + ':', s, {top: 170}) + `<div style="position:absolute;left:60px;top:430px;font:900 100px Arial;color:#111;background:${s.hi};padding:4px 24px">one minute</div>`],
+  ['Raw', 'candid', (C, R, s) => `<div class="pill" style="top:60px;background:#111;color:#fff">for <span class="fit" data-max="520" data-start="54">${C}</span></div>`],
+  ['Raw laugh', 'laugh', (C, R, s) => `<div class="pill" style="top:60px;background:#111;color:#fff">for <span class="fit" data-max="520" data-start="54">${C}</span></div>`],
+];
+// cutout layouts need cutout.png (transparent person); they ignore poses
+const CUT = [
+  ['Paper cut', (C, P) => `<div class="th k1"><div class="sheet"><div class="tape"></div><div class="kk">A VIDEO FOR</div><span class="fit" data-max="620" data-start="150" style="font-family:Georgia,serif;font-weight:900">${C}</span></div>${P}</div>`],
+  ['Color block', (C, P) => `<div class="th k2"><div class="t" style="top:150px"><span class="fit" data-max="540" data-start="170">${C}</span></div><div class="pill" style="top:420px;background:#ffd84a;color:#111">Watch this</div>${P}</div>`],
+  ['Dark spotlight', (C, P) => `<div class="th k3">${P}<div style="position:absolute;left:640px;top:140px;font:900 120px Arial;color:#ffd84a">Hi,</div><div class="t" style="left:640px;top:290px;width:600px"><span class="fit" data-max="600" data-start="130">${C}</span></div></div>`],
+  ['Split screen', (C, P, R) => `<div class="th k4"><div class="l"></div>${P}<div class="t" style="left:600px;top:150px;width:640px;white-space:normal">${stack(R, 620, 112, 10)}</div><div style="position:absolute;left:600px;top:480px;font:800 56px Arial;color:#ffd84a">for ${C}</div></div>`],
+  ['Postcard card', (C, P) => `<div class="th k5"><div class="card"><div class="hand" style="font-size:80px;margin-top:40px">To:</div><span class="fit hand" data-max="620" data-start="150" style="color:#2447ff">${C}</span></div>${P}</div>`],
+  ['Play button', (C, P) => `<div class="th k6">${P}<div class="pill" style="left:620px;top:50px;background:#111;color:#fff;font-size:52px"><span class="fit" data-max="540" data-start="52">${C}</span></div><div class="play"><i></i></div></div>`],
+  ['Terminal', (C, P) => `<div class="th k7"><div class="win"><div style="font:800 56px ui-monospace,Menlo,monospace;margin-top:70px">$ hello <br><span class="fit" data-max="590" data-start="86">${C.toLowerCase().replace(/ /g, '-')}</span></div></div>${P}</div>`],
+  ['Whiteboard', (C, P) => `<div class="th k8"><div class="t" style="top:180px;width:700px;font-family:'Marker Felt','Bradley Hand',cursive"><span class="fit" data-max="660" data-start="120">Hi ${C}!</span></div>${P}</div>`],
+  ['Text behind me', (C, P) => `<div class="th k9"><div class="big">${lines(C, 11).slice(0, 3).map(l => `<div><span class="fit" data-max="700" data-start="${l.length > 8 ? 190 : 250}" style="font-weight:900">${l}</span></div>`).join('')}</div>${P}</div>`],
+  ['Aurora glass', (C, P, R) => `<div class="th k10"><div class="glass"><div style="font:700 44px Arial;margin-bottom:18px">${R}</div><span class="fit" data-max="600" data-start="130" style="font-weight:900">${C}</span></div>${P}</div>`],
+];
+const all = () => LAYOUTS.map((l, i) => ({id: i, name: l[0], kind: 'pose'})).concat(HAS_CUT ? CUT.map((c, i) => ({id: LAYOUTS.length + i, name: c[0], kind: 'cut'})) : []);
+let HAS_CUT = false;
+function render1(idx, item, pose){
+  const C = esc(item.title), R = esc(item.sub || '');
+  if (idx >= LAYOUTS.length) { const c = CUT[idx - LAYOUTS.length]; return c[1](C, '<img class="p" src="cutout.png" alt="">', R); }
+  const [, dp, fn] = LAYOUTS[idx], tag = pose || dp, s = POSE[tag] || {bg: '#888', ink: '#fff', hi: '#ffd84a'};
+  return `<div class="th" style="background:${s.bg}"><img class="bg" src="poses/${tag}.png">${fn(C, R, s)}</div>`;
+}
+function fitAll(root){
+  root.querySelectorAll('.fit[data-max]').forEach(el => { let fs = +el.dataset.start; el.style.fontSize = fs + 'px'; while (el.scrollWidth > +el.dataset.max && fs > 20) { fs -= 4; el.style.fontSize = fs + 'px'; } });
+  root.querySelectorAll('.t, .big').forEach(b => { const f = [...b.querySelectorAll('.fit')]; if (f.length > 1) { const m = Math.min(...f.map(x => parseFloat(x.style.fontSize))); f.forEach(x => x.style.fontSize = m + 'px'); } });
+}
+const scaled = (html, w) => { const k = w / 1280; return `<div class="frame" style="width:${w}px;height:${Math.round(720 * k)}px"><div class="scaler" style="transform:scale(${k})">${html}</div></div>`; };
+function render(){
+  const item = CFG.items[st.i], L = all();
+  const h = render1(st.l, item, st.pose);
+  document.getElementById('hero').innerHTML = scaled(h, 800);
+  document.getElementById('smalls').innerHTML = scaled(h, 240) + scaled(h, 120);
+  document.getElementById('strip').innerHTML = TAGS.map(t => `<img src="poses/${t}.png" data-t="${t}" title="${t}" class="${st.pose === t ? 'sel' : ''}">`).join('');
+  document.getElementById('grid').innerHTML = L.map(x => `<div class="cell ${x.id === st.l ? 'sel' : ''}" data-l="${x.id}">${scaled(render1(x.id, item, x.kind === 'pose' ? st.pose : null), 384)}<div class="lab">${x.id + 1}. ${x.name}</div></div>`).join('');
+  fitAll(document.body);
+  document.querySelectorAll('.cell').forEach(c => c.onclick = () => { st.l = +c.dataset.l; render(); scrollTo({top: 0, behavior: 'smooth'}); });
+  document.querySelectorAll('.strip img').forEach(c => c.onclick = () => { st.pose = c.dataset.t; render(); });
+}
+function sample(tag){ // flat background colour from the pose's top-left pixel
+  return new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 1; const g = c.getContext('2d'); g.drawImage(im, 4, 4, 1, 1, 0, 0, 1, 1); const [r, gg, b] = g.getImageData(0, 0, 1, 1).data; const lum = (0.299 * r + 0.587 * gg + 0.114 * b) / 255; const dark = lum < 0.6; POSE[tag] = {bg: `rgb(${r},${gg},${b})`, ink: dark ? '#fff' : '#111', hi: dark ? '#ffd84a' : '#111'}; res(); }; im.onerror = res; im.src = `poses/${tag}.png`; });
+}
+async function solo(){ // one thumbnail; sets <html data-ready="ok"> or "fail:reason" for thumbnail-export
+  document.body.className = 'solo';
+  const set = v => { document.documentElement.dataset.ready = v; };
+  const l = +hs.get('l'), item = CFG.items[+hs.get('i')], pose = safeTag(hs.get('pose')), max = LAYOUTS.length + (HAS_CUT ? CUT.length : 0);
+  if (!item) return set('fail:unknown item');
+  if (!String(item.title || '').trim()) return set('fail:item has no title');
+  if (!Number.isInteger(l) || l < 0 || l >= max) return set('fail:unknown layout (need cutout.png for layouts above ' + LAYOUTS.length + ')');
+  if (hs.get('pose') && (!pose || !TAGS.includes(pose))) return set('fail:unknown pose');
+  if (l < LAYOUTS.length && !TAGS.includes(pose || LAYOUTS[l][1])) return set('fail:pose file missing: ' + (pose || LAYOUTS[l][1]));
+  document.getElementById('app').innerHTML = render1(l, item, pose); fitAll(document.body);
+  const imgs = [...document.images]; await Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
+  if (imgs.some(i => !i.naturalWidth)) return set('fail:image missing');
+  if ([...document.querySelectorAll('.fit')].some(e => parseFloat(e.style.fontSize) < 32)) return set('fail:text too small, shorten the title');
+  set('ok');
+}
+Promise.all([fetch('config.json').then(x => x.json()), fetch('poses/index.json').then(x => x.json()).catch(() => []), fetch('cutout.png', {method: 'HEAD'}).then(r => r.ok).catch(() => false)]).then(async ([c, tags, cut]) => {
+  CFG = c; TAGS = tags.filter(t => safeTag(t)); HAS_CUT = cut; await Promise.all(TAGS.map(sample));
+  if (hs.get('solo')) return solo();
+  const sel = document.getElementById('item'); CFG.items.forEach((x, i) => { const o = document.createElement('option'); o.value = i; o.textContent = x.title + (x.sub ? ' - ' + x.sub : ''); sel.appendChild(o); });
+  if (hs.get('i') && CFG.items[+hs.get('i')]) { st.i = +hs.get('i'); sel.value = st.i; }
+  sel.onchange = () => { st.i = +sel.value; render(); };
+  document.getElementById('reset').onclick = () => { st.pose = null; render(); };
+  document.getElementById('gd').onclick = e => { const on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); document.getElementById('app').classList.toggle('guides', on); };
+  document.getElementById('use').onclick = () => { const n = all()[st.l].name; document.getElementById('chosen').textContent = (st.l + 1) + '. ' + n + (st.pose ? ' + pose ' + st.pose : '') + ' (tell the agent)'; };
+  render();
+});
+</script></body></html>

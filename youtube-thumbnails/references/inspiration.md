@@ -1,6 +1,6 @@
 # Where the rules come from and where to look
 
-We read these sources in November 2026 (one was only read by its description, as marked) and kept what a test of ours also showed.
+We read these sources in November 2026 (one was only read by its description, as marked). Rules marked "we did not test" in `tactics.md` come from them. Costs, timings and the model comparison are our own measurements.
 Repositories change. A verified run of ours outranks anything below.
 
 ## Sources

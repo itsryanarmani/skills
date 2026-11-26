@@ -12,7 +12,7 @@ clean background reserved for text. No text, no logos, no watermark, no extra
 props unless stated. Flat solid studio background colour: <colour>. Pose: <pose>.
 ```
 
-Change "the man" for the person. Keep "no text". Keep the empty left half.
+Set the person with `--who`, `--he`, `--his`, `--him`. Keep "no text". Keep the empty left half.
 
 ## The 25 poses
 

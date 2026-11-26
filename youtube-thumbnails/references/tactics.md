@@ -2,13 +2,13 @@
 
 ## The 120 px test
 
-Most phone viewers first see a thumbnail about 120 px wide. Look at the design
+The `inference-sh` thumbnail skill says most phone viewers first see a thumbnail about 120 px wide (we did not measure this). Look at the design
 at that width. They must still see the feeling (colour and expression), the
 subject (composition) and the words (if any). A muddy blur means redesign.
 
 ## Expressions
 
-Faces beat faceless thumbnails. The expression sets the feeling.
+Both source skills (see `inspiration.md`) say faces beat faceless thumbnails; we did not test it. The expression sets the feeling.
 
 | Expression | Strength | Pair with |
 | --- | --- | --- |

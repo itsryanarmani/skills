@@ -42,7 +42,6 @@ the nearest layout in the gallery template (`assets/gallery`).
 
 ## Extra layouts in the gallery
 
-Not from the thread, added because they test well for a personal video:
-Why, Why not, Psst, Please watch, Let's build, The pitch, Hello, Postcard,
-Thumbs up, Minute. Each pairs a pose with a short line. Read `references/tactics.md`
+Not from the thread, added because they suit a personal video: Why not, Psst,
+Please, Let's build, The pitch, Hello, Postcard, Thumbs up, Minute. Each pairs a pose with a short line. Read `references/tactics.md`
 for the expression that matches the line.

@@ -19,16 +19,23 @@ The scripts are `thumbnail-poses` and `thumbnail-export` in the scripts repo.
 The gallery page is in `assets/gallery/` (its `README.md` shows the folder and `config.example.json` the items).
 
 ```bash
+mkdir -p gallery/poses
+cp assets/gallery/index.html gallery/                    # the template
+cp assets/gallery/config.example.json gallery/config.json   # then edit: one item per video
 thumbnail-poses --dry-run --out gallery/poses            # prompts and cost, no network
 thumbnail-poses --ref front.jpg --ref smile.jpg --out gallery/poses --yes
-cp config.example.json gallery/config.json               # your titles, one per item
 python3 -m http.server 8765 --directory gallery          # open http://127.0.0.1:8765/
 thumbnail-export --gallery gallery --out thumbs --layout 5 --item all
 ```
 
+For anyone other than a man, add `--who "the woman" --he she --his her --him her`
+to `thumbnail-poses`. Layouts above 24 need a transparent `gallery/cutout.png`.
+`thumbnail-export` fails a thumbnail when the page reports a problem (unknown
+layout, missing pose, text too small), so read every row.
+
 ## Cost
 
-About $0.07 per pose, $1.75 for all 25. Layouts and export are free (local
+About $0.07 per pose, $1.75 for all 25 (a pose that writes no file is retried once, so at worst twice that). Layouts and export are free (local
 Chrome). Measured November 2026 on `openai/gpt-image-2/edit`; 15 poses took under 10
 minutes with 3 parallel runs. A second model, `google/nano-banana-2/edit`, cost
 the same. In one side-by-side sample (n=1) it looked less like the person, so

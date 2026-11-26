@@ -10,8 +10,8 @@ Use `thumbnail-dataset` (scripts repo). It searches the official YouTube Data AP
 read-only, and writes `dataset.jsonl`, `dataset.csv` and `thumbs/<id>.jpg`.
 
 ```bash
-thumbnail-dataset --out data --queries-file queries.txt --max 30 --published-after <a year ago> --dry-run
-thumbnail-dataset --out data --queries-file queries.txt --max 30 --published-after <a year ago>
+thumbnail-dataset --out data --queries-file queries.txt --max 30 --published-after 2025-11-26 --dry-run
+thumbnail-dataset --out data --queries-file queries.txt --max 30 --published-after 2025-11-26
 ```
 
 - Write 20 to 30 queries from your niche, plus a few from the format names in
@@ -36,7 +36,7 @@ thumbnail-dataset --out data --queries-file queries.txt --max 30 --published-aft
 ## 3. Label
 
 Label each thumbnail with one schema: `format` (the 20 in `formats.md`, plus
-`face_plus_big_text`, `object_or_scene_only`, `other`), `has_face`, `expression`,
+`screenshot_ui`, `face_plus_big_text`, `object_or_scene_only`, `other`), `has_face`, `expression`,
 `face_size`, `face_side`, the exact `text`, `word_count`, `text_position`,
 `text_colors`, `dominant_colors`, `bg_type`, `contrast`, `elements`, `hook_type`.
 Use a vision model, or cheap subagents that read numbered contact sheets of 12
@@ -48,11 +48,11 @@ eye: do not trust labels you did not look at.
 First study (November 2026): 562 thumbnails from 424 channels, 225 labelled
 (120 top, 105 bottom outliers, vertical Shorts removed). The labels came from a
 small model reading contact sheets, and their accuracy was not measured.
-"Top share" is top divided by top plus bottom, from raw counts; the groups differ in size (120 against 105).
+"Top share" is top divided by top plus bottom, from raw counts; the groups differ in size (120 against 105), so no difference at all would show as 53%, not 50%.
 
 | Feature | Top / bottom | Top share |
 | --- | --- | --- |
-| Story hook ("my layoff journey", "I quit at 53") | 16 / 2 | 89% |
+| Story hook (a personal story, an age and a life change) | 16 / 2 | 89% |
 | News headline layout | 1 / 10 | 9% |
 | Photo background | 83 / 52 | 61% |
 | Studio background | 5 / 17 | 23% |
@@ -65,9 +65,9 @@ small model reading contact sheets, and their accuracy was not measured.
 | Orange, brown or yellow in the palette | 27 / 13, 16 / 7, 27 / 16 | 63 to 70% |
 | A face at all | 93 / 96 | 49% |
 
-What this suggests, and no more: personal and story thumbnails over-performed
+These 12 rows were picked from about 70 feature cells, so some extremes are chance: retest them on your niche. What this suggests, and no more: personal and story thumbnails over-performed
 their channels; heavy branding, news banners, studio sets and red text under-
-performed; text low in the frame (where the duration badge sits) did badly.
+performed; text low in the frame did badly (a guess: the duration badge covers its corner, but the data does not show why).
 
 What it does not show. The bottom group is mostly large, polished channels, so
 "polished" may just mean "big". The top group has small channels with one lucky

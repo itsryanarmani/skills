@@ -12,7 +12,7 @@ brights, never flat), vibrant colour with one accent doing the work, a clear
 hierarchy of at most three steps (headline, hero object, face), a big positive
 face, and a clean finish with no clutter. The source says a before and after
 comparison on views favoured the bold, high-contrast, hierarchical frame over the
-flat one by about 4.4 times. That is one creator's comparison, not ours.
+flat one by about 4.4 times. That is one guide's before-and-after, not ours.
 
 Our own study (`dataset-and-recreation.md`) found story and personal thumbnails
 over-performing heavy branding, so "vibrant" must not become "loud and branded".

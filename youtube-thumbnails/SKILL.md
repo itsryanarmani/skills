@@ -43,8 +43,8 @@ compare both on your own photos before a large batch.
 
 ## Study real thumbnails first (optional, recommended for a batch)
 
-Collect recent thumbnails of your niche with `thumbnail-dataset` (it needs a
-`youtube.readonly` token and costs about 100 quota units per search), drop vertical
+Collect recent thumbnails of your niche with `thumbnail-dataset` (a real run needs a
+`youtube.readonly` token and costs about 100 quota units per search; `--dry-run` needs none), drop vertical
 Shorts, label the biggest over- and under-performers, and read the table as hints.
 Recreate one or two references with your own person and words to see why they work.
 See `references/dataset-and-recreation.md`. The images are other people's work:

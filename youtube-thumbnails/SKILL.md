@@ -16,7 +16,7 @@ For the video itself use `talking-head-edit`. For ad images use
 
 Needs `wavespeed` (key in `WAVESPEED_API_KEY`), Chrome, and optionally `ffmpeg`.
 The scripts are `thumbnail-poses` and `thumbnail-export` in the scripts repo.
-The gallery page is in `assets/gallery/` (see its README block in `config.example.json`).
+The gallery page is in `assets/gallery/` (its `README.md` shows the folder and `config.example.json` the items).
 
 ```bash
 thumbnail-poses --dry-run --out gallery/poses            # prompts and cost, no network
